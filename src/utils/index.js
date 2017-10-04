@@ -109,11 +109,13 @@ const FormioUtils = {
         noRecurse = fn(component, newPath);
       }
 
-      const subPath = () => {
+      var subPath = function() {
         if (
           component.key &&
           (
-            [ 'datagrid', 'container', 'editgrid' ].includes(component.type) ||
+            (component.type === 'datagrid') ||
+            (component.type === 'container') ||
+            (component.type === 'editgrid') ||
             component.tree
           )
         ) {
