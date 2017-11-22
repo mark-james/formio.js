@@ -8439,6 +8439,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'requestHeaders',
     get: function get() {
+      var _this5 = this;
+
       // Create the headers object.
       var headers = new Headers();
 
@@ -8447,7 +8449,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         try {
           (0, _each3.default)(this.component.data.headers, function (header) {
             if (header.key) {
-              headers.set(header.key, header.value);
+              headers.set(header.key, _this5.interpolate(header.value, {
+                data: _this5.data
+              }));
             }
           });
         } catch (err) {
@@ -14416,7 +14420,7 @@ OTransition:"oTransitionEnd",MozTransition:"transitionend",WebkitTransition:"web
 
 }).call(this,require('_process'))
 },{"_process":307}],54:[function(require,module,exports){
-/* flatpickr v4.1.2, @license MIT */
+/* flatpickr v4.0.7, @license MIT */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -14490,7 +14494,6 @@ var defaults = {
     enable: [],
     enableSeconds: false,
     enableTime: false,
-    errorHandler: console.warn,
     getWeek: getWeek,
     hourIncrement: 1,
     ignoredFocusElements: [],
@@ -14774,6 +14777,7 @@ var formats = {
     y: function (date) { return String(date.getFullYear()).substring(2); },
 };
 
+"use strict";
 if (typeof Object.assign !== "function") {
     Object.assign = function (target) {
         var args = [];
@@ -14861,11 +14865,8 @@ function FlatpickrInstance(element, instanceConfig) {
         return fn.bind(self);
     }
     function updateTime(e) {
-        if (self.config.noCalendar && self.selectedDates.length === 0) {
-            var minDate = self.config.minDate;
-            self.setDate(new Date().setHours(!minDate ? self.config.defaultHour : minDate.getHours(), !minDate ? self.config.defaultMinute : minDate.getMinutes(), !minDate || !self.config.enableSeconds
-                ? self.config.defaultSeconds
-                : minDate.getSeconds()), false);
+        if (self.config.noCalendar && !self.selectedDates.length) {
+            self.setDate(new Date().setHours(self.config.defaultHour, self.config.defaultMinute, self.config.defaultSeconds), false);
             setHoursFromInputs();
             updateValue();
         }
@@ -14960,9 +14961,7 @@ function FlatpickrInstance(element, instanceConfig) {
         self._handlers.push({ element: element, event: event, handler: handler });
     }
     function onClick(handler) {
-        return function (evt) {
-            evt.which === 1 && handler(evt);
-        };
+        return function (evt) { return evt.which === 1 && handler(evt); };
     }
     function triggerChange() {
         triggerEvent("onChange");
@@ -15091,8 +15090,8 @@ function FlatpickrInstance(element, instanceConfig) {
             }
         }
         catch (e) {
-            e.message = "Invalid date supplied: " + jumpTo;
-            self.config.errorHandler(e);
+            console.error(e.stack);
+            console.warn("Invalid date supplied: " + jumpTo);
         }
         self.redraw();
     }
@@ -15321,7 +15320,7 @@ function FlatpickrInstance(element, instanceConfig) {
         }
         self.nextMonthNav = createElement("span", "flatpickr-next-month");
         self.nextMonthNav.innerHTML = self.config.nextArrow;
-        self.navigationCurrentMonth = createElement("div", "flatpickr-current-month");
+        self.navigationCurrentMonth = createElement("span", "flatpickr-current-month");
         self.navigationCurrentMonth.appendChild(self.currentMonthElement);
         self.navigationCurrentMonth.appendChild(yearInput);
         monthNavFragment.appendChild(self.prevMonthNav);
@@ -15478,7 +15477,7 @@ function FlatpickrInstance(element, instanceConfig) {
         updateNavigationCurrentMonth();
         if (self.oldCurMonth.firstChild)
             self.oldCurMonth.firstChild.textContent = monthToStr(self.currentMonth - delta, self.config.shorthandCurrentMonth, self.l10n);
-        afterDayAnim(function () { return triggerEvent("onMonthChange"); });
+        triggerEvent("onMonthChange");
         if (from_keyboard &&
             document.activeElement &&
             document.activeElement.$i) {
@@ -15810,7 +15809,8 @@ function FlatpickrInstance(element, instanceConfig) {
             if (timestamp >= minRangeDate && timestamp <= maxRangeDate)
                 dayElem.classList.add("inRange");
         };
-        for (var i = 0, date = self.days.childNodes[i].dateObj; i < 42; i++, date =
+        for (var i = 0, date = self.days.childNodes[i].dateObj; i < 42; i++,
+            date =
                 self.days.childNodes[i] &&
                     self.days.childNodes[i].dateObj) {
             _loop_1(i, date);
@@ -15971,7 +15971,7 @@ function FlatpickrInstance(element, instanceConfig) {
     function setupLocale() {
         if (typeof self.config.locale !== "object" &&
             typeof flatpickr.l10ns[self.config.locale] === "undefined")
-            self.config.errorHandler(new Error("flatpickr: invalid locale " + self.config.locale));
+            console.warn("flatpickr: invalid locale " + self.config.locale);
         self.l10n = __assign({}, flatpickr.l10ns.default, typeof self.config.locale === "object"
             ? self.config.locale
             : self.config.locale !== "default"
@@ -16121,7 +16121,7 @@ function FlatpickrInstance(element, instanceConfig) {
                     break;
                 case "multiple":
                     dates = inputDate
-                        .split(self.config.conjunction)
+                        .split("; ")
                         .map(function (date) { return self.parseDate(date, format); });
                     break;
                 case "range":
@@ -16133,8 +16133,6 @@ function FlatpickrInstance(element, instanceConfig) {
                     break;
             }
         }
-        else
-            self.config.errorHandler(new Error("Invalid date supplied: " + JSON.stringify(inputDate)));
         self.selectedDates = dates.filter(function (d) { return d instanceof Date && isEnabled(d, false); });
         self.selectedDates.sort(function (a, b) { return a.getTime() - b.getTime(); });
     }
@@ -16277,7 +16275,8 @@ function FlatpickrInstance(element, instanceConfig) {
             }
         }
         if (!(parsedDate instanceof Date)) {
-            self.config.errorHandler(new Error("Invalid date provided: " + date_orig));
+            console.warn("flatpickr: invalid date " + date_orig);
+            console.info(self.element);
             return undefined;
         }
         if (timeless === true)
@@ -16289,7 +16288,7 @@ function FlatpickrInstance(element, instanceConfig) {
             ? element.querySelector("[data-input]")
             : element;
         if (!self.input) {
-            self.config.errorHandler(new Error("Invalid input element specified"));
+            console.warn("Error: invalid input element specified", self.input);
             return;
         }
         self.input._type = self.input.type;
@@ -16340,7 +16339,7 @@ function FlatpickrInstance(element, instanceConfig) {
                 self.input.parentNode.insertBefore(self.mobileInput, self.input.nextSibling);
         }
         catch (_a) { }
-        bind(self.mobileInput, "change", function (e) {
+        self.mobileInput.addEventListener("change", function (e) {
             self.setDate(e.target.value, false, self.mobileFormatStr);
             triggerEvent("onChange");
             triggerEvent("onClose");
@@ -16505,7 +16504,7 @@ function _flatpickr(nodeList, config) {
             instances.push(node._flatpickr);
         }
         catch (e) {
-            console.error(e);
+            console.warn(e, e.stack);
         }
     }
     return instances.length === 1 ? instances[0] : instances;
@@ -17810,8 +17809,7 @@ var Translator = function (_EventEmitter) {
     var joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
 
     // object
-    var handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
-    if (res && handleAsObject && noObject.indexOf(resType) < 0 && !(joinArrays && resType === '[object Array]')) {
+    if (res && typeof res !== 'string' && noObject.indexOf(resType) < 0 && !(joinArrays && resType === '[object Array]')) {
       if (!options.returnObjects && !this.options.returnObjects) {
         this.logger.warn('accessing an object - but returnObjects options is not enabled!');
         return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(usedKey, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
@@ -18380,7 +18378,6 @@ var I18n = function (_EventEmitter) {
       if (l) {
         _this4.language = l;
         _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
-        if (!_this4.translator.language) _this4.translator.changeLanguage(l);
 
         if (_this4.services.languageDetector) _this4.services.languageDetector.cacheUserLanguage(l);
       }
@@ -43685,7 +43682,7 @@ module.exports = upperFirst;
 
 },{"./_createCaseFirst":158}],304:[function(require,module,exports){
 //! moment.js
-//! version : 2.19.2
+//! version : 2.19.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -44500,7 +44497,7 @@ function get (mom, unit) {
 
 function set$1 (mom, unit, value) {
     if (mom.isValid() && !isNaN(value)) {
-        if (unit === 'FullYear' && isLeapYear(mom.year()) && mom.month() === 1 && mom.date() === 29) {
+        if (unit === 'FullYear' && isLeapYear(mom.year())) {
             mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value, mom.month(), daysInMonth(value, mom.month()));
         }
         else {
@@ -45606,11 +45603,10 @@ function defineLocale (name, config) {
 
 function updateLocale(name, config) {
     if (config != null) {
-        var locale, tmpLocale, parentConfig = baseConfig;
+        var locale, parentConfig = baseConfig;
         // MERGE
-        tmpLocale = loadLocale(name);
-        if (tmpLocale != null) {
-            parentConfig = tmpLocale._config;
+        if (locales[name] != null) {
+            parentConfig = locales[name]._config;
         }
         config = mergeConfigs(parentConfig, config);
         locale = new Locale(config);
@@ -48164,7 +48160,7 @@ addParseToken('x', function (input, array, config) {
 // Side effect imports
 
 
-hooks.version = '2.19.2';
+hooks.version = '2.19.1';
 
 setHookCallback(createLocal);
 
@@ -48581,7 +48577,7 @@ return hooks;
 (function (global){
 /**!
  * @fileOverview Kickass library to create and place poppers near their reference elements.
- * @version 1.12.9
+ * @version 1.12.6
  * @license
  * Copyright (c) 2016 Federico Zivolo and contributors
  *
@@ -48609,7 +48605,7 @@ return hooks;
 	(global.Popper = factory());
 }(this, (function () { 'use strict';
 
-var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+var isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 var longerTimeoutBrowsers = ['Edge', 'Trident', 'Firefox'];
 var timeoutDuration = 0;
 for (var i = 0; i < longerTimeoutBrowsers.length; i += 1) {
@@ -48626,7 +48622,7 @@ function microtaskDebounce(fn) {
       return;
     }
     called = true;
-    window.Promise.resolve().then(function () {
+    Promise.resolve().then(function () {
       called = false;
       fn();
     });
@@ -48683,7 +48679,7 @@ function getStyleComputedProperty(element, property) {
     return [];
   }
   // NOTE: 1 DOM access here
-  var css = getComputedStyle(element, null);
+  var css = window.getComputedStyle(element, null);
   return property ? css[property] : css;
 }
 
@@ -48711,7 +48707,7 @@ function getParentNode(element) {
 function getScrollParent(element) {
   // Return body, `getScroll` will take care to get the correct `scrollTop` from it
   if (!element) {
-    return document.body;
+    return window.document.body;
   }
 
   switch (element.nodeName) {
@@ -48753,7 +48749,7 @@ function getOffsetParent(element) {
       return element.ownerDocument.documentElement;
     }
 
-    return document.documentElement;
+    return window.document.documentElement;
   }
 
   // .offsetParent will return the closest TD or TABLE in case
@@ -48800,7 +48796,7 @@ function getRoot(node) {
 function findCommonOffsetParent(element1, element2) {
   // This check is needed to avoid errors in case one of the elements isn't defined for any reason
   if (!element1 || !element1.nodeType || !element2 || !element2.nodeType) {
-    return document.documentElement;
+    return window.document.documentElement;
   }
 
   // Here we make sure to give as "start" the element that comes first in the DOM
@@ -48892,7 +48888,7 @@ function getBordersSize(styles, axis) {
   var sideA = axis === 'x' ? 'Left' : 'Top';
   var sideB = sideA === 'Left' ? 'Right' : 'Bottom';
 
-  return parseFloat(styles['border' + sideA + 'Width'], 10) + parseFloat(styles['border' + sideB + 'Width'], 10);
+  return +styles['border' + sideA + 'Width'].split('px')[0] + +styles['border' + sideB + 'Width'].split('px')[0];
 }
 
 /**
@@ -48915,9 +48911,9 @@ function getSize(axis, body, html, computedStyle) {
 }
 
 function getWindowSizes() {
-  var body = document.body;
-  var html = document.documentElement;
-  var computedStyle = isIE10$1() && getComputedStyle(html);
+  var body = window.document.body;
+  var html = window.document.documentElement;
+  var computedStyle = isIE10$1() && window.getComputedStyle(html);
 
   return {
     height: getSize('Height', body, html, computedStyle),
@@ -49060,8 +49056,8 @@ function getOffsetRectRelativeToArbitraryNode(children, parent) {
   var scrollParent = getScrollParent(children);
 
   var styles = getStyleComputedProperty(parent);
-  var borderTopWidth = parseFloat(styles.borderTopWidth, 10);
-  var borderLeftWidth = parseFloat(styles.borderLeftWidth, 10);
+  var borderTopWidth = +styles.borderTopWidth.split('px')[0];
+  var borderLeftWidth = +styles.borderLeftWidth.split('px')[0];
 
   var offsets = getClientRect({
     top: childrenRect.top - parentRect.top - borderTopWidth,
@@ -49077,8 +49073,8 @@ function getOffsetRectRelativeToArbitraryNode(children, parent) {
   // differently when margins are applied to it. The margins are included in
   // the box of the documentElement, in the other cases not.
   if (!isIE10 && isHTML) {
-    var marginTop = parseFloat(styles.marginTop, 10);
-    var marginLeft = parseFloat(styles.marginLeft, 10);
+    var marginTop = +styles.marginTop.split('px')[0];
+    var marginLeft = +styles.marginLeft.split('px')[0];
 
     offsets.top -= borderTopWidth - marginTop;
     offsets.bottom -= borderTopWidth - marginTop;
@@ -49157,7 +49153,7 @@ function getBoundaries(popper, reference, padding, boundariesElement) {
     // Handle other cases based on DOM element used as boundaries
     var boundariesNode = void 0;
     if (boundariesElement === 'scrollParent') {
-      boundariesNode = getScrollParent(getParentNode(reference));
+      boundariesNode = getScrollParent(getParentNode(popper));
       if (boundariesNode.nodeName === 'BODY') {
         boundariesNode = popper.ownerDocument.documentElement;
       }
@@ -49283,7 +49279,7 @@ function getReferenceOffsets(state, popper, reference) {
  * @returns {Object} object containing width and height properties
  */
 function getOuterSizes(element) {
-  var styles = getComputedStyle(element);
+  var styles = window.getComputedStyle(element);
   var x = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
   var y = parseFloat(styles.marginLeft) + parseFloat(styles.marginRight);
   var result = {
@@ -49500,7 +49496,7 @@ function getSupportedPropertyName(property) {
   for (var i = 0; i < prefixes.length - 1; i++) {
     var prefix = prefixes[i];
     var toCheck = prefix ? '' + prefix + upperProp : property;
-    if (typeof document.body.style[toCheck] !== 'undefined') {
+    if (typeof window.document.body.style[toCheck] !== 'undefined') {
       return toCheck;
     }
   }
@@ -49619,7 +49615,7 @@ function removeEventListeners(reference, state) {
  */
 function disableEventListeners() {
   if (this.state.eventsEnabled) {
-    cancelAnimationFrame(this.scheduleUpdate);
+    window.cancelAnimationFrame(this.scheduleUpdate);
     this.state = removeEventListeners(this.reference, this.state);
   }
 }
@@ -49859,8 +49855,6 @@ function isModifierRequired(modifiers, requestingName, requestedName) {
  * @returns {Object} The data object, properly modified
  */
 function arrow(data, options) {
-  var _data$offsets$arrow;
-
   // arrow depends on keepTogether in order to work
   if (!isModifierRequired(data.instance.modifiers, 'arrow', 'keepTogether')) {
     return data;
@@ -49912,23 +49906,22 @@ function arrow(data, options) {
   if (reference[side] + arrowElementSize > popper[opSide]) {
     data.offsets.popper[side] += reference[side] + arrowElementSize - popper[opSide];
   }
-  data.offsets.popper = getClientRect(data.offsets.popper);
 
   // compute center of the popper
   var center = reference[side] + reference[len] / 2 - arrowElementSize / 2;
 
   // Compute the sideValue using the updated popper offsets
   // take popper margin in account because we don't have this info available
-  var css = getStyleComputedProperty(data.instance.popper);
-  var popperMarginSide = parseFloat(css['margin' + sideCapitalized], 10);
-  var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width'], 10);
-  var sideValue = center - data.offsets.popper[side] - popperMarginSide - popperBorderSide;
+  var popperMarginSide = getStyleComputedProperty(data.instance.popper, 'margin' + sideCapitalized).replace('px', '');
+  var sideValue = center - getClientRect(data.offsets.popper)[side] - popperMarginSide;
 
   // prevent arrowElement from being placed not contiguously to its popper
   sideValue = Math.max(Math.min(popper[len] - arrowElementSize, sideValue), 0);
 
   data.arrowElement = arrowElement;
-  data.offsets.arrow = (_data$offsets$arrow = {}, defineProperty(_data$offsets$arrow, side, Math.round(sideValue)), defineProperty(_data$offsets$arrow, altSide, ''), _data$offsets$arrow);
+  data.offsets.arrow = {};
+  data.offsets.arrow[side] = Math.round(sideValue);
+  data.offsets.arrow[altSide] = ''; // make sure to unset any eventual altSide value from the DOM node
 
   return data;
 }
