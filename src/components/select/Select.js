@@ -127,6 +127,11 @@ export class SelectComponent extends BaseComponent {
       formioBase: Formio.getBaseUrl()
     });
 
+    // Allow for post body interpolation
+    body = his.interpolate(body, {
+      data: this.data
+    });
+
     // Add search capability.
     if (this.component.searchField && search) {
       query[this.component.searchField] = search;
