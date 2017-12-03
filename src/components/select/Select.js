@@ -127,10 +127,10 @@ export class SelectComponent extends BaseComponent {
       formioBase: Formio.getBaseUrl()
     });
 
-    // Allow for post body interpolation
-    body = his.interpolate(body, {
+     // Allow for post body interpolation
+      body = JSON.parse(this.interpolate(JSON.stringify(body), {
       data: this.data
-    });
+    }));
 
     // Add search capability.
     if (this.component.searchField && search) {
@@ -175,7 +175,9 @@ export class SelectComponent extends BaseComponent {
       try {
         _each(this.component.data.headers, (header) => {
           if (header.key) {
-            headers.set(header.key, header.value);
+            headers.set(header.key, this.interpolate(header.value, {
+              data: this.data
+            }));
           }
         });
       }

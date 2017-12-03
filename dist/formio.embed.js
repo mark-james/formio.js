@@ -8194,9 +8194,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       });
 
       // Allow for post body interpolation
-      body = his.interpolate(body, {
+      body = JSON.parse(this.interpolate(JSON.stringify(body), {
         data: this.data
-      });
+      }));
 
       // Add search capability.
       if (this.component.searchField && search) {
@@ -8444,6 +8444,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'requestHeaders',
     get: function get() {
+      var _this5 = this;
+
       // Create the headers object.
       var headers = new Headers();
 
@@ -8452,7 +8454,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         try {
           (0, _each3.default)(this.component.data.headers, function (header) {
             if (header.key) {
-              headers.set(header.key, header.value);
+              headers.set(header.key, _this5.interpolate(header.value, {
+                data: _this5.data
+              }));
             }
           });
         } catch (err) {
