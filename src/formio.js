@@ -35,7 +35,7 @@ export class Formio {
     this.actionUrl = '';
     this.query = '';
 
-    if (Object.keys(options).length === 0 && options.constructor === Object) {
+    if (Object.keys(options).length !== 0 && options.constructor === Object) {
       Formio.setOptions(options);
     }
     if (options.hasOwnProperty('base')) {
@@ -517,13 +517,11 @@ export class Formio {
   }
 
   static getOptions() {
-    console.log("Get Options: " + sessionStorage.formioOptions)
     return JSON.parse(sessionStorage.formioOptions);
 
   }
 
   static setOptions(options) {
-    console.log("Set Options: " + JSON.stringify(options))
     sessionStorage.formioOptions = JSON.stringify(options);
   }
 

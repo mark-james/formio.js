@@ -75,7 +75,7 @@ var Formio = function () {
     this.actionUrl = '';
     this.query = '';
 
-    if (Object.keys(options).length === 0 && options.constructor === Object) {
+    if (Object.keys(options).length !== 0 && options.constructor === Object) {
       Formio.setOptions(options);
     }
     if (options.hasOwnProperty('base')) {
@@ -586,13 +586,11 @@ var Formio = function () {
   }, {
     key: 'getOptions',
     value: function getOptions() {
-      console.log("Get Options: " + sessionStorage.formioOptions);
       return JSON.parse(sessionStorage.formioOptions);
     }
   }, {
     key: 'setOptions',
     value: function setOptions(options) {
-      console.log("Set Options: " + JSON.stringify(options));
       sessionStorage.formioOptions = JSON.stringify(options);
     }
   }, {
