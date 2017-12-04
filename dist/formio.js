@@ -585,12 +585,14 @@ var Formio = function () {
   }, {
     key: 'getOptions',
     value: function getOptions() {
-      return JSON.parse(localStorage.getItem('formioOptions'));
+      console.log("Get Options: " + sessionStorage.formioOptions);
+      return JSON.parse(sessionStorage.formioOptions);
     }
   }, {
     key: 'setOptions',
     value: function setOptions(options) {
-      localStorage.setItem('formioOptions', JSON.stringify(options));
+      console.log("Set Options: " + JSON.stringify(options));
+      sessionStorage.formioOptions = JSON.stringify(options);
     }
   }, {
     key: 'getUrlParts',
