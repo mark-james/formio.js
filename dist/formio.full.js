@@ -10885,7 +10885,7 @@ var Formio = function () {
     this.actionUrl = '';
     this.query = '';
 
-    setOptions(options);
+    Formio.setOptions(options);
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -11395,12 +11395,12 @@ var Formio = function () {
   }, {
     key: 'getOptions',
     value: function getOptions() {
-      return Formio.options;
+      return localStorage.getItem('formioOptions');
     }
   }, {
     key: 'setOptions',
     value: function setOptions(options) {
-      Formio.options = options;
+      localStorage.setItem('formioOptions', options);
     }
   }, {
     key: 'getUrlParts',
@@ -12020,7 +12020,6 @@ Formio.events = new EventEmitter({
   wildcard: false,
   maxListeners: 0
 });
-Formio.options = {};
 
 module.exports = global.Formio = Formio;
 

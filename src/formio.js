@@ -35,7 +35,7 @@ export class Formio {
     this.actionUrl = '';
     this.query = '';
 
-    setOptions(options);
+    Formio.setOptions(options);
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -516,11 +516,12 @@ export class Formio {
   }
 
   static getOptions() {
-    return Formio.options;
+    return localStorage.getItem('formioOptions');
+
   }
 
   static setOptions(options) {
-    Formio.options = options;
+    localStorage.setItem('formioOptions', options);
   }
 
 
@@ -1124,6 +1125,5 @@ Formio.events = new EventEmitter({
   wildcard: false,
   maxListeners: 0
 });
-Formio.options = {};
 
 module.exports = global.Formio = Formio;
