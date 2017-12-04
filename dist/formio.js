@@ -74,6 +74,7 @@ var Formio = function () {
     this.actionId = '';
     this.actionUrl = '';
     this.query = '';
+    this.options = options;
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -579,6 +580,11 @@ var Formio = function () {
         query = '?' + serialize(query.params);
       }
       return Formio.makeStaticRequest(Formio.baseUrl + '/project' + query);
+    }
+  }, {
+    key: 'getOptions',
+    value: function getOptions() {
+      return Formio.options;
     }
   }, {
     key: 'getUrlParts',
@@ -1198,6 +1204,7 @@ Formio.events = new EventEmitter({
   wildcard: false,
   maxListeners: 0
 });
+Formio.options = {};
 
 module.exports = global.Formio = Formio;
 
