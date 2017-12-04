@@ -516,12 +516,12 @@ export class Formio {
   }
 
   static getOptions() {
-    return localStorage.getItem('formioOptions');
+    return JSON.parse(localStorage.getItem('formioOptions'));
 
   }
 
   static setOptions(options) {
-    localStorage.setItem('formioOptions', options);
+    localStorage.setItem('formioOptions', JSON.stringify(options));
   }
 
 

@@ -565,12 +565,12 @@ var Formio = function () {
   }, {
     key: 'getOptions',
     value: function getOptions() {
-      return localStorage.getItem('formioOptions');
+      return JSON.parse(localStorage.getItem('formioOptions'));
     }
   }, {
     key: 'setOptions',
     value: function setOptions(options) {
-      localStorage.setItem('formioOptions', options);
+      localStorage.setItem('formioOptions', JSON.stringify(options));
     }
   }, {
     key: 'getUrlParts',
