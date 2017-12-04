@@ -55,8 +55,9 @@ var Formio = function () {
     this.actionUrl = '';
     this.query = '';
 
-    Formio.setOptions(options);
-
+    if (Object.keys(options).length === 0 && options.constructor === Object) {
+      Formio.setOptions(options);
+    }
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
     } else if (Formio.baseUrl) {
