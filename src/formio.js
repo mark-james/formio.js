@@ -34,7 +34,8 @@ export class Formio {
     this.actionId = '';
     this.actionUrl = '';
     this.query = '';
-    this.options = options;
+
+    setOptions(options);
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -517,6 +518,11 @@ export class Formio {
   static getOptions() {
     return Formio.options;
   }
+
+  static setOptions(options) {
+    Formio.options = options;
+  }
+
 
   static getUrlParts(url) {
     var regex = '^(http[s]?:\\/\\/)';

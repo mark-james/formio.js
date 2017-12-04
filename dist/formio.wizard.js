@@ -10781,7 +10781,8 @@ var Formio = function () {
     this.actionId = '';
     this.actionUrl = '';
     this.query = '';
-    this.options = options;
+
+    setOptions(options);
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -11292,6 +11293,11 @@ var Formio = function () {
     key: 'getOptions',
     value: function getOptions() {
       return Formio.options;
+    }
+  }, {
+    key: 'setOptions',
+    value: function setOptions(options) {
+      Formio.options = options;
     }
   }, {
     key: 'getUrlParts',
