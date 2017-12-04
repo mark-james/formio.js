@@ -34,6 +34,7 @@ export class Formio {
     this.actionId = '';
     this.actionUrl = '';
     this.query = '';
+    this.options = options;
 
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
@@ -511,6 +512,10 @@ export class Formio {
       }
       return canSubmit;
     });
+  }
+
+  static getOptions() {
+    return Formio.options;
   }
 
   static getUrlParts(url) {
@@ -1113,5 +1118,6 @@ Formio.events = new EventEmitter({
   wildcard: false,
   maxListeners: 0
 });
+Formio.options = {};
 
 module.exports = global.Formio = Formio;
