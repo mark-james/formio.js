@@ -8190,7 +8190,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       // Allow for url interpolation.
       url = this.interpolate(url, {
         data: this.data,
-        formioBase: _formio2.default.getBaseUrl()
+        formioBase: _formio2.default.getBaseUrl(),
+        formioOptions: _formio2.default.getOptions()
       });
 
       console.log('Data From Options: ' + JSON.stringify(_formio2.default.getOptions()));
@@ -8206,7 +8207,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
       // Add filter capability
       if (this.component.filter) {
-        var filter = this.interpolate(this.component.filter, { data: this.data });
+        var filter = this.interpolate(this.component.filter, { data: this.data, formioOptions: _formio2.default.getOptions() });
         url += (!(url.indexOf('?') !== -1) ? '?' : '&') + filter;
       }
 
@@ -8456,7 +8457,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
           (0, _each3.default)(this.component.data.headers, function (header) {
             if (header.key) {
               headers.set(header.key, _this5.interpolate(header.value, {
-                data: _this5.data
+                data: _this5.data,
+                formioOptions: _formio2.default.getOptions()
               }));
             }
           });

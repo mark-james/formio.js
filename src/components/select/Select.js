@@ -124,7 +124,8 @@ export class SelectComponent extends BaseComponent {
     // Allow for url interpolation.
     url = this.interpolate(url, {
       data: this.data,
-      formioBase: Formio.getBaseUrl()
+      formioBase: Formio.getBaseUrl(),
+      formioOptions: Formio.getOptions()
     });
 
      console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
@@ -140,7 +141,7 @@ export class SelectComponent extends BaseComponent {
 
     // Add filter capability
     if (this.component.filter) {
-      let filter = this.interpolate(this.component.filter, {data: this.data});
+      let filter = this.interpolate(this.component.filter, {data: this.data, formioOptions: Formio.getOptions()});
       url += (!url.includes('?') ? '?' : '&') + filter;
     }
 
@@ -177,7 +178,8 @@ export class SelectComponent extends BaseComponent {
         _each(this.component.data.headers, (header) => {
           if (header.key) {
             headers.set(header.key, this.interpolate(header.value, {
-              data: this.data
+              data: this.data,
+              formioOptions: Formio.getOptions()
             }));
           }
         });
