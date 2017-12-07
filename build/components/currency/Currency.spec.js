@@ -14,7 +14,7 @@ describe('Currency Component', function () {
     });
   });
   it('Should format currency for USA locale', function (done) {
-    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { i18n: { lng: 'en-US', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { language: 'en-US' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, undefined, null, '');
       _harness.Harness.testSetInput(component, {}, null, '');
@@ -65,7 +65,7 @@ describe('Currency Component', function () {
     });
   });
   it('Should format currency for British locale', function (done) {
-    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { i18n: { lng: 'en-GB', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { language: 'en-GB' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
       _harness.Harness.testSetInput(component, 1.00, 1, 'US$1.00');
@@ -84,7 +84,7 @@ describe('Currency Component', function () {
     });
   });
   it('Should format currency for French locale', function (done) {
-    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { i18n: { lng: 'fr', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { language: 'fr' }).then(function (component) {
       // The spaces in these tests are a weird unicode space so be careful duplicating the tests.
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
@@ -104,7 +104,7 @@ describe('Currency Component', function () {
     });
   });
   it('Should format currency for German locale', function (done) {
-    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { i18n: { lng: 'de', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Currency.CurrencyComponent, _index.components.comp1, { language: 'de' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
       _harness.Harness.testSetInput(component, 1.00, 1.00, '1,00 $');

@@ -44,6 +44,10 @@ var _isString2 = require('lodash/isString');
 
 var _isString3 = _interopRequireDefault(_isString2);
 
+var _isDate2 = require('lodash/isDate');
+
+var _isDate3 = _interopRequireDefault(_isDate2);
+
 var _isNil2 = require('lodash/isNil');
 
 var _isNil3 = _interopRequireDefault(_isNil2);
@@ -72,10 +76,18 @@ var _jsonLogicJs = require('json-logic-js');
 
 var _jsonLogicJs2 = _interopRequireDefault(_jsonLogicJs);
 
+var _operators = require('./jsonlogic/operators');
+
+var _moment = require('moment');
+
+var _moment2 = _interopRequireDefault(_moment);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Configure JsonLogic
-_jsonLogicJs2.default.add_operation('_', _lodash2.default);
+_operators.lodashOperators.forEach(function (name) {
+  return _jsonLogicJs2.default.add_operation('_' + name, _lodash2.default[name]);
+});
 
 var FormioUtils = {
   jsonLogic: _jsonLogicJs2.default, // Share
@@ -371,7 +383,8 @@ var FormioUtils = {
         try {
           data[component.key] = this.jsonLogic.apply(component.calculateValue, {
             data: submission ? submission.data : data,
-            row: data
+            row: data,
+            _: _lodash2.default
           });
         } catch (e) {
           console.warn('An error occurred calculating a value for ' + component.key, e);
@@ -429,7 +442,8 @@ var FormioUtils = {
     } else if (component.conditional && component.conditional.json) {
       return _jsonLogicJs2.default.apply(component.conditional.json, {
         data: data,
-        row: row
+        row: row,
+        _: _lodash2.default
       });
     }
 
@@ -511,6 +525,42 @@ var FormioUtils = {
       var v = c === 'x' ? r : r & 0x3 | 0x8;
       return v.toString(16);
     });
+  },
+
+
+  /**
+   * Return a translated date setting.
+   *
+   * @param date
+   * @return {*}
+   */
+  getDateSetting: function getDateSetting(date) {
+    if ((0, _isNil3.default)(date) || (0, _isNaN3.default)(date) || date === '') {
+      return null;
+    }
+
+    var dateSetting = new Date(date);
+    if (FormioUtils.isValidDate(dateSetting)) {
+      return dateSetting;
+    }
+
+    try {
+      // Moment constant might be used in eval.
+      var moment = _moment2.default;
+      dateSetting = new Date(eval(date));
+    } catch (e) {
+      return null;
+    }
+
+    // Ensure this is a date.
+    if (!FormioUtils.isValidDate(dateSetting)) {
+      dateSetting = null;
+    }
+
+    return dateSetting;
+  },
+  isValidDate: function isValidDate(date) {
+    return (0, _isDate3.default)(date) && !(0, _isNaN3.default)(date.getDate());
   }
 };
 

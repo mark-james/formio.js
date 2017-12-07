@@ -142,29 +142,13 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
   }, {
     key: 'loading',
     set: function set(loading) {
-      this._loading = loading;
-      if (!this.loader && loading) {
-        this.loader = this.ce('i', {
-          class: 'glyphicon glyphicon-refresh glyphicon-spin button-icon-right'
-        });
-      }
-      if (this.loader) {
-        if (loading) {
-          this.element.appendChild(this.loader);
-        } else if (this.element.contains(this.loader)) {
-          this.element.removeChild(this.loader);
-        }
-      }
+      this.setLoading(this.element, loading);
     }
   }, {
     key: 'disabled',
     set: function set(disabled) {
       _set(ButtonComponent.prototype.__proto__ || Object.getPrototypeOf(ButtonComponent.prototype), 'disabled', disabled, this);
-      if (disabled) {
-        this.element.setAttribute('disabled', 'disabled');
-      } else {
-        this.element.removeAttribute('disabled');
-      }
+      this.setDisabled(this.element, disabled);
     }
   }]);
 

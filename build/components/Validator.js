@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Validator = undefined;
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _get2 = require('lodash/get');
 
 var _get3 = _interopRequireDefault(_get2);
@@ -227,7 +231,8 @@ var Validator = exports.Validator = {
         try {
           valid = _index2.default.jsonLogic.apply(setting, {
             data: data,
-            row: component.data
+            row: component.data,
+            _: _lodash2.default
           });
         } catch (err) {
           valid = err.message;

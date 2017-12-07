@@ -25,6 +25,8 @@ var _each2 = require('lodash/each');
 
 var _each3 = _interopRequireDefault(_each2);
 
+var _utils = require('../../utils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -32,8 +34,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var momentModule = require('moment');
 
 var DateTimeComponent = exports.DateTimeComponent = function (_BaseComponent) {
   _inherits(DateTimeComponent, _BaseComponent);
@@ -57,38 +57,6 @@ var DateTimeComponent = exports.DateTimeComponent = function (_BaseComponent) {
       info.changeEvent = 'input';
       this.component.suffix = true;
       return info;
-    }
-
-    /**
-     * Return a translated date setting.
-     *
-     * @param date
-     * @return {*}
-     */
-
-  }, {
-    key: 'getDateSetting',
-    value: function getDateSetting(date) {
-      if (!date) {
-        return null;
-      }
-
-      var dateSetting = new Date(date);
-      if (!dateSetting || isNaN(dateSetting.getDate())) {
-        try {
-          var moment = momentModule;
-          dateSetting = new Date(eval(date));
-        } catch (e) {
-          dateSetting = null;
-        }
-      }
-
-      // Ensure this is a date.
-      if (dateSetting && isNaN(dateSetting.getDate())) {
-        dateSetting = null;
-      }
-
-      return dateSetting;
     }
 
     /**
@@ -235,7 +203,7 @@ var DateTimeComponent = exports.DateTimeComponent = function (_BaseComponent) {
   }, {
     key: 'defaultDate',
     get: function get() {
-      return this.getDateSetting(this.component.defaultDate);
+      return (0, _utils.getDateSetting)(this.component.defaultDate);
     }
   }, {
     key: 'config',
@@ -254,8 +222,8 @@ var DateTimeComponent = exports.DateTimeComponent = function (_BaseComponent) {
         defaultDate: this.defaultDate,
         hourIncrement: (0, _get4.default)(this.component, 'timePicker.hourStep', 1),
         minuteIncrement: (0, _get4.default)(this.component, 'timePicker.minuteStep', 5),
-        minDate: this.getDateSetting((0, _get4.default)(this.component, 'datePicker.minDate')),
-        maxDate: this.getDateSetting((0, _get4.default)(this.component, 'datePicker.maxDate')),
+        minDate: (0, _utils.getDateSetting)((0, _get4.default)(this.component, 'datePicker.minDate')),
+        maxDate: (0, _utils.getDateSetting)((0, _get4.default)(this.component, 'datePicker.maxDate')),
         onChange: function onChange() {
           return _this3.onChange();
         },

@@ -63,6 +63,20 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// Fix performance issues in Choices by adding a debounce around render method.
+_choices2.default.prototype._render = _choices2.default.prototype.render;
+_choices2.default.prototype.render = function () {
+  var _this = this;
+
+  if (this.renderDebounce) {
+    clearTimeout(this.renderDebounce);
+  }
+
+  this.renderDebounce = setTimeout(function () {
+    return _this._render();
+  }, 100);
+};
+
 var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   _inherits(SelectComponent, _BaseComponent);
 
@@ -70,21 +84,24 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     _classCallCheck(this, SelectComponent);
 
     // Trigger an update.
-    var _this = _possibleConstructorReturn(this, (SelectComponent.__proto__ || Object.getPrototypeOf(SelectComponent)).call(this, component, options, data));
+    var _this2 = _possibleConstructorReturn(this, (SelectComponent.__proto__ || Object.getPrototypeOf(SelectComponent)).call(this, component, options, data));
 
-    _this.triggerUpdate = (0, _debounce3.default)(_this.updateItems.bind(_this), 100);
+    _this2.triggerUpdate = (0, _debounce3.default)(_this2.updateItems.bind(_this2), 100);
+
+    // Keep track of the select options.
+    _this2.selectOptions = [];
 
     // If they wish to refresh on a value, then add that here.
-    if (_this.component.refreshOn) {
-      _this.on('change', function (event) {
-        if (_this.component.refreshOn === 'data') {
-          _this.refreshItems();
-        } else if (event.changed && event.changed.component.key === _this.component.refreshOn) {
-          _this.refreshItems();
+    if (_this2.component.refreshOn) {
+      _this2.on('change', function (event) {
+        if (_this2.component.refreshOn === 'data') {
+          _this2.refreshItems();
+        } else if (event.changed && event.changed.component.key === _this2.component.refreshOn) {
+          _this2.refreshItems();
         }
       });
     }
-    return _this;
+    return _this2;
   }
 
   _createClass(SelectComponent, [{
@@ -101,9 +118,6 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       var info = _get2(SelectComponent.prototype.__proto__ || Object.getPrototypeOf(SelectComponent.prototype), 'elementInfo', this).call(this);
       info.type = 'select';
       info.changeEvent = 'change';
-      if (info.attr.placeholder) {
-        delete info.attr.placeholder;
-      }
       return info;
     }
   }, {
@@ -114,7 +128,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'itemTemplate',
     value: function itemTemplate(data) {
-      return this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
+      var template = this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
+      var label = template.replace(/<\/?[^>]+(>|$)/g, "");
+      return template.replace(label, this.t(label));
     }
   }, {
     key: 'itemValue',
@@ -122,13 +138,49 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       return this.component.valueProperty ? (0, _get4.default)(data, this.component.valueProperty) : data;
     }
   }, {
-    key: 'setItems',
-    value: function setItems(items) {
-      var _this2 = this;
+    key: 'createInput',
+    value: function createInput(container) {
+      this.selectContainer = container;
+      this.selectInput = _get2(SelectComponent.prototype.__proto__ || Object.getPrototypeOf(SelectComponent.prototype), 'createInput', this).call(this, container);
+    }
 
-      if (!this.choices) {
+    /**
+     * Adds an option to the select dropdown.
+     *
+     * @param value
+     * @param label
+     */
+
+  }, {
+    key: 'addOption',
+    value: function addOption(value, label, attr) {
+      var option = {
+        value: value,
+        label: label
+      };
+
+      this.selectOptions.push(option);
+      if (this.choices) {
         return;
       }
+
+      option.element = document.createElement('option');
+      if (this.value === option.value) {
+        option.element.setAttribute('selected', 'selected');
+        option.element.selected = 'selected';
+      }
+      option.element.innerHTML = label;
+      if (attr) {
+        (0, _each3.default)(attr, function (value, key) {
+          option.element.setAttribute(key, value);
+        });
+      }
+      this.selectInput.appendChild(option.element);
+    }
+  }, {
+    key: 'setItems',
+    value: function setItems(items) {
+      var _this3 = this;
 
       // If the items is a string, then parse as JSON.
       if (typeof items == 'string') {
@@ -140,25 +192,40 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         }
       }
 
-      this.choices._clearChoices();
+      if (!this.choices && this.selectInput) {
+        // Detach from DOM and clear input.
+        this.selectContainer.removeChild(this.selectInput);
+        this.selectInput.innerHTML = '';
+      }
+
+      this.selectOptions = [];
 
       // If they provided select values, then we need to get them instead.
       if (this.component.selectValues) {
         items = (0, _get4.default)(items, this.component.selectValues);
       }
 
-      // Add the currently selected choices if they don't already exist.
-      var currentChoices = (0, _isArray3.default)(this.value) ? this.value : [this.value];
-      (0, _each3.default)(currentChoices, function (choice) {
-        _this2.addCurrentChoices(choice, items);
-      });
+      if (this.choices) {
+        // Add the currently selected choices if they don't already exist.
+        var currentChoices = (0, _isArray3.default)(this.value) ? this.value : [this.value];
+        (0, _each3.default)(currentChoices, function (choice) {
+          _this3.addCurrentChoices(choice, items);
+        });
+      } else if (!this.component.multiple) {
+        this.addPlaceholder(this.selectInput);
+      }
 
       // Iterate through each of the items.
-      (0, _each3.default)(items, function (item) {
-
-        // Add the choice to the select list.
-        _this2.choices._addChoice(_this2.itemValue(item), _this2.itemTemplate(item));
+      (0, _each3.default)(items, function (item, index) {
+        _this3.addOption(_this3.itemValue(item), _this3.itemTemplate(item));
       });
+
+      if (this.choices) {
+        this.choices.setChoices(this.selectOptions, 'value', 'label', true);
+      } else {
+        // Re-attach select input.
+        this.selectContainer.appendChild(this.selectInput);
+      }
 
       // If a value is provided, then select it.
       if (this.value) {
@@ -174,7 +241,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'loadItems',
     value: function loadItems(url, search, headers, options, method, body) {
-      var _this3 = this;
+      var _this4 = this;
 
       options = options || {};
 
@@ -226,10 +293,10 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       // Make the request.
       options.header = headers;
       _formio2.default.makeRequest(this.options.formio, 'select', url, method, body, options).then(function (response) {
-        return _this3.setItems(response);
+        return _this4.setItems(response);
       }).catch(function (err) {
-        _this3.events.emit('formio.error', err);
-        console.warn('Unable to load resources for ' + _this3.component.key);
+        _this4.events.emit('formio.error', err);
+        console.warn('Unable to load resources for ' + _this4.component.key);
       });
     }
 
@@ -301,63 +368,67 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       }
     }
   }, {
+    key: 'addPlaceholder',
+    value: function addPlaceholder(input) {
+      if (!this.component.placeholder) {
+        return;
+      }
+      var placeholder = document.createElement('option');
+      placeholder.setAttribute('placeholder', true);
+      placeholder.appendChild(this.text(this.component.placeholder));
+      input.appendChild(placeholder);
+    }
+  }, {
     key: 'addInput',
     value: function addInput(input, container) {
-      var _this4 = this;
+      var _this5 = this;
 
       _get2(SelectComponent.prototype.__proto__ || Object.getPrototypeOf(SelectComponent.prototype), 'addInput', this).call(this, input, container);
       if (this.component.multiple) {
         input.setAttribute('multiple', true);
       }
-      var tabIndex = input.tabIndex;
-      this.choices = new _choices2.default(input, {
+
+      if (this.component.widget === 'html5') {
+        this.triggerUpdate();
+        return;
+      }
+
+      var placeholderValue = this.t(this.component.placeholder);
+      var choicesOptions = {
         removeItemButton: true,
         itemSelectText: '',
         classNames: {
           containerOuter: 'choices form-group formio-choices',
           containerInner: 'form-control'
         },
+        placeholder: !!this.component.placeholder,
+        placeholderValue: placeholderValue,
+        searchPlaceholderValue: placeholderValue,
         shouldSort: false,
         position: this.component.dropdown || 'auto'
-      });
+      };
+
+      var tabIndex = input.tabIndex;
+      this.addPlaceholder(input);
+      this.choices = new _choices2.default(input, choicesOptions);
       this.choices.itemList.tabIndex = tabIndex;
       this.setInputStyles(this.choices.containerOuter);
 
       // If a search field is provided, then add an event listener to update items on search.
       if (this.component.searchField) {
         input.addEventListener('search', function (event) {
-          return _this4.triggerUpdate(event.detail.value);
+          return _this5.triggerUpdate(event.detail.value);
         });
       }
 
       input.addEventListener('showDropdown', function () {
-        if (_this4.component.dataSrc === 'custom') {
-          _this4.updateCustomItems();
+        if (_this5.component.dataSrc === 'custom') {
+          _this5.updateCustomItems();
         }
       });
 
-      // Create a pseudo-placeholder.
-      if (this.component.placeholder && !this.choices.placeholderElement) {
-        this.placeholder = this.ce('span', {
-          class: 'formio-placeholder'
-        }, [this.text(this.component.placeholder)]);
-
-        // Prepend the placeholder.
-        this.choices.containerInner.insertBefore(this.placeholder, this.choices.containerInner.firstChild);
-        input.addEventListener('addItem', function () {
-          _this4.placeholder.style.visibility = 'hidden';
-        }, false);
-        input.addEventListener('removeItem', function () {
-          var value = _this4.getValue();
-          if (!value || !value.length) {
-            _this4.placeholder.style.visibility = 'visible';
-          }
-        }, false);
-      }
-
-      if (this.disabled) {
-        this.choices.disable();
-      }
+      // Force the disabled state with getters and setters.
+      this.disabled = this.disabled;
       this.triggerUpdate();
     }
   }, {
@@ -380,7 +451,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
         // If it is not found, then add it.
         if (!found) {
-          this.choices._addChoice(this.itemValue(value), this.itemTemplate(value));
+          this.addOption(this.itemValue(value), this.itemTemplate(value));
         }
       }
     }
@@ -391,23 +462,52 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       if (!flags.changed && this.value) {
         return this.value;
       }
-      if (!this.choices) {
-        return;
+      if (this.choices) {
+        this.value = this.choices.getValue(true);
+
+        // Make sure we don't get the placeholder
+        if (!this.component.multiple && this.component.placeholder && this.value === this.t(this.component.placeholder)) {
+          this.value = '';
+        }
+      } else {
+        var values = [];
+        (0, _each3.default)(this.selectOptions, function (selectOption) {
+          if (selectOption.element.selected) {
+            values.push(selectOption.value);
+          }
+        });
+        this.value = this.component.multiple ? values : values.shift();
       }
-      this.value = this.choices.getValue(true);
       return this.value;
     }
   }, {
     key: 'setValue',
     value: function setValue(value, flags) {
       flags = this.getFlags.apply(this, arguments);
+      var hasPreviousValue = (0, _isArray3.default)(this.value) ? this.value.length : this.value;
+      var hasValue = (0, _isArray3.default)(value) ? value.length : value;
       this.value = value;
       if (this.choices) {
         // Now set the value.
-        if (value) {
+        if (hasValue) {
           this.choices.setValueByChoice((0, _isArray3.default)(value) ? value : [value]);
-        } else {
+        } else if (hasPreviousValue) {
           this.choices.removeActiveItems();
+        }
+      } else {
+        if (hasValue) {
+          var values = (0, _isArray3.default)(value) ? value : [value];
+          (0, _each3.default)(this.selectOptions, function (selectOption) {
+            if (values.indexOf(selectOption.value) !== -1) {
+              selectOption.element.selected = true;
+              selectOption.element.setAttribute('selected', 'selected');
+            }
+          });
+        } else {
+          (0, _each3.default)(this.selectOptions, function (selectOption) {
+            selectOption.element.selected = false;
+            selectOption.element.removeAttribute('selected');
+          });
         }
       }
       this.updateValue(flags);
@@ -448,7 +548,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'requestHeaders',
     get: function get() {
-      var _this5 = this;
+      var _this6 = this;
 
       // Create the headers object.
       var headers = new Headers();
@@ -458,8 +558,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         try {
           (0, _each3.default)(this.component.data.headers, function (header) {
             if (header.key) {
-              headers.set(header.key, _this5.interpolate(header.value, {
-                data: _this5.data,
+              headers.set(header.key, _this6.interpolate(header.value, {
+                data: _this6.data,
                 formioOptions: _formio2.default.getOptions()
               }));
             }

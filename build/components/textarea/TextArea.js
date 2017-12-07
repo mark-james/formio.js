@@ -22,10 +22,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var TextAreaComponent = exports.TextAreaComponent = function (_TextFieldComponent) {
   _inherits(TextAreaComponent, _TextFieldComponent);
 
-  function TextAreaComponent() {
+  function TextAreaComponent(component, options, data) {
     _classCallCheck(this, TextAreaComponent);
 
-    return _possibleConstructorReturn(this, (TextAreaComponent.__proto__ || Object.getPrototypeOf(TextAreaComponent)).apply(this, arguments));
+    // Never submit on enter for text areas.
+    var _this = _possibleConstructorReturn(this, (TextAreaComponent.__proto__ || Object.getPrototypeOf(TextAreaComponent)).call(this, component, options, data));
+
+    _this.options.submitOnEnter = false;
+    return _this;
   }
 
   _createClass(TextAreaComponent, [{

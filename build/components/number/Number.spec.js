@@ -34,7 +34,7 @@ describe('Number Component', function () {
     });
   });
   it('Should format numbers for USA locale', function (done) {
-    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { i18n: { lng: 'en-US', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { language: 'en-US' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, undefined, null, '');
       _harness.Harness.testSetInput(component, '', null, '');
@@ -81,7 +81,7 @@ describe('Number Component', function () {
     });
   });
   it('Should format numbers for British locale', function (done) {
-    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { i18n: { lng: 'en-GB', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { language: 'en-GB' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
       _harness.Harness.testSetInput(component, 1, 1, '1');
@@ -102,7 +102,7 @@ describe('Number Component', function () {
     });
   });
   it('Should format numbers for French locale', function (done) {
-    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { i18n: { lng: 'fr', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { language: 'fr' }).then(function (component) {
       // The spaces in these tests are a weird unicode space so be careful duplicating the tests.
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
@@ -124,7 +124,7 @@ describe('Number Component', function () {
     });
   });
   it('Should format numbers for German locale', function (done) {
-    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { i18n: { lng: 'de', resources: {} } }).then(function (component) {
+    _harness.Harness.testCreate(_Number.NumberComponent, _index.components.comp2, { language: 'de' }).then(function (component) {
       _harness.Harness.testSetInput(component, null, null, '');
       _harness.Harness.testSetInput(component, 0, 0, '0');
       _harness.Harness.testSetInput(component, 1, 1, '1');

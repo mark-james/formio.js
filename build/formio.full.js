@@ -60,7 +60,9 @@ _formio8.default.createForm = function (element, form, options) {
       instance.url = form;
       instance.nosubmit = false;
       instance.loadSubmission();
-      return instance;
+      return instance.ready.then(function () {
+        return instance;
+      });
     });
   } else {
     return _nativePromiseOnly2.default.resolve(_formio8.default.formFactory(element, form, options));

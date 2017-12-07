@@ -1,5 +1,6 @@
 import maskInput from 'text-mask-all/vanilla';
 import Promise from "native-promise-only";
+import _ from 'lodash';
 import _get from 'lodash/get';
 import _each from 'lodash/each';
 import _assign from 'lodash/assign';
@@ -13,8 +14,6 @@ import i18next from 'i18next';
 import FormioUtils from '../../utils';
 import { Validator } from '../Validator';
 import Tooltip from 'tooltip.js';
-
-i18next.initialized = false;
 
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
@@ -42,37 +41,6 @@ export class BaseComponent {
     this.options = _defaults(_clone(options), {
       highlightErrors: true
     });
-
-    /**
-     * The i18n configuration for this component.
-     */
-    let i18n = require('../../i18n');
-    if (options && options.i18n && !options.i18nReady) {
-      // Support legacy way of doing translations.
-      if (options.i18n.resources) {
-        i18n = options.i18n;
-      }
-      else {
-        _each(options.i18n, (lang, code) => {
-          if (!i18n.resources[code]) {
-            i18n.resources[code] = {translation: lang};
-          }
-          else {
-            _assign(i18n.resources[code].translation, lang);
-          }
-        });
-      }
-
-      options.i18n = i18n;
-      options.i18nReady = true;
-    }
-
-    if (options && options.i18n) {
-      this.options.i18n = options.i18n;
-    }
-    else {
-      this.options.i18n = i18n;
-    }
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -252,24 +220,6 @@ export class BaseComponent {
   }
 
   /**
-   * Sets the language for this form.
-   *
-   * @param lang
-   * @return {*}
-   */
-  set language(lang) {
-    return new Promise((resolve, reject) => {
-      i18next.changeLanguage(lang, (err) => {
-        if (err) {
-          return reject(err);
-        }
-        this.redraw();
-        resolve();
-      });
-    });
-  }
-
-  /**
    * Register for a new event within this component.
    *
    * @example
@@ -346,25 +296,6 @@ export class BaseComponent {
     }
 
     return null;
-  }
-
-  /**
-   * Perform the localization initialization.
-   * @returns {*}
-   */
-  localize() {
-    if (i18next.initialized) {
-      return Promise.resolve(i18next);
-    }
-    i18next.initialized = true;
-    return new Promise((resolve, reject) => {
-      i18next.init(this.options.i18n, (err, t) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(i18next);
-      });
-    });
   }
 
   /**
@@ -535,7 +466,8 @@ export class BaseComponent {
         try {
           defaultValue = FormioUtils.jsonLogic.apply(this.component.customDefaultValue, {
             data: this.data,
-            row: this.data
+            row: this.data,
+            _
           });
         }
         catch (err) {
@@ -587,6 +519,7 @@ export class BaseComponent {
   removeValue(index) {
     if (this.data.hasOwnProperty(this.component.key)) {
       this.data[this.component.key].splice(index, 1);
+      this.triggerChange();
     }
     this.buildRows();
   }
@@ -743,6 +676,10 @@ export class BaseComponent {
   }
 
   setInputStyles(input) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
     if (this.labelOnTheLeftOrRight(this.component.labelPosition)) {
       const totalLabelWidth = this.getLabelWidth() + this.getLabelMargin();
       input.style.width = `${100 - totalLabelWidth}%`;
@@ -755,16 +692,16 @@ export class BaseComponent {
     }
   }
 
+  labelIsHidden() {
+    return !this.component.label || this.component.hideLabel || this.options.inputsOnly;
+  }
+
   /**
    * Create the HTML element for the label of this component.
    * @param {HTMLElement} container - The containing element that will contain this label.
    */
   createLabel(container) {
-    if (
-      !this.component.label ||
-      this.component.hideLabel ||
-      this.options.inputsOnly
-    ) {
+    if (this.labelIsHidden()) {
       return;
     }
     let className = 'control-label';
@@ -903,7 +840,7 @@ export class BaseComponent {
     this.description = this.ce('div', {
       class: 'help-block'
     });
-    this.description.appendChild(this.text(this.component.description));
+    this.description.innerHTML = this.t(this.component.description);
     container.appendChild(this.description);
   }
 
@@ -1347,6 +1284,9 @@ export class BaseComponent {
   }
 
   addInputSubmitListener(input) {
+    if (!this.options.submitOnEnter) {
+      return;
+    }
     this.addEventListener(input, 'keypress', (event) => {
       let key = event.keyCode || event.which;
       if (key == 13) {
@@ -1493,8 +1433,9 @@ export class BaseComponent {
     else {
       try {
         let val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
-          data: data,
-          row: this.data
+          data,
+          row: this.data,
+          _
         });
         changed = this.setValue(val, flags);
       }
@@ -1701,16 +1642,40 @@ export class BaseComponent {
     }
 
     this._disabled = disabled;
-    // Disable all input.
-    _each(this.inputs, (input) => {
-      input.disabled = disabled;
-      if (disabled) {
-        input.setAttribute('disabled', 'disabled');
+
+    // Disable all inputs.
+    _each(this.inputs, (input) => this.setDisabled(input, disabled));
+  }
+
+  setDisabled(element, disabled) {
+    element.disabled = disabled;
+    if (disabled) {
+      element.setAttribute('disabled', 'disabled');
+    }
+    else {
+      element.removeAttribute('disabled');
+    }
+  }
+
+  setLoading(element, loading) {
+    if (element.loading === loading) {
+      return;
+    }
+
+    element.loading = loading;
+    if (!element.loader && loading) {
+      element.loader = this.ce('i', {
+        class: 'glyphicon glyphicon-refresh glyphicon-spin button-icon-right'
+      });
+    }
+    if (element.loader) {
+      if (loading) {
+        element.appendChild(element.loader);
       }
-      else {
-        input.removeAttribute('disabled');
+      else if (element.contains(element.loader)) {
+        element.removeChild(element.loader);
       }
-    });
+    }
   }
 
   selectOptions(select, tag, options, defaultValue) {
@@ -1784,7 +1749,7 @@ export class BaseComponent {
       name: this.options.name,
       type: this.component.inputType || 'text',
       class: 'form-control',
-      lang: this.options.i18n.lng
+      lang: this.options.language
   };
 
     if (this.component.placeholder) {

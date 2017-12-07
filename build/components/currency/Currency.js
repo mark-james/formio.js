@@ -44,7 +44,7 @@ var CurrencyComponent = exports.CurrencyComponent = function (_NumberComponent) 
 
     // Get the prefix and suffix from the localized string.
     var regex = '(.*)?100(' + (_this.decimalSeparator === '.' ? '\.' : _this.decimalSeparator) + '0{' + _this.decimalLimit + '})?(.*)?';
-    var parts = 100 .toLocaleString(_this.options.i18n.lng, _this.getFormatOptions()).match(new RegExp(regex));
+    var parts = 100 .toLocaleString(options.language, _this.getFormatOptions()).match(new RegExp(regex));
     _this.prefix = parts[1] || '';
     _this.suffix = parts[3] || '';
     return _this;

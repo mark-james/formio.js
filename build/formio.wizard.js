@@ -25,6 +25,10 @@ var _utils = require('./utils');
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _each = require('lodash/each');
 
 var _each2 = _interopRequireDefault(_each);
@@ -32,6 +36,10 @@ var _each2 = _interopRequireDefault(_each);
 var _clone = require('lodash/clone');
 
 var _clone2 = _interopRequireDefault(_clone);
+
+var _defaults = require('lodash/defaults');
+
+var _defaults2 = _interopRequireDefault(_defaults);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -44,6 +52,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var FormioWizard = exports.FormioWizard = function (_FormioForm) {
   _inherits(FormioWizard, _FormioForm);
 
+  /**
+   * Constructor for wizard based forms
+   * @param element Dom element to place this wizard.
+   * @param {Object} options Options object, supported options are:
+   *    - breadcrumbSettings.clickable: true (default) determines if the breadcrumb bar is clickable or not
+   *    - buttonSettings.show*(Previous, Next, Cancel): true (default) determines if the button is shown or not  
+   */
   function FormioWizard(element, options) {
     _classCallCheck(this, FormioWizard);
 
@@ -102,7 +117,8 @@ var FormioWizard = exports.FormioWizard = function (_FormioForm) {
               var result = _utils2.default.jsonLogic.apply(form.nextPage, {
                 data: data,
                 page: page,
-                form: form
+                form: form,
+                _: _lodash2.default
               });
               var newPage = parseInt(result, 10);
               if (!isNaN(parseInt(newPage, 10)) && isFinite(newPage)) {
@@ -268,12 +284,22 @@ var FormioWizard = exports.FormioWizard = function (_FormioForm) {
   }, {
     key: 'hasButton',
     value: function hasButton(name, nextPage) {
+      // Check for and initlize button settings object
+      this.options.buttonSettings = (0, _defaults2.default)(this.options.buttonSettings, {
+        showPrevious: true,
+        showNext: true,
+        showCancel: true
+      });
+
       if (name === 'previous') {
-        return this.page > 0;
+        return this.page > 0 && this.options.buttonSettings.showPrevious;
       }
       nextPage = nextPage === undefined ? this.getNextPage(this.submission.data, this.page) : nextPage;
       if (name === 'next') {
-        return nextPage !== null && nextPage < this.pages.length;
+        return nextPage !== null && nextPage < this.pages.length && this.options.buttonSettings.showNext;
+      }
+      if (name === 'cancel') {
+        return this.options.buttonSettings.showCancel;
       }
       if (name === 'submit') {
         return nextPage === null || this.page === this.pages.length - 1;
@@ -299,6 +325,11 @@ var FormioWizard = exports.FormioWizard = function (_FormioForm) {
         return;
       }
 
+      // Check for and initlize breadcrumb settings object
+      this.options.breadcrumbSettings = (0, _defaults2.default)(this.options.breadcrumbSettings, {
+        clickable: true
+      });
+
       this.wizardHeader = this.ce('ul', {
         class: 'pagination'
       });
@@ -313,13 +344,17 @@ var FormioWizard = exports.FormioWizard = function (_FormioForm) {
           return;
         }
 
+        // Set clickable based on breadcrumb settings
+        var clickable = _this6.page !== i && _this6.options.breadcrumbSettings.clickable;
+
         var pageButton = _this6.ce('li', {
-          class: i === _this6.page ? 'active' : '',
-          style: i === _this6.page ? '' : 'cursor: pointer;'
+          class: i === _this6.page ? 'active' : clickable ? '' : 'disabled',
+          style: clickable ? 'cursor: pointer;' : ''
         });
 
         // Navigate to the page as they click on it.
-        if (_this6.page !== i) {
+
+        if (clickable) {
           _this6.addEventListener(pageButton, 'click', function (event) {
             event.preventDefault();
             _this6.setPage(i);
@@ -417,13 +452,25 @@ var FormioWizard = exports.FormioWizard = function (_FormioForm) {
         }
         var buttonWrapper = _this8.ce('li');
         var buttonProp = button.name + 'Button';
-        _this8[buttonProp] = _this8.ce('button', {
+        var buttonElement = _this8[buttonProp] = _this8.ce('button', {
           class: button.class + ' btn-wizard-nav-' + button.name
         });
-        _this8[buttonProp].appendChild(_this8.text(_this8.t(button.name)));
+        buttonElement.appendChild(_this8.text(_this8.t(button.name)));
         _this8.addEventListener(_this8[buttonProp], 'click', function (event) {
           event.preventDefault();
-          _this8[button.method]();
+
+          // Disable the button until done.
+          buttonElement.setAttribute('disabled', 'disabled');
+          _this8.setLoading(buttonElement, true);
+
+          // Call the button method, then re-enable the button.
+          _this8[button.method]().then(function () {
+            buttonElement.removeAttribute('disabled');
+            _this8.setLoading(buttonElement, false);
+          }).catch(function () {
+            buttonElement.removeAttribute('disabled');
+            _this8.setLoading(buttonElement, false);
+          });
         });
         buttonWrapper.appendChild(_this8[buttonProp]);
         _this8.wizardNav.appendChild(buttonWrapper);

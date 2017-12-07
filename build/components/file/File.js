@@ -90,12 +90,12 @@ var FileComponent = exports.FileComponent = function (_BaseComponent) {
       if (this.listContainer && this.uploadContainer) {
         // Refresh file list.
         var newList = this.buildList();
-        this.element.replaceChild(newList, this.listContainer);
+        this.inputsContainer.replaceChild(newList, this.listContainer);
         this.listContainer = newList;
 
         // Refresh upload container.
         var newUpload = this.buildUpload();
-        this.element.replaceChild(newUpload, this.uploadContainer);
+        this.inputsContainer.replaceChild(newUpload, this.uploadContainer);
         this.uploadContainer = newUpload;
       }
     }

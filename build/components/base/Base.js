@@ -15,6 +15,10 @@ var _nativePromiseOnly = require('native-promise-only');
 
 var _nativePromiseOnly2 = _interopRequireDefault(_nativePromiseOnly);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _get2 = require('lodash/get');
 
 var _get3 = _interopRequireDefault(_get2);
@@ -69,12 +73,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-_i18next2.default.initialized = false;
-
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
  */
-
 var BaseComponent = function () {
   /**
    * Initialize a new BaseComponent.
@@ -100,34 +101,6 @@ var BaseComponent = function () {
     this.options = (0, _defaults3.default)((0, _clone3.default)(options), {
       highlightErrors: true
     });
-
-    /**
-     * The i18n configuration for this component.
-     */
-    var i18n = require('../../i18n');
-    if (options && options.i18n && !options.i18nReady) {
-      // Support legacy way of doing translations.
-      if (options.i18n.resources) {
-        i18n = options.i18n;
-      } else {
-        (0, _each3.default)(options.i18n, function (lang, code) {
-          if (!i18n.resources[code]) {
-            i18n.resources[code] = { translation: lang };
-          } else {
-            (0, _assign3.default)(i18n.resources[code].translation, lang);
-          }
-        });
-      }
-
-      options.i18n = i18n;
-      options.i18nReady = true;
-    }
-
-    if (options && options.i18n) {
-      this.options.i18n = options.i18n;
-    } else {
-      this.options.i18n = i18n;
-    }
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -311,17 +284,6 @@ var BaseComponent = function () {
     }
 
     /**
-     * Sets the language for this form.
-     *
-     * @param lang
-     * @return {*}
-     */
-
-  }, {
-    key: 'on',
-
-
-    /**
      * Register for a new event within this component.
      *
      * @example
@@ -339,6 +301,9 @@ var BaseComponent = function () {
      * @param {function} cb - The callback handler to handle this event.
      * @param {boolean} internal - This is an internal event handler.
      */
+
+  }, {
+    key: 'on',
     value: function on(event, cb, internal) {
       if (!this.events) {
         return;
@@ -405,30 +370,6 @@ var BaseComponent = function () {
       }
 
       return null;
-    }
-
-    /**
-     * Perform the localization initialization.
-     * @returns {*}
-     */
-
-  }, {
-    key: 'localize',
-    value: function localize() {
-      var _this = this;
-
-      if (_i18next2.default.initialized) {
-        return _nativePromiseOnly2.default.resolve(_i18next2.default);
-      }
-      _i18next2.default.initialized = true;
-      return new _nativePromiseOnly2.default(function (resolve, reject) {
-        _i18next2.default.init(_this.options.i18n, function (err, t) {
-          if (err) {
-            return reject(err);
-          }
-          resolve(_i18next2.default);
-        });
-      });
     }
 
     /**
@@ -609,6 +550,7 @@ var BaseComponent = function () {
     value: function removeValue(index) {
       if (this.data.hasOwnProperty(this.component.key)) {
         this.data[this.component.key].splice(index, 1);
+        this.triggerChange();
       }
       this.buildRows();
     }
@@ -620,7 +562,7 @@ var BaseComponent = function () {
   }, {
     key: 'buildRows',
     value: function buildRows() {
-      var _this2 = this;
+      var _this = this;
 
       if (!this.tbody) {
         return;
@@ -628,19 +570,19 @@ var BaseComponent = function () {
       this.inputs = [];
       this.tbody.innerHTML = '';
       (0, _each3.default)(this.data[this.component.key], function (value, index) {
-        var tr = _this2.ce('tr');
-        var td = _this2.ce('td');
-        var input = _this2.createInput(td);
+        var tr = _this.ce('tr');
+        var td = _this.ce('td');
+        var input = _this.createInput(td);
         input.value = value;
         tr.appendChild(td);
 
-        if (!_this2.shouldDisable) {
-          var tdAdd = _this2.ce('td');
-          tdAdd.appendChild(_this2.removeButton(index));
+        if (!_this.shouldDisable) {
+          var tdAdd = _this.ce('td');
+          tdAdd.appendChild(_this.removeButton(index));
           tr.appendChild(tdAdd);
         }
 
-        _this2.tbody.appendChild(tr);
+        _this.tbody.appendChild(tr);
       });
 
       if (!this.shouldDisable) {
@@ -666,14 +608,14 @@ var BaseComponent = function () {
   }, {
     key: 'addButton',
     value: function addButton() {
-      var _this3 = this;
+      var _this2 = this;
 
       var addButton = this.ce('a', {
         class: 'btn btn-primary'
       });
       this.addEventListener(addButton, 'click', function (event) {
         event.preventDefault();
-        _this3.addValue();
+        _this2.addValue();
       });
 
       var addIcon = this.ce('span', {
@@ -711,7 +653,7 @@ var BaseComponent = function () {
   }, {
     key: 'removeButton',
     value: function removeButton(index) {
-      var _this4 = this;
+      var _this3 = this;
 
       var removeButton = this.ce('button', {
         type: 'button',
@@ -721,7 +663,7 @@ var BaseComponent = function () {
 
       this.addEventListener(removeButton, 'click', function (event) {
         event.preventDefault();
-        _this4.removeValue(index);
+        _this3.removeValue(index);
       });
 
       var removeIcon = this.ce('span', {
@@ -771,6 +713,10 @@ var BaseComponent = function () {
   }, {
     key: 'setInputStyles',
     value: function setInputStyles(input) {
+      if (this.labelIsHidden()) {
+        return;
+      }
+
       if (this.labelOnTheLeftOrRight(this.component.labelPosition)) {
         var totalLabelWidth = this.getLabelWidth() + this.getLabelMargin();
         input.style.width = 100 - totalLabelWidth + '%';
@@ -782,6 +728,11 @@ var BaseComponent = function () {
         }
       }
     }
+  }, {
+    key: 'labelIsHidden',
+    value: function labelIsHidden() {
+      return !this.component.label || this.component.hideLabel || this.options.inputsOnly;
+    }
 
     /**
      * Create the HTML element for the label of this component.
@@ -791,7 +742,7 @@ var BaseComponent = function () {
   }, {
     key: 'createLabel',
     value: function createLabel(container) {
-      if (!this.component.label || this.component.hideLabel || this.options.inputsOnly) {
+      if (this.labelIsHidden()) {
         return;
       }
       var className = 'control-label';
@@ -938,7 +889,7 @@ var BaseComponent = function () {
       this.description = this.ce('div', {
         class: 'help-block'
       });
-      this.description.appendChild(this.text(this.component.description));
+      this.description.innerHTML = this.t(this.component.description);
       container.appendChild(this.description);
     }
 
@@ -1150,14 +1101,14 @@ var BaseComponent = function () {
   }, {
     key: 'destroy',
     value: function destroy(all) {
-      var _this5 = this;
+      var _this4 = this;
 
       if (this.inputMask) {
         this.inputMask.destroy();
       }
       (0, _each3.default)(this.eventListeners, function (listener) {
         if (all || listener.internal) {
-          _this5.events.off(listener.type, listener.listener);
+          _this4.events.off(listener.type, listener.listener);
         }
       });
       (0, _each3.default)(this.eventHandlers, function (handler) {
@@ -1174,11 +1125,11 @@ var BaseComponent = function () {
   }, {
     key: 'appendChild',
     value: function appendChild(element, child) {
-      var _this6 = this;
+      var _this5 = this;
 
       if (Array.isArray(child)) {
         child.forEach(function (oneChild) {
-          _this6.appendChild(element, oneChild);
+          _this5.appendChild(element, oneChild);
         });
       } else if (child instanceof HTMLElement || child instanceof Text) {
         element.appendChild(child);
@@ -1238,13 +1189,13 @@ var BaseComponent = function () {
   }, {
     key: 'attr',
     value: function attr(element, _attr) {
-      var _this7 = this;
+      var _this6 = this;
 
       (0, _each3.default)(_attr, function (value, key) {
         if (typeof value !== 'undefined') {
           if (key.indexOf('on') === 0) {
             // If this is an event, add a listener.
-            _this7.addEventListener(element, key.substr(2).toLowerCase(), value);
+            _this6.addEventListener(element, key.substr(2).toLowerCase(), value);
           } else {
             // Otherwise it is just an attribute.
             element.setAttribute(key, value);
@@ -1356,7 +1307,7 @@ var BaseComponent = function () {
   }, {
     key: 'show',
     value: function show(_show) {
-      var _this8 = this;
+      var _this7 = this;
 
       // Ensure we stop any pending data clears.
       if (this.clearPending) {
@@ -1385,7 +1336,7 @@ var BaseComponent = function () {
 
       if (!_show && this.component.clearOnHide) {
         this.clearPending = setTimeout(function () {
-          return _this8.setValue(null, {
+          return _this7.setValue(null, {
             noValidate: true
           });
         }, 200);
@@ -1444,14 +1395,17 @@ var BaseComponent = function () {
   }, {
     key: 'addInputSubmitListener',
     value: function addInputSubmitListener(input) {
-      var _this9 = this;
+      var _this8 = this;
 
+      if (!this.options.submitOnEnter) {
+        return;
+      }
       this.addEventListener(input, 'keypress', function (event) {
         var key = event.keyCode || event.which;
         if (key == 13) {
           event.preventDefault();
           event.stopPropagation();
-          _this9.emit('submitButton');
+          _this8.emit('submitButton');
         }
       });
     }
@@ -1465,10 +1419,10 @@ var BaseComponent = function () {
   }, {
     key: 'addInputEventListener',
     value: function addInputEventListener(input) {
-      var _this10 = this;
+      var _this9 = this;
 
       this.addEventListener(input, this.info.changeEvent, function () {
-        return _this10.updateValue({ changed: true });
+        return _this9.updateValue({ changed: true });
       });
     }
 
@@ -1616,7 +1570,8 @@ var BaseComponent = function () {
         try {
           var val = _utils2.default.jsonLogic.apply(this.component.calculateValue, {
             data: data,
-            row: this.data
+            row: this.data,
+            _: _lodash2.default
           });
           changed = this.setValue(val, flags);
         } catch (err) {
@@ -1816,9 +1771,40 @@ var BaseComponent = function () {
      */
 
   }, {
+    key: 'setDisabled',
+    value: function setDisabled(element, disabled) {
+      element.disabled = disabled;
+      if (disabled) {
+        element.setAttribute('disabled', 'disabled');
+      } else {
+        element.removeAttribute('disabled');
+      }
+    }
+  }, {
+    key: 'setLoading',
+    value: function setLoading(element, loading) {
+      if (element.loading === loading) {
+        return;
+      }
+
+      element.loading = loading;
+      if (!element.loader && loading) {
+        element.loader = this.ce('i', {
+          class: 'glyphicon glyphicon-refresh glyphicon-spin button-icon-right'
+        });
+      }
+      if (element.loader) {
+        if (loading) {
+          element.appendChild(element.loader);
+        } else if (element.contains(element.loader)) {
+          element.removeChild(element.loader);
+        }
+      }
+    }
+  }, {
     key: 'selectOptions',
     value: function selectOptions(select, tag, options, defaultValue) {
-      var _this11 = this;
+      var _this10 = this;
 
       (0, _each3.default)(options, function (option) {
         var attrs = {
@@ -1827,8 +1813,8 @@ var BaseComponent = function () {
         if (defaultValue !== undefined && option.value === defaultValue) {
           attrs.selected = 'selected';
         }
-        var optionElement = _this11.ce('option', attrs);
-        optionElement.appendChild(_this11.text(option.label));
+        var optionElement = _this10.ce('option', attrs);
+        optionElement.appendChild(_this10.text(option.label));
         select.appendChild(optionElement);
       });
     }
@@ -1896,7 +1882,7 @@ var BaseComponent = function () {
         name: this.options.name,
         type: this.component.inputType || 'text',
         class: 'form-control',
-        lang: this.options.i18n.lng
+        lang: this.options.language
       };
 
       if (this.component.placeholder) {
@@ -1913,21 +1899,6 @@ var BaseComponent = function () {
         changeEvent: 'change',
         attr: attributes
       };
-    }
-  }, {
-    key: 'language',
-    set: function set(lang) {
-      var _this12 = this;
-
-      return new _nativePromiseOnly2.default(function (resolve, reject) {
-        _i18next2.default.changeLanguage(lang, function (err) {
-          if (err) {
-            return reject(err);
-          }
-          _this12.redraw();
-          resolve();
-        });
-      });
     }
   }, {
     key: 'shouldDisable',
@@ -1992,7 +1963,8 @@ var BaseComponent = function () {
           try {
             defaultValue = _utils2.default.jsonLogic.apply(this.component.customDefaultValue, {
               data: this.data,
-              row: this.data
+              row: this.data,
+              _: _lodash2.default
             });
           } catch (err) {
             defaultValue = null;
@@ -2064,20 +2036,18 @@ var BaseComponent = function () {
      */
     ,
     set: function set(disabled) {
+      var _this11 = this;
+
       // Do not allow a component to be disabled if it should be always...
       if (!disabled && this.shouldDisable) {
         return;
       }
 
       this._disabled = disabled;
-      // Disable all input.
+
+      // Disable all inputs.
       (0, _each3.default)(this.inputs, function (input) {
-        input.disabled = disabled;
-        if (disabled) {
-          input.setAttribute('disabled', 'disabled');
-        } else {
-          input.removeAttribute('disabled');
-        }
+        return _this11.setDisabled(input, disabled);
       });
     }
   }]);

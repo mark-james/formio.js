@@ -16,6 +16,10 @@ var _each = require('lodash/each');
 
 var _each2 = _interopRequireDefault(_each);
 
+var _i18next = require('i18next');
+
+var _i18next2 = _interopRequireDefault(_i18next);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('Formio Form Renderer tests', function () {
@@ -49,11 +53,117 @@ describe('Formio Form Renderer tests', function () {
       } });
   });
 
+  it('Should translate a form from options', function (done) {
+    var formElement = document.createElement('div');
+    var translateForm = new _formio2.default(formElement, {
+      language: 'es',
+      i18n: {
+        es: {
+          'Default Label': 'Spanish Label'
+        }
+      }
+    });
+    translateForm.setForm({
+      title: 'Translate Form',
+      components: [{
+        type: 'textfield',
+        label: 'Default Label',
+        key: 'myfield',
+        input: true,
+        inputType: 'text',
+        validate: {}
+      }]
+    }).then(function () {
+      var label = formElement.querySelector('.control-label');
+      _powerAssert2.default.equal(label.innerHTML, 'Spanish Label');
+      done();
+    });
+  });
+
+  it('Should translate a form after instantiate', function (done) {
+    var formElement = document.createElement('div');
+    var translateForm = new _formio2.default(formElement, {
+      i18n: {
+        es: {
+          'Default Label': 'Spanish Label'
+        }
+      }
+    });
+    translateForm.setForm({
+      title: 'Translate Form',
+      components: [{
+        type: 'textfield',
+        label: 'Default Label',
+        key: 'myfield',
+        input: true,
+        inputType: 'text',
+        validate: {}
+      }]
+    }).then(function () {
+      translateForm.language = 'es';
+      var label = formElement.querySelector('.control-label');
+      _powerAssert2.default.equal(label.innerHTML, 'Spanish Label');
+      done();
+    });
+  });
+
+  it('Should add a translation after instantiate', function (done) {
+    var formElement = document.createElement('div');
+    var translateForm = new _formio2.default(formElement, {
+      i18n: {
+        language: 'es',
+        es: {
+          'Default Label': 'Spanish Label'
+        },
+        fr: {
+          'Default Label': 'French Label'
+        }
+      }
+    });
+    translateForm.setForm({
+      title: 'Translate Form',
+      components: [{
+        type: 'textfield',
+        label: 'Default Label',
+        key: 'myfield',
+        input: true,
+        inputType: 'text',
+        validate: {}
+      }]
+    }).then(function () {
+      translateForm.language = 'fr';
+      var label = formElement.querySelector('.control-label');
+      _powerAssert2.default.equal(label.innerHTML, 'French Label');
+      done();
+    });
+  });
+
+  it('Should switch a translation after instantiate', function (done) {
+    var formElement = document.createElement('div');
+    var translateForm = new _formio2.default(formElement);
+    translateForm.setForm({
+      title: 'Translate Form',
+      components: [{
+        type: 'textfield',
+        label: 'Default Label',
+        key: 'myfield',
+        input: true,
+        inputType: 'text',
+        validate: {}
+      }]
+    }).then(function () {
+      translateForm.addLanguage('es', { 'Default Label': 'Spanish Label' }, true);
+      var label = formElement.querySelector('.control-label');
+      _powerAssert2.default.equal(label.innerHTML, 'Spanish Label');
+      done();
+    });
+  });
+
   (0, _each2.default)(_index.FormTests, function (formTest) {
     (0, _each2.default)(formTest.tests, function (formTestTest, title) {
       it(title, function (done) {
         var formElement = document.createElement('div');
-        var form = new _formio2.default(formElement);
+        var form = new _formio2.default(formElement, { language: 'en' });
         form.setForm(formTest.form).then(function () {
           formTestTest(form, done);
         }).catch(function (error) {
