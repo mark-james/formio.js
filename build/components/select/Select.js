@@ -260,13 +260,14 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       url = this.interpolate(url, {
         data: this.data,
         formioBase: _formio2.default.getBaseUrl(),
-        formioOptions: _formio2.default.getOptions()
+        formioOptions: _formio2.default.getOptions(),
+        rootData: this.root.data
       });
 
       console.log('Data From Options: ' + JSON.stringify(_formio2.default.getOptions()));
       // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
-        data: this.data, formioOptions: _formio2.default.getOptions()
+        data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data
       }));
 
       // Add search capability.

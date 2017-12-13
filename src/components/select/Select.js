@@ -187,13 +187,14 @@ export class SelectComponent extends BaseComponent {
     url = this.interpolate(url, {
       data: this.data,
       formioBase: Formio.getBaseUrl(),
-      formioOptions: Formio.getOptions()
+      formioOptions: Formio.getOptions(), 
+      rootData: this.root.data
     });
 
      console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
      // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
-      data: this.data, formioOptions: Formio.getOptions()
+      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data
     }));
 
     // Add search capability.
