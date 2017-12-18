@@ -106,9 +106,18 @@ var ButtonComponent = exports.ButtonComponent = function (_BaseComponent) {
             // Create object containing the corresponding HTML element components
             var components = {};
             (0, _each3.default)(flattened, function (component, key) {
-              var element = form.getComponent(key);
-              if (element) {
-                components[key] = element;
+              if (key.indexOf(".data.") !== -1) {
+                var formKey = key.split(".data.")[0];
+                var compKey = key.split(".data.")[1];
+                var element = form.getComponent(formKey).getComponent(compKey);
+                if (element) {
+                  components[formKey + '-' + compKey] = element;
+                }
+              } else {
+                var element = form.getComponent(key);
+                if (element) {
+                  components[key] = element;
+                }
               }
             });
             // Make data available to script

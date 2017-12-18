@@ -75,9 +75,19 @@ export class ButtonComponent extends BaseComponent {
           // Create object containing the corresponding HTML element components
           var components = {};
           _each(flattened, function(component, key) {
-            var element = form.getComponent(key);
-            if (element) {
-              components[key] = element;
+            if(key.includes(".data.")){
+              var formKey = key.split(".data.")[0];
+              var compKey = key.split(".data.")[1];
+              var element = form.getComponent(formKey).getComponent(compKey);
+              if (element) {
+               components[formKey+'-'+compKey] = element;
+              }       
+            }
+            else {
+              var element = form.getComponent(key);
+              if (element) {
+                components[key] = element;
+              }
             }
           });
           // Make data available to script
