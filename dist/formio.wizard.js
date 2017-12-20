@@ -10221,7 +10221,7 @@ var FormioForm = exports.FormioForm = function (_FormioComponents) {
       var _this5 = this;
 
       this.setUrl(value, options);
-      this.nosubmit = false;
+      //this.nosubmit = false;
       this.formio.loadForm().then(function (form) {
         var setForm = _this5.setForm(form);
         _this5.loadSubmission();

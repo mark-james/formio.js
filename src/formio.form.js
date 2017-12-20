@@ -417,7 +417,7 @@ export class FormioForm extends FormioComponents {
    */
   setSrc(value, options) {
     this.setUrl(value, options);
-    this.nosubmit = false;
+    //this.nosubmit = false;
     this.formio.loadForm().then(
       (form) => {
         var setForm = this.setForm(form);
