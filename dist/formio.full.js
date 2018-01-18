@@ -3402,7 +3402,7 @@ var BaseComponent = function () {
   }, {
     key: 'shouldDisable',
     get: function get() {
-      return Formio.getOptions().readOnly || this.component.disabled;
+      return Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled;
       //return (this.options.readOnly || this.component.disabled);
     }
   }, {
@@ -6402,6 +6402,11 @@ var FormComponent = exports.FormComponent = function (_FormioForm) {
       _this.component.submit = true;
     }
 
+    // If the form is disabled then disable all child components
+    if (_this.component.disabled) {
+      _this.options.readOnly = true;
+    }
+
     if (!component.src && !_this.options.formio && component.form) {
       component.src = _formio4.default.getBaseUrl();
       if (component.project) {
@@ -8200,7 +8205,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         rootData: this.root.data
       });
 
-      console.log('Data From Options: ' + JSON.stringify(_formio2.default.getOptions()));
+      //console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
       // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
         data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data
@@ -8373,22 +8378,22 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'addCurrentChoices',
     value: function addCurrentChoices(value, items) {
-      if (value && items.length) {
+      var _this6 = this;
+
+      if (value) {
         var found = false;
+        if (items && items.length) {
+          (0, _each3.default)(items, function (choice) {
+            if (choice._id && value._id && choice._id === value._id) {
+              found = true;
+              return false;
+            }
+            found |= (0, _isEqual3.default)(_this6.itemValue(choice), value);
+            return found ? false : true;
+          });
+        }
 
-        // Iterate through all elements and remove the ones that are found.
-        (0, _remove3.default)(items, function (choice) {
-          // For resources we may have two different instances of the same resource
-          // Unify them so we don't have two copies of the same thing in the dropdown
-          // and so the correct resource gets selected in the first place
-          if (choice._id && value._id && choice._id === value._id) {
-            return true;
-          }
-          found = (0, _isEqual3.default)(choice, value);
-          return found;
-        });
-
-        // If it is not found, then add it.
+        // Add the default option if no item is found.
         if (!found) {
           this.addOption(this.itemValue(value), this.itemTemplate(value));
         }
@@ -8481,13 +8486,14 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     key: 'destroy',
     value: function destroy() {
       if (this.choices) {
+        this.choices.itemList;
         this.choices.destroy();
       }
     }
   }, {
     key: 'requestHeaders',
     get: function get() {
-      var _this6 = this;
+      var _this7 = this;
 
       // Create the headers object.
       var headers = new Headers();
@@ -8497,8 +8503,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         try {
           (0, _each3.default)(this.component.data.headers, function (header) {
             if (header.key) {
-              headers.set(header.key, _this6.interpolate(header.value, {
-                data: _this6.data,
+              headers.set(header.key, _this7.interpolate(header.value, {
+                data: _this7.data,
                 formioOptions: _formio2.default.getOptions()
               }));
             }
@@ -12214,7 +12220,7 @@ var Formio = function () {
 
 exports.Formio = Formio;
 Formio.Headers = Headers;
-Formio.baseUrl = 'https://api.form.io';
+Formio.baseUrl = 'http://localhost:4200';
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];

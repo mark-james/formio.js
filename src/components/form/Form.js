@@ -22,6 +22,11 @@ export class FormComponent extends FormioForm {
       this.component.submit = true;
     }
 
+    // If the form is disabled then disable all child components
+    if (this.component.disabled){
+      this.options.readOnly = true;
+    }
+
     if (
       !component.src &&
       !this.options.formio &&

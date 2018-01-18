@@ -59,6 +59,11 @@ var FormComponent = exports.FormComponent = function (_FormioForm) {
       _this.component.submit = true;
     }
 
+    // If the form is disabled then disable all child components
+    if (_this.component.disabled) {
+      _this.options.readOnly = true;
+    }
+
     if (!component.src && !_this.options.formio && component.form) {
       component.src = _formio4.default.getBaseUrl();
       if (component.project) {

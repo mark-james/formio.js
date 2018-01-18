@@ -1903,7 +1903,7 @@ var BaseComponent = function () {
   }, {
     key: 'shouldDisable',
     get: function get() {
-      return Formio.getOptions().readOnly || this.component.disabled;
+      return Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled;
       //return (this.options.readOnly || this.component.disabled);
     }
   }, {

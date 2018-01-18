@@ -191,7 +191,7 @@ export class SelectComponent extends BaseComponent {
       rootData: this.root.data
     });
 
-     console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
+     //console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
      // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
       data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data
@@ -394,22 +394,20 @@ export class SelectComponent extends BaseComponent {
   }
 
   addCurrentChoices(value, items) {
-    if (value && items.length) {
+    if (value) {
       let found = false;
+      if (items && items.length) {
+        _each(items, (choice) => {
+          if (choice._id && value._id && (choice._id === value._id)) {
+            found = true;
+            return false;
+          }
+          found |= _isEqual(this.itemValue(choice), value);
+          return found ? false : true;
+        });
+      }
 
-      // Iterate through all elements and remove the ones that are found.
-      _remove(items, (choice) => {
-        // For resources we may have two different instances of the same resource
-        // Unify them so we don't have two copies of the same thing in the dropdown
-        // and so the correct resource gets selected in the first place
-        if (choice._id && value._id && choice._id === value._id) {
-          return true;
-        }
-        found = _isEqual(choice, value);
-        return found;
-      });
-
-      // If it is not found, then add it.
+      // Add the default option if no item is found.
       if (!found) {
         this.addOption(this.itemValue(value), this.itemTemplate(value));
       }
@@ -501,6 +499,7 @@ export class SelectComponent extends BaseComponent {
 
   destroy() {
     if (this.choices) {
+      this.choices.itemList
       this.choices.destroy();
     }
   }

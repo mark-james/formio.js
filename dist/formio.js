@@ -1238,7 +1238,7 @@ var Formio = function () {
 
 exports.Formio = Formio;
 Formio.Headers = Headers;
-Formio.baseUrl = 'https://api.form.io';
+Formio.baseUrl = 'http://localhost:4200';
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];
