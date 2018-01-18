@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.SelectComponent = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
@@ -27,10 +25,6 @@ var _each2 = require('lodash/each');
 
 var _each3 = _interopRequireDefault(_each2);
 
-var _remove2 = require('lodash/remove');
-
-var _remove3 = _interopRequireDefault(_remove2);
-
 var _get3 = require('lodash/get');
 
 var _get4 = _interopRequireDefault(_get3);
@@ -47,13 +41,25 @@ var _isArray2 = require('lodash/isArray');
 
 var _isArray3 = _interopRequireDefault(_isArray2);
 
+var _isObject2 = require('lodash/isObject');
+
+var _isObject3 = _interopRequireDefault(_isObject2);
+
 var _isEqual2 = require('lodash/isEqual');
 
 var _isEqual3 = _interopRequireDefault(_isEqual2);
 
+var _isString2 = require('lodash/isString');
+
+var _isString3 = _interopRequireDefault(_isString2);
+
 var _cloneDeep2 = require('lodash/cloneDeep');
 
 var _cloneDeep3 = _interopRequireDefault(_cloneDeep2);
+
+var _find2 = require('lodash/find');
+
+var _find3 = _interopRequireDefault(_find2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -63,20 +69,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-// Fix performance issues in Choices by adding a debounce around render method.
-_choices2.default.prototype._render = _choices2.default.prototype.render;
-_choices2.default.prototype.render = function () {
-  var _this = this;
-
-  if (this.renderDebounce) {
-    clearTimeout(this.renderDebounce);
-  }
-
-  this.renderDebounce = setTimeout(function () {
-    return _this._render();
-  }, 100);
-};
-
 var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   _inherits(SelectComponent, _BaseComponent);
 
@@ -84,24 +76,30 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     _classCallCheck(this, SelectComponent);
 
     // Trigger an update.
-    var _this2 = _possibleConstructorReturn(this, (SelectComponent.__proto__ || Object.getPrototypeOf(SelectComponent)).call(this, component, options, data));
+    var _this = _possibleConstructorReturn(this, (SelectComponent.__proto__ || Object.getPrototypeOf(SelectComponent)).call(this, component, options, data));
 
-    _this2.triggerUpdate = (0, _debounce3.default)(_this2.updateItems.bind(_this2), 100);
+    _this.triggerUpdate = (0, _debounce3.default)(_this.updateItems.bind(_this), 100);
 
     // Keep track of the select options.
-    _this2.selectOptions = [];
+    _this.selectOptions = [];
+
+    // See if this should use the template.
+    _this.useTemplate = _this.component.dataSrc !== 'values' && _this.component.template;
+
+    // If this component has been activated.
+    _this.activated = false;
 
     // If they wish to refresh on a value, then add that here.
-    if (_this2.component.refreshOn) {
-      _this2.on('change', function (event) {
-        if (_this2.component.refreshOn === 'data') {
-          _this2.refreshItems();
-        } else if (event.changed && event.changed.component.key === _this2.component.refreshOn) {
-          _this2.refreshItems();
+    if (_this.component.refreshOn) {
+      _this.on('change', function (event) {
+        if (_this.component.refreshOn === 'data') {
+          _this.refreshItems();
+        } else if (event.changed && event.changed.component.key === _this.component.refreshOn) {
+          _this.refreshItems();
         }
       });
     }
-    return _this2;
+    return _this;
   }
 
   _createClass(SelectComponent, [{
@@ -128,6 +126,13 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'itemTemplate',
     value: function itemTemplate(data) {
+      // Perform a fast interpretation if we should not use the template.
+      if (data && !this.useTemplate) {
+        return this.t(data.label || data);
+      }
+      if (typeof data === 'string') {
+        return this.t(data);
+      }
       var template = this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
       var label = template.replace(/<\/?[^>]+(>|$)/g, "");
       return template.replace(label, this.t(label));
@@ -135,7 +140,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'itemValue',
     value: function itemValue(data) {
-      return this.component.valueProperty ? (0, _get4.default)(data, this.component.valueProperty) : data;
+      return this.component.valueProperty && (0, _isObject3.default)(data) ? (0, _get4.default)(data, this.component.valueProperty) : data;
     }
   }, {
     key: 'createInput',
@@ -178,6 +183,24 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       this.selectInput.appendChild(option.element);
     }
   }, {
+    key: 'addValueOptions',
+    value: function addValueOptions(items) {
+      var _this2 = this;
+
+      items = items || [];
+      if (!this.selectOptions.length) {
+        if (this.choices) {
+          // Add the currently selected choices if they don't already exist.
+          var currentChoices = (0, _isArray3.default)(this.value) ? this.value : [this.value];
+          (0, _each3.default)(currentChoices, function (choice) {
+            _this2.addCurrentChoices(choice, items);
+          });
+        } else if (!this.component.multiple) {
+          this.addPlaceholder(this.selectInput);
+        }
+      }
+    }
+  }, {
     key: 'setItems',
     value: function setItems(items) {
       var _this3 = this;
@@ -205,15 +228,8 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         items = (0, _get4.default)(items, this.component.selectValues);
       }
 
-      if (this.choices) {
-        // Add the currently selected choices if they don't already exist.
-        var currentChoices = (0, _isArray3.default)(this.value) ? this.value : [this.value];
-        (0, _each3.default)(currentChoices, function (choice) {
-          _this3.addCurrentChoices(choice, items);
-        });
-      } else if (!this.component.multiple) {
-        this.addPlaceholder(this.selectInput);
-      }
+      // Add the value options.
+      this.addValueOptions(items);
 
       // Iterate through each of the items.
       (0, _each3.default)(items, function (item, index) {
@@ -226,6 +242,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         // Re-attach select input.
         this.selectContainer.appendChild(this.selectInput);
       }
+
+      // We are no longer loading.
+      this.loading = false;
 
       // If a value is provided, then select it.
       if (this.value) {
@@ -264,7 +283,6 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         rootData: this.root.data
       });
 
-      //console.log('Data From Options: ' + JSON.stringify(Formio.getOptions()));
       // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
         data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data
@@ -272,7 +290,11 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
       // Add search capability.
       if (this.component.searchField && search) {
-        query[this.component.searchField] = search;
+        if ((0, _isArray3.default)(search)) {
+          query[this.component.searchField + '__in'] = search.join(',');
+        } else {
+          query[this.component.searchField] = search;
+        }
       }
 
       // Add filter capability
@@ -291,11 +313,13 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         url += '?' + _formio2.default.serialize(query);
       }
 
-      // Make the request 
+      // Make the request.
       options.header = headers;
+      this.loading = true;
       _formio2.default.makeRequest(this.options.formio, 'select', url, method, body, options).then(function (response) {
         return _this4.setItems(response);
       }).catch(function (err) {
+        _this4.loading = false;
         _this4.events.emit('formio.error', err);
         console.warn('Unable to load resources for ' + _this4.component.key);
       });
@@ -318,7 +342,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     }
   }, {
     key: 'updateItems',
-    value: function updateItems(searchInput) {
+    value: function updateItems(searchInput, forceUpdate) {
       if (!this.component.data) {
         console.warn('Select component ' + this.component.key + ' does not have data configuration.');
         return;
@@ -336,6 +360,10 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
           this.updateCustomItems();
           break;
         case 'resource':
+          if (!forceUpdate && !this.active) {
+            // If we are lazyLoading, wait until activated.
+            return;
+          }
           var resourceUrl = this.options.formio ? this.options.formio.formsUrl : _formio2.default.getProjectUrl() + '/form';
           resourceUrl += '/' + this.component.data.resource + '/submission';
 
@@ -346,6 +374,10 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
           }
           break;
         case 'url':
+          if (!forceUpdate && !this.active) {
+            // If we are lazyLoading, wait until activated.
+            return;
+          }
           var url = this.component.data.url;
           var method = void 0;
           var body = void 0;
@@ -381,6 +413,28 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       placeholder.appendChild(this.text(this.component.placeholder));
       input.appendChild(placeholder);
     }
+
+    /**
+     * Activate this select control.
+     */
+
+  }, {
+    key: 'activate',
+    value: function activate() {
+      if (this.active) {
+        return;
+      }
+      this.activated = true;
+      if (this.choices) {
+        this.choices.setChoices([{
+          value: '',
+          label: '<i class="' + this.iconClass('refresh') + '" style="font-size:1.3em;"></i>'
+        }], 'value', 'label', true);
+      } else {
+        this.addOption('', this.t('loading...'));
+      }
+      this.refreshItems();
+    }
   }, {
     key: 'addInput',
     value: function addInput(input, container) {
@@ -393,22 +447,27 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
       if (this.component.widget === 'html5') {
         this.triggerUpdate();
+        this.addEventListener(input, 'focus', function () {
+          return _this5.activate();
+        });
         return;
       }
 
       var placeholderValue = this.t(this.component.placeholder);
       var choicesOptions = {
-        removeItemButton: true,
+        removeItemButton: this.component.removeItemButton || this.component.multiple || false,
         itemSelectText: '',
         classNames: {
           containerOuter: 'choices form-group formio-choices',
           containerInner: 'form-control'
         },
+        itemComparer: _isEqual3.default,
         placeholder: !!this.component.placeholder,
         placeholderValue: placeholderValue,
         searchPlaceholderValue: placeholderValue,
         shouldSort: false,
-        position: this.component.dropdown || 'auto'
+        position: this.component.dropdown || 'auto',
+        searchEnabled: this.component.searchEnabled || false
       };
 
       var tabIndex = input.tabIndex;
@@ -419,15 +478,21 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
 
       // If a search field is provided, then add an event listener to update items on search.
       if (this.component.searchField) {
-        input.addEventListener('search', function (event) {
+        this.addEventListener(input, 'search', function (event) {
           return _this5.triggerUpdate(event.detail.value);
+        });
+        this.addEventListener(input, 'stopSearch', function () {
+          return _this5.triggerUpdate();
         });
       }
 
-      input.addEventListener('showDropdown', function () {
+      this.addEventListener(input, 'showDropdown', function () {
         if (_this5.component.dataSrc === 'custom') {
           _this5.updateCustomItems();
         }
+
+        // Activate the control.
+        _this5.activate();
       });
 
       // Force the disabled state with getters and setters.
@@ -490,10 +555,27 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       var hasPreviousValue = (0, _isArray3.default)(this.value) ? this.value.length : this.value;
       var hasValue = (0, _isArray3.default)(value) ? value.length : value;
       this.value = value;
+
+      // Do not set the value if we are loading... that will happen after it is done.
+      if (this.loading) {
+        return;
+      }
+
+      // Determine if we need to perform an initial lazyLoad api call if searchField is provided.
+      if (this.component.searchField && this.component.lazyLoad && !this.lazyLoadInit && !this.active && !this.selectOptions.length && hasValue) {
+        this.loading = true;
+        this.lazyLoadInit = true;
+        this.triggerUpdate(this.value, true);
+        return;
+      }
+
+      // Add the value options.
+      this.addValueOptions();
+
       if (this.choices) {
         // Now set the value.
         if (hasValue) {
-          this.choices.setValueByChoice((0, _isArray3.default)(value) ? value : [value]);
+          this.choices.removeActiveItems().setChoices(this.selectOptions, 'value', 'label', true).setValueByChoice((0, _isArray3.default)(value) ? value : [value]);
         } else if (hasPreviousValue) {
           this.choices.removeActiveItems();
         }
@@ -501,10 +583,13 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         if (hasValue) {
           var values = (0, _isArray3.default)(value) ? value : [value];
           (0, _each3.default)(this.selectOptions, function (selectOption) {
-            if (values.indexOf(selectOption.value) !== -1) {
-              selectOption.element.selected = true;
-              selectOption.element.setAttribute('selected', 'selected');
-            }
+            (0, _each3.default)(values, function (val) {
+              if ((0, _isEqual3.default)(val, selectOption.value)) {
+                selectOption.element.selected = true;
+                selectOption.element.setAttribute('selected', 'selected');
+                return false;
+              }
+            });
           });
         } else {
           (0, _each3.default)(this.selectOptions, function (selectOption) {
@@ -538,15 +623,35 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     key: 'asString',
     value: function asString(value) {
       value = value || this.getValue();
-      value = (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== 'object' ? { label: value } : value;
-      return this.itemTemplate(value);
+
+      if (this.component.dataSrc === 'values') {
+        value = (0, _find3.default)(this.component.data.values, ['value', value]);
+      }
+
+      if ((0, _isString3.default)(value)) {
+        return value;
+      }
+
+      return (0, _isObject3.default)(value) ? this.itemTemplate(value) : '-';
+    }
+  }, {
+    key: 'setupValueElement',
+    value: function setupValueElement(element) {
+      element.innerHTML = this.asString();
+    }
+  }, {
+    key: 'updateViewOnlyValue',
+    value: function updateViewOnlyValue() {
+      this.setupValueElement(this.valueElement);
     }
   }, {
     key: 'destroy',
     value: function destroy() {
+      _get2(SelectComponent.prototype.__proto__ || Object.getPrototypeOf(SelectComponent.prototype), 'destroy', this).call(this);
       if (this.choices) {
-        this.choices.itemList;
+        this.choices.destroyed = true;
         this.choices.destroy();
+        this.choices = null;
       }
     }
   }, {
@@ -574,6 +679,11 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       }
 
       return headers;
+    }
+  }, {
+    key: 'active',
+    get: function get() {
+      return !this.component.lazyLoad || this.activated;
     }
   }, {
     key: 'disabled',
