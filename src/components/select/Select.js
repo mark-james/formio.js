@@ -218,14 +218,14 @@ export class SelectComponent extends BaseComponent {
       url += '?' + Formio.serialize(query);
     }
 
-    // Make the request.
-    options.header = headers;
-    Formio.makeRequest(this.options.formio, 'select', url, method, body, options)
-      .then((response) => this.setItems(response))
-      .catch((err) => {
-        this.events.emit('formio.error', err);
-        console.warn(`Unable to load resources for ${this.component.key}`);
-      });
+    // Make the request 
+      options.header = headers;
+      Formio.makeRequest(this.options.formio, 'select', url, method, body, options)
+        .then((response) => this.setItems(response))
+        .catch((err) => {
+          this.events.emit('formio.error', err);
+          console.warn(`Unable to load resources for ${this.component.key}`);
+        });
   }
 
   /**
@@ -315,7 +315,9 @@ export class SelectComponent extends BaseComponent {
             body = null
           }
         }
-        this.loadItems(url, searchInput, this.requestHeaders, {noToken: true}, method, body);
+        if (!this._disabled) {
+          this.loadItems(url, searchInput, this.requestHeaders, {noToken: true}, method, body);
+        }
         break;
     }
   }

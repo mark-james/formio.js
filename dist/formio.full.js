@@ -3402,7 +3402,8 @@ var BaseComponent = function () {
   }, {
     key: 'shouldDisable',
     get: function get() {
-      return this.options.readOnly || this.component.disabled;
+      return Formio.getOptions().readOnly || this.component.disabled;
+      //return (this.options.readOnly || this.component.disabled);
     }
   }, {
     key: 'className',
@@ -8226,7 +8227,7 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         url += '?' + _formio2.default.serialize(query);
       }
 
-      // Make the request.
+      // Make the request 
       options.header = headers;
       _formio2.default.makeRequest(this.options.formio, 'select', url, method, body, options).then(function (response) {
         return _this4.setItems(response);
@@ -8299,7 +8300,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
               body = null;
             }
           }
-          this.loadItems(url, searchInput, this.requestHeaders, { noToken: true }, method, body);
+          if (!this._disabled) {
+            this.loadItems(url, searchInput, this.requestHeaders, { noToken: true }, method, body);
+          }
           break;
       }
     }
