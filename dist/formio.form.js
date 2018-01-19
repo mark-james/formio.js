@@ -8096,8 +8096,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
   }, {
     key: 'addOption',
     value: function addOption(value, label, attr) {
+      // options needs to be stored as strings because of limitation with choices.js
       var option = {
-        value: value,
+        value: JSON.stringify(value, null, 0),
         label: label
       };
 
@@ -8468,8 +8469,34 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         return this.value;
       }
       if (this.choices) {
-        this.value = this.choices.getValue(true);
-
+        var value = void 0;
+        var convertedValue = void 0;
+        value = this.choices.getValue(true);
+        // Try and convert value from choices.js into a json object
+        if ((0, _isArray3.default)(value)) {
+          convertedValue = [];
+          (0, _each3.default)(value, function (val) {
+            if ((0, _isString3.default)(val)) {
+              // Can't tell if it's a real string or an object stringified
+              try {
+                convertedValue.push(JSON.parse(val));
+              } catch (e) {
+                convertedValue.push(val);
+              }
+            }
+          });
+        } else {
+          if ((0, _isString3.default)(value)) {
+            try {
+              convertedValue = JSON.parse(value);
+            } catch (e) {
+              convertedValue = value;
+            }
+          } else {
+            convertedValue = value;
+          }
+        }
+        this.value = convertedValue;
         // Make sure we don't get the placeholder
         if (!this.component.multiple && this.component.placeholder && this.value === this.t(this.component.placeholder)) {
           this.value = '';
@@ -8512,7 +8539,21 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       if (this.choices) {
         // Now set the value.
         if (hasValue) {
-          this.choices.removeActiveItems().setChoices(this.selectOptions, 'value', 'label', true).setValueByChoice((0, _isArray3.default)(value) ? value : [value]);
+          // choices.js doesn't handle json objects as value well. So we make them strings.
+          var newValue = void 0;
+          if ((0, _isObject3.default)(value)) {
+            newValue = JSON.stringify(value, null, 0);
+          } else if ((0, _isArray3.default)(value)) {
+            newValue = [];
+            (0, _each3.default)(value, function (val) {
+              if ((0, _isObject3.default)(value)) {
+                newValue.push(JSON.stringify(val, null, 0));
+              }
+            });
+          } else {
+            newValue = value;
+          }
+          this.choices.removeActiveItems().setChoices(this.selectOptions, 'value', 'label', true).setValueByChoice((0, _isArray3.default)(newValue) ? newValue : [newValue]);
         } else if (hasPreviousValue) {
           this.choices.removeActiveItems();
         }

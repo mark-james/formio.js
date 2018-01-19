@@ -88,8 +88,9 @@ export class SelectComponent extends BaseComponent {
    * @param label
    */
   addOption(value, label, attr) {
+    // options needs to be stored as strings because of limitation with choices.js
     let option = {
-      value: value,
+      value: JSON.stringify(value,null,0),
       label: label
     };
 
@@ -481,8 +482,30 @@ export class SelectComponent extends BaseComponent {
       return this.value;
     }
     if (this.choices) {
-      this.value = this.choices.getValue(true);
-
+      let value;
+      let convertedValue
+      value = this.choices.getValue(true);
+      // Try and convert value from choices.js into a json object
+      if (_isArray(value)) {
+        convertedValue = [];
+        _each(value, (val) => {
+          if(_isString(val)) {
+            // Can't tell if it's a real string or an object stringified
+            try { convertedValue.push(JSON.parse(val));}
+            catch(e) {convertedValue.push(val)}
+          }
+        });
+      }
+      else {
+        if(_isString(value)) {
+          try { convertedValue = JSON.parse(value);}
+          catch(e) {convertedValue = value}
+        }
+        else {
+          convertedValue = value
+        }
+      }
+      this.value = convertedValue;
       // Make sure we don't get the placeholder
       if (
         !this.component.multiple &&
@@ -536,10 +559,26 @@ export class SelectComponent extends BaseComponent {
     if (this.choices) {
       // Now set the value.
       if (hasValue) {
+        // choices.js doesn't handle json objects as value well. So we make them strings.
+        let newValue;
+        if (_isObject(value)) {
+          newValue = JSON.stringify(value, null, 0)
+        }
+        else if (_isArray(value)) {
+          newValue = [];
+          _each(value, (val) => {
+            if(_isObject(value)) {
+              newValue.push(JSON.stringify(val, null, 0))
+            }
+          });
+        }
+        else {
+          newValue = value;
+        }  
         this.choices
           .removeActiveItems()
           .setChoices(this.selectOptions, 'value', 'label', true)
-          .setValueByChoice(_isArray(value) ? value : [value])
+          .setValueByChoice(_isArray(newValue) ? newValue : [newValue])
       }
       else if (hasPreviousValue) {
         this.choices.removeActiveItems();
