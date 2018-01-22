@@ -160,8 +160,9 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
     key: 'addOption',
     value: function addOption(value, label, attr) {
       // options needs to be stored as strings because of limitation with choices.js
+      var option = {};
       if ((0, _isObject3.default)(value)) {
-        var _option = {
+        option = {
           value: JSON.stringify(value, null, 0),
           label: label
         };
@@ -172,12 +173,12 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
             newValue.push(JSON.stringify(val, null, 0));
           }
         });
-        var _option2 = {
+        option = {
           value: newValue,
           label: label
         };
       } else {
-        var _option3 = {
+        option = {
           value: value,
           label: label
         };

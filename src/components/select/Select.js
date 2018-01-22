@@ -89,8 +89,9 @@ export class SelectComponent extends BaseComponent {
    */
   addOption(value, label, attr) {
     // options needs to be stored as strings because of limitation with choices.js
+    let option = {}
     if (_isObject(value)) {
-      let option = {
+      option = {
         value: JSON.stringify(value,null,0),
         label: label
       };
@@ -102,13 +103,13 @@ export class SelectComponent extends BaseComponent {
           newValue.push(JSON.stringify(val, null, 0))
         }
       });
-      let option = {
+      option = {
         value: newValue,
         label: label
       };
     }
     else {
-      let option = {
+      option = {
         value: value,
         label: label
       };
