@@ -12428,7 +12428,8 @@ var Formio = function () {
 
 exports.Formio = Formio;
 Formio.Headers = Headers;
-Formio.baseUrl = 'http://localhost:4200';
+//Formio.baseUrl = 'http://localhost:4200';
+Formio.baseUrl = 'http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com/';
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];
