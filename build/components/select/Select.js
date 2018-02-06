@@ -295,6 +295,22 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         skip: 0
       };
 
+      // Build up tiers of parent data to be accessible for interpolation.
+      var count = 1;
+      var tempObj = this;
+      var tempObjPrev = {};
+
+      while (count <= 4) {
+        if (tempObj.parent !== null) {
+          tempObjPrev = tempObj;
+          tempObj = tempObj.parent;
+          if (tempObj.data !== tempObjPrev.data) {
+            this.data['parentData' + count] = tempObj.data;
+            count = count + 1;
+          }
+        } else break;
+      }
+
       // Allow for url interpolation.
       url = this.interpolate(url, {
         data: this.data,
