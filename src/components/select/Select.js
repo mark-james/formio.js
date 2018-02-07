@@ -226,13 +226,14 @@ export class SelectComponent extends BaseComponent {
     var count = 1;
     var tempObj = this;
     var tempObjPrev = {};
+    var parentData = [];
       
     while (count <= 4) {
       if (tempObj.parent !== null){
         tempObjPrev = tempObj;
         tempObj = tempObj.parent;
         if (tempObj.data !== tempObjPrev.data) {
-          this.data['parentData' + count] = tempObj.data;
+          parentData.push(tempObj.data);
           count = count +1
         }
       }
@@ -245,12 +246,13 @@ export class SelectComponent extends BaseComponent {
       data: this.data,
       formioBase: Formio.getBaseUrl(),
       formioOptions: Formio.getOptions(), 
-      rootData: this.root.data
+      rootData: this.root.data,
+      parentData: parentData
     });
 
      // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
-      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data
+      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, parentData: parentData
     }));
 
     // Add search capability.
@@ -601,16 +603,19 @@ export class SelectComponent extends BaseComponent {
       if (hasValue) {
         // choices.js doesn't handle json objects as value well. So we make them strings.
         let newValue;
-        if (_isObject(value)) {
-          newValue = JSON.stringify(value, null, 0)
-        }
-        else if (_isArray(value)) {
+        if (_isArray(value)) {
           newValue = [];
           _each(value, (val) => {
-            if(_isObject(value)) {
+            if(_isObject(val)) {
               newValue.push(JSON.stringify(val, null, 0))
             }
+            else {
+              newValue.push(val);
+            }
           });
+        }
+        else if (_isObject(value)) {
+          newValue = JSON.stringify(value, null, 0)
         }
         else {
           newValue = value;

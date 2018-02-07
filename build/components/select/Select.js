@@ -299,13 +299,14 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
       var count = 1;
       var tempObj = this;
       var tempObjPrev = {};
+      var parentData = [];
 
       while (count <= 4) {
         if (tempObj.parent !== null) {
           tempObjPrev = tempObj;
           tempObj = tempObj.parent;
           if (tempObj.data !== tempObjPrev.data) {
-            this.data['parentData' + count] = tempObj.data;
+            parentData.push(tempObj.data);
             count = count + 1;
           }
         } else break;
@@ -316,12 +317,13 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         data: this.data,
         formioBase: _formio2.default.getBaseUrl(),
         formioOptions: _formio2.default.getOptions(),
-        rootData: this.root.data
+        rootData: this.root.data,
+        parentData: parentData
       });
 
       // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
-        data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data
+        data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data, parentData: parentData
       }));
 
       // Add search capability.
@@ -639,15 +641,17 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         if (hasValue) {
           // choices.js doesn't handle json objects as value well. So we make them strings.
           var newValue = void 0;
-          if ((0, _isObject3.default)(value)) {
-            newValue = JSON.stringify(value, null, 0);
-          } else if ((0, _isArray3.default)(value)) {
+          if ((0, _isArray3.default)(value)) {
             newValue = [];
             (0, _each3.default)(value, function (val) {
-              if ((0, _isObject3.default)(value)) {
+              if ((0, _isObject3.default)(val)) {
                 newValue.push(JSON.stringify(val, null, 0));
+              } else {
+                newValue.push(val);
               }
             });
+          } else if ((0, _isObject3.default)(value)) {
+            newValue = JSON.stringify(value, null, 0);
           } else {
             newValue = value;
           }
