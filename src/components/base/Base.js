@@ -1355,6 +1355,68 @@ export class BaseComponent {
   }
 
   /**
+   * The empty value for this component.
+   *
+   * @return {null}
+   */
+  get emptyValue() {
+    return null;
+  }
+
+  /**
+   * Returns if this component has a value set.
+   *
+   */
+  get hasValue() {
+    return _.has(this.data, this.component.key);
+  }
+
+  /**
+   * Get the value of this component.
+   *
+   * @return {*}
+   */
+  get value() {
+    return this.dataValue;
+  }
+
+  /**
+   * Get the static value of this component.
+   * @return {*}
+   */
+  get dataValue() {
+    return _.get(this.data, this.component.key, this.emptyValue);
+  }
+
+  splice(index) {
+    if (this.hasValue) {
+      let dataValue = this.dataValue || [];
+      if (_.isArray(dataValue) && dataValue.hasOwnProperty(index)) {
+        dataValue.splice(index, 1);
+        this.dataValue = dataValue;
+        this.triggerChange();
+      }
+    }
+  }
+
+  /**
+   * Sets the static value of this component.
+   *
+   * @param value
+   */
+  set dataValue(value) {
+    _.set(this.data, this.component.key, value);
+    return value;
+  }
+
+  /**
+   * Deletes the value of the component.
+   */
+  deleteValue() {
+    _.unset(this.data, this.component.key);
+  }
+
+  /**
    * Get the value at a specific index.
    *
    * @param index
