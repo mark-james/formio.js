@@ -11,7 +11,6 @@ export class EditGridComponent extends FormioComponents {
   constructor(component, options, data) {
     super(component, options, data);
     this.type = 'datagrid';
-    this.rows = [];
     this.editRows = [];
   }
 
@@ -263,11 +262,11 @@ export class EditGridComponent extends FormioComponents {
     if (!this.rows[rowIndex]) {
       this.tableElement.removeChild(this.editRows[rowIndex].element);
       this.editRows.splice(rowIndex, 1);
-      this.rows.splice(rowIndex, 1);
+      this.splice(rowIndex);
     }
     else {
       this.editRows[rowIndex].isOpen = false;
-      this.editRows[rowIndex].data = this.rows[rowIndex];
+      this.editRows[rowIndex].data = this.dataValue[rowIndex];
     }
     this.refreshDOM();
   }
@@ -283,7 +282,7 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
     this.removeRowComponents(rowIndex);
-    this.rows[rowIndex] = this.editRows[rowIndex].data;
+    this.dataValue[rowIndex] = this.editRows[rowIndex].data;
     this.editRows[rowIndex].isOpen = false;
     this.checkValidity(this.data, true);
     this.updateValue();
@@ -413,9 +412,9 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
 
-    this.rows = this.dataValue = value;
+    this.dataValue = value;
     // Refresh editRow data when data changes.
-    this.rows.forEach((row, rowIndex) => {
+    this.dataValue.forEach((row, rowIndex) => {
       if (this.editRows[rowIndex]) {
         this.editRows[rowIndex].data = row;
       }
@@ -427,8 +426,8 @@ export class EditGridComponent extends FormioComponents {
       }
     });
     // Remove any extra edit rows.
-    if (this.rows.length < this.editRows.length) {
-      for (let rowIndex = this.editRows.length - 1; rowIndex >= this.rows.length; rowIndex--) {
+    if (this.dataValue.length < this.editRows.length) {
+      for (let rowIndex = this.editRows.length - 1; rowIndex >= this.dataValue.length; rowIndex--) {
         this.removeRowComponents(rowIndex);
         this.tableElement.removeChild(this.editRows[rowIndex].element);
         this.editRows.splice(rowIndex, 1);
@@ -443,6 +442,6 @@ export class EditGridComponent extends FormioComponents {
    * @returns {*}
    */
   getValue() {
-    return this.rows;
+    return this.dataValue;
   }
 }
