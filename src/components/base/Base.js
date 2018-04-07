@@ -1,20 +1,11 @@
-import maskInput from 'text-mask-all/vanilla';
-import Promise from "native-promise-only";
-import _get from 'lodash/get';
-import _each from 'lodash/each';
-import _assign from 'lodash/assign';
-import _debounce from 'lodash/debounce';
-import _isArray from 'lodash/isArray';
-import _clone from 'lodash/clone';
-import _defaults from 'lodash/defaults';
-import _isEqual from 'lodash/isEqual';
-import _isUndefined from 'lodash/isUndefined';
-import i18next from 'i18next';
-import FormioUtils from '../../utils';
-import { Validator } from '../Validator';
+import maskInput, {conformToMask} from 'vanilla-text-mask';
+import Promise from 'native-promise-only';
+import _ from 'lodash';
 import Tooltip from 'tooltip.js';
+import i18next from 'i18next';
 
-i18next.initialized = false;
+import FormioUtils from '../../utils';
+import {Validator} from '../Validator';
 
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
@@ -28,6 +19,7 @@ export class BaseComponent {
    * @param {Object} data - The global data submission object this component will belong.
    */
   constructor(component, options, data) {
+    this.originalComponent = _.cloneDeep(component);
     /**
      * The ID of this component. This value is auto-generated when the component is created, but
      * can also be provided from the component.id value passed into the constructor.
@@ -39,40 +31,13 @@ export class BaseComponent {
      * The options for this component.
      * @type {{}}
      */
-    this.options = _defaults(_clone(options), {
+    this.options = _.defaults(_.clone(options), {
+      language: 'en',
       highlightErrors: true
     });
 
-    /**
-     * The i18n configuration for this component.
-     */
-    let i18n = require('../../i18n');
-    if (options && options.i18n && !options.i18nReady) {
-      // Support legacy way of doing translations.
-      if (options.i18n.resources) {
-        i18n = options.i18n;
-      }
-      else {
-        _each(options.i18n, (lang, code) => {
-          if (!i18n.resources[code]) {
-            i18n.resources[code] = {translation: lang};
-          }
-          else {
-            _assign(i18n.resources[code].translation, lang);
-          }
-        });
-      }
-
-      options.i18n = i18n;
-      options.i18nReady = true;
-    }
-
-    if (options && options.i18n) {
-      this.options.i18n = options.i18n;
-    }
-    else {
-      this.options.i18n = i18n;
-    }
+    // Use the i18next that is passed in, otherwise use the global version.
+    this.i18next = this.options.i18next || i18next;
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -141,12 +106,6 @@ export class BaseComponent {
     this.info = null;
 
     /**
-     * The value of this component
-     * @type {*}
-     */
-    this.value = null;
-
-    /**
      * The row path of this component.
      * @type {number}
      */
@@ -186,25 +145,19 @@ export class BaseComponent {
      */
     this.root = this;
 
-    /**
-     * The Input mask instance for this component.
-     * @type {InputMask}
-     */
-    this.inputMask = null;
-
     this.options.name = this.options.name || 'data';
 
     /**
      * The validators that are assigned to this component.
      * @type {[string]}
      */
-    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json'];
+    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json', 'mask'];
 
     /**
      * Used to trigger a new change in this component.
      * @type {function} - Call to trigger a change in this component.
      */
-    this.triggerChange = _debounce(this.onChange.bind(this), 100);
+    this.triggerChange = _.debounce(this.onChange.bind(this), 100);
 
     /**
      * An array of event handlers so that the destry command can deregister them.
@@ -215,6 +168,9 @@ export class BaseComponent {
     // To force this component to be invalid.
     this.invalid = false;
 
+    // Determine if the component has been built.
+    this.isBuilt = false;
+
     /**
      * An array of the event listeners so that the destroy command can deregister them.
      * @type {Array}
@@ -223,7 +179,7 @@ export class BaseComponent {
 
     if (this.component) {
       this.type = this.component.type;
-      if (this.component.input && this.component.key) {
+      if (this.hasInput && this.component.key) {
         this.options.name += `[${this.component.key}]`;
       }
 
@@ -235,6 +191,10 @@ export class BaseComponent {
     }
   }
 
+  get hasInput() {
+    return this.component.input || this.inputs.length;
+  }
+
   /**
    * Translate a text using the i18n system.
    *
@@ -243,30 +203,15 @@ export class BaseComponent {
    */
   t(text, params) {
     params = params || {};
+    params.data = this.root ? this.root.data : this.data;
+    params.row = this.data;
     params.component = this.component;
     params.nsSeparator = '::';
     params.keySeparator = '.|.';
     params.pluralSeparator = '._.';
     params.contextSeparator = '._.';
-    return i18next.t(text, params);
-  }
-
-  /**
-   * Sets the language for this form.
-   *
-   * @param lang
-   * @return {*}
-   */
-  set language(lang) {
-    return new Promise((resolve, reject) => {
-      i18next.changeLanguage(lang, (err) => {
-        if (err) {
-          return reject(err);
-        }
-        this.redraw();
-        resolve();
-      });
-    });
+    const translated = this.i18next.t(text, params);
+    return translated || text;
   }
 
   /**
@@ -291,7 +236,7 @@ export class BaseComponent {
     if (!this.events) {
       return;
     }
-    let type = `formio.${event}`;
+    const type = `formio.${event}`;
     this.eventListeners.push({
       type: type,
       listener: cb,
@@ -318,7 +263,7 @@ export class BaseComponent {
    */
   getIcon(name) {
     return this.ce('i', {
-      class: `glyphicon glyphicon-${name}`
+      class: this.iconClass(name)
     });
   }
 
@@ -349,25 +294,6 @@ export class BaseComponent {
   }
 
   /**
-   * Perform the localization initialization.
-   * @returns {*}
-   */
-  localize() {
-    if (i18next.initialized) {
-      return Promise.resolve(i18next);
-    }
-    i18next.initialized = true;
-    return new Promise((resolve, reject) => {
-      i18next.init(this.options.i18n, (err, t) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(i18next);
-      });
-    });
-  }
-
-  /**
    * Called before a next page is triggered allowing the components
    * to perform special functions.
    *
@@ -388,34 +314,116 @@ export class BaseComponent {
   }
 
   get shouldDisable() {
-    return (this.options.readOnly || this.component.disabled);
+    return (this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
   }
 
   /**
    * Builds the component.
    */
   build() {
-    this.createElement();
+    if (this.viewOnly) {
+      this.viewOnlyBuild();
+    }
+    else {
+      this.createElement();
 
-    const labelAtTheBottom = this.component.labelPosition === 'bottom';
-    if (!labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    if (!this.createWrapper()) {
-      this.createInput(this.element);
-    }
-    if (labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    this.createDescription(this.element);
+      const labelAtTheBottom = this.component.labelPosition === 'bottom';
+      if (!labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      if (!this.createWrapper()) {
+        this.createInput(this.element);
+      }
+      if (labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      this.createDescription(this.element);
 
-    // Disable if needed.
-    if (this.shouldDisable) {
-      this.disabled = true;
+      // Disable if needed.
+      if (this.shouldDisable) {
+        this.disabled = true;
+      }
+
+      // Restore the value.
+      this.restoreValue();
+    }
+  }
+
+  get viewOnly() {
+    return this.options.readOnly && this.options.viewAsHtml;
+  }
+
+  viewOnlyBuild() {
+    this.createViewOnlyElement();
+    this.createViewOnlyLabel(this.element);
+    this.createViewOnlyValue(this.element);
+  }
+
+  createViewOnlyElement() {
+    this.element = this.ce('dl', {
+      id: this.id
+    });
+
+    if (this.element) {
+      // Ensure you can get the component info from the element.
+      this.element.component = this.component;
     }
 
-    // Restore the value.
-    this.restoreValue();
+    return this.element;
+  }
+
+  createViewOnlyLabel(container) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
+    this.labelElement = this.ce('dt');
+    this.labelElement.appendChild(this.text(this.component.label));
+    this.createTooltip(this.labelElement);
+    container.appendChild(this.labelElement);
+  }
+
+  createViewOnlyValue(container) {
+    this.valueElement = this.ce('dd');
+    this.setupValueElement(this.valueElement);
+    container.appendChild(this.valueElement);
+  }
+
+  setupValueElement(element) {
+    let value = this.getValue();
+    value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
+    element.innerHTML = value;
+  }
+
+  get defaultViewOnlyValue() {
+    return '-';
+  }
+
+  getView(value) {
+    if (!value) {
+      return '';
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    return value.toString();
+  }
+
+  updateViewOnlyValue() {
+    if (!this.valueElement) {
+      return;
+    }
+
+    this.setupValueElement(this.valueElement);
+  }
+
+  empty(element) {
+    if (element) {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    }
   }
 
   /**
@@ -423,7 +431,7 @@ export class BaseComponent {
    * @returns {string} - The class name of this component.
    */
   get className() {
-    let className = this.component.input ? 'form-group has-feedback ' : '';
+    let className = this.hasInput ? 'form-group has-feedback ' : '';
     className += `formio-component formio-component-${this.component.type} `;
     if (this.component.key) {
       className += `formio-component-${this.component.key} `;
@@ -431,7 +439,7 @@ export class BaseComponent {
     if (this.component.customClass) {
       className += this.component.customClass;
     }
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' required';
     }
     return className;
@@ -443,10 +451,10 @@ export class BaseComponent {
    */
   get customStyle() {
     let customCSS = '';
-    _each(this.component.style, function(value, key) {
-        if (value !== '') {
-          customCSS += `${key}:${value};`;
-        }
+    _.each(this.component.style, (value, key) => {
+      if (value !== '') {
+        customCSS += `${key}:${value};`;
+      }
     });
     return customCSS;
   }
@@ -464,16 +472,19 @@ export class BaseComponent {
    * @returns {HTMLElement}
    */
   createElement() {
+    // If the element is already created, don't recreate.
+    if (this.element) {
+      return this.element;
+    }
+
     this.element = this.ce('div', {
       id: this.id,
       class: this.className,
       style: this.customStyle
     });
 
-    if (this.element) {
-      // Ensure you can get the component info from the element.
-      this.element.component = this.component;
-    }
+    // Ensure you can get the component info from the element.
+    this.element.component = this.component;
 
     return this.element;
   }
@@ -487,14 +498,15 @@ export class BaseComponent {
       return false;
     }
     else {
-      let table = this.ce('table', {
+      const table = this.ce('table', {
         class: 'table table-bordered'
       });
       this.tbody = this.ce('tbody');
       table.appendChild(this.tbody);
 
       // Add a default value.
-      if (!this.data[this.component.key] || !this.data[this.component.key].length) {
+      const dataValue = this.dataValue;
+      if (!dataValue || !dataValue.length) {
         this.addNewValue();
       }
 
@@ -510,19 +522,15 @@ export class BaseComponent {
   }
 
   get defaultValue() {
-    let defaultValue = '';
+    let defaultValue = this.emptyValue;
     if (this.component.defaultValue) {
       defaultValue = this.component.defaultValue;
     }
     else if (this.component.customDefaultValue) {
       if (typeof this.component.customDefaultValue === 'string') {
         try {
-          let row = this.data;
-          let data = this.data;
-          let value = '';
-          let component = this;
-          eval(this.component.customDefaultValue.toString());
-          defaultValue = value;
+          defaultValue = (new Function('component', 'row', 'data',
+            `var value = ''; ${this.component.customDefaultValue}; return value;`))(this, this.data, this.data);
         }
         catch (e) {
           defaultValue = null;
@@ -535,18 +543,28 @@ export class BaseComponent {
         try {
           defaultValue = FormioUtils.jsonLogic.apply(this.component.customDefaultValue, {
             data: this.data,
-            row: this.data
+            row: this.data,
+            _
           });
         }
         catch (err) {
           defaultValue = null;
           /* eslint-disable no-console */
-          console.warn(`An error occurred calculating a value for ${this.component.key}`, e);
+          console.warn(`An error occurred calculating a value for ${this.component.key}`, err);
           /* eslint-enable no-console */
         }
       }
     }
-    return defaultValue;
+
+    if (this._inputMask) {
+      defaultValue = conformToMask(defaultValue, this._inputMask).conformedValue;
+      if (!FormioUtils.matchInputMask(defaultValue, this._inputMask)) {
+        defaultValue = '';
+      }
+    }
+
+    // Clone so that it creates a new instance.
+    return _.cloneDeep(defaultValue);
   }
 
   /**
@@ -562,13 +580,19 @@ export class BaseComponent {
    * Adds a new empty value to the data array.
    */
   addNewValue() {
-    if (!this.data[this.component.key]) {
-      this.data[this.component.key] = [];
+    let dataValue = this.dataValue || [];
+    if (!Array.isArray(dataValue)) {
+      dataValue = [dataValue];
     }
-    if (!_isArray(this.data[this.component.key])) {
-      this.data[this.component.key] = [this.data[this.component.key]];
+
+    const defaultValue = this.defaultValue;
+    if (Array.isArray(defaultValue)) {
+      dataValue = dataValue.concat(defaultValue);
     }
-    this.data[this.component.key].push(this.defaultValue);
+    else {
+      dataValue.push(defaultValue);
+    }
+    this.dataValue = dataValue;
   }
 
   /**
@@ -577,6 +601,7 @@ export class BaseComponent {
   addValue() {
     this.addNewValue();
     this.buildRows();
+    this.checkConditions(this.root ? this.root.data : this.data);
     this.restoreValue();
   }
 
@@ -585,9 +610,7 @@ export class BaseComponent {
    * @param {number} index - The index of the data element to remove.
    */
   removeValue(index) {
-    if (this.data.hasOwnProperty(this.component.key)) {
-      this.data[this.component.key].splice(index, 1);
-    }
+    this.splice(index);
     this.buildRows();
   }
 
@@ -600,15 +623,15 @@ export class BaseComponent {
     }
     this.inputs = [];
     this.tbody.innerHTML = '';
-    _each(this.data[this.component.key], (value, index) => {
-      let tr = this.ce('tr');
-      let td = this.ce('td');
+    _.each(this.dataValue, (value, index) => {
+      const tr = this.ce('tr');
+      const td = this.ce('td');
       const input = this.createInput(td);
       input.value = value;
       tr.appendChild(td);
 
       if (!this.shouldDisable) {
-        let tdAdd = this.ce('td');
+        const tdAdd = this.ce('td');
         tdAdd.appendChild(this.removeButton(index));
         tr.appendChild(tdAdd);
       }
@@ -617,8 +640,8 @@ export class BaseComponent {
     });
 
     if (!this.shouldDisable) {
-      let tr = this.ce('tr');
-      let td = this.ce('td', {
+      const tr = this.ce('tr');
+      const td = this.ce('td', {
         colspan: '2'
       });
       td.appendChild(this.addButton());
@@ -631,12 +654,34 @@ export class BaseComponent {
     }
   }
 
+  bootstrap4Theme(name) {
+    return (name === 'default') ? 'secondary' : name;
+  }
+
+  iconClass(name, spinning) {
+    if (!this.options.icons || this.options.icons === 'glyphicon') {
+      return spinning ? `glyphicon glyphicon-${name} glyphicon-spin` : `glyphicon glyphicon-${name}`;
+    }
+    switch (name) {
+      case 'zoom-in':
+        return 'fa fa-search-plus';
+      case 'zoom-out':
+        return 'fa fa-search-minus';
+      case 'question-sign':
+        return 'fa fa-question-circle';
+      case 'remove-circle':
+        return 'fa fa-times-circle-o';
+      default:
+        return spinning ? `fa fa-${name} fa-spin` : `fa fa-${name}`;
+    }
+  }
+
   /**
    * Adds a new button to add new rows to the multiple input elements.
    * @returns {HTMLElement} - The "Add New" button html element.
    */
-  addButton() {
-    let addButton = this.ce('a', {
+  addButton(justIcon) {
+    const addButton = this.ce('a', {
       class: 'btn btn-primary'
     });
     this.addEventListener(addButton, 'click', (event) => {
@@ -644,12 +689,19 @@ export class BaseComponent {
       this.addValue();
     });
 
-    let addIcon = this.ce('span', {
-      class: 'glyphicon glyphicon-plus'
+    const addIcon = this.ce('i', {
+      class: this.iconClass('plus')
     });
-    addButton.appendChild(addIcon);
-    addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
-    return addButton;
+
+    if (justIcon) {
+      addButton.appendChild(addIcon);
+      return addButton;
+    }
+    else {
+      addButton.appendChild(addIcon);
+      addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
+      return addButton;
+    }
   }
 
   /**
@@ -665,7 +717,10 @@ export class BaseComponent {
    * @return {*}
    */
   get errorLabel() {
-    return this.t(this.component.errorLabel || this.component.label || this.component.placeholder || this.component.key);
+    return this.t(this.component.errorLabel
+      || this.component.label
+      || this.component.placeholder
+      || this.component.key);
   }
 
   /**
@@ -683,9 +738,9 @@ export class BaseComponent {
    * @returns {HTMLElement} - The html element of the remove button.
    */
   removeButton(index) {
-    let removeButton = this.ce('button', {
+    const removeButton = this.ce('button', {
       type: 'button',
-      class: 'btn btn-default',
+      class: 'btn btn-default btn-secondary',
       tabindex: '-1'
     });
 
@@ -694,8 +749,8 @@ export class BaseComponent {
       this.removeValue(index);
     });
 
-    let removeIcon = this.ce('span', {
-      class: 'glyphicon glyphicon-remove-circle'
+    const removeIcon = this.ce('i', {
+      class: this.iconClass('remove-circle')
     });
     removeButton.appendChild(removeIcon);
     return removeButton;
@@ -727,7 +782,7 @@ export class BaseComponent {
   }
 
   getLabelWidth() {
-    if (_isUndefined(this.component.labelWidth)) {
+    if (_.isUndefined(this.component.labelWidth)) {
       this.component.labelWidth = 30;
     }
 
@@ -735,7 +790,7 @@ export class BaseComponent {
   }
 
   getLabelMargin() {
-    if (_isUndefined(this.component.labelMargin)) {
+    if (_.isUndefined(this.component.labelMargin)) {
       this.component.labelMargin = 3;
     }
 
@@ -743,16 +798,25 @@ export class BaseComponent {
   }
 
   setInputStyles(input) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
     if (this.labelOnTheLeftOrRight(this.component.labelPosition)) {
       const totalLabelWidth = this.getLabelWidth() + this.getLabelMargin();
       input.style.width = `${100 - totalLabelWidth}%`;
 
       if (this.labelOnTheLeft(this.component.labelPosition)) {
-        input.style.marginLeft = `${totalLabelWidth}%`
-      } else {
-        input.style.marginRight = `${totalLabelWidth}%`
+        input.style.marginLeft = `${totalLabelWidth}%`;
+      }
+      else {
+        input.style.marginRight = `${totalLabelWidth}%`;
       }
     }
+  }
+
+  labelIsHidden() {
+    return !this.component.label || this.component.hideLabel || this.options.inputsOnly;
   }
 
   /**
@@ -760,11 +824,7 @@ export class BaseComponent {
    * @param {HTMLElement} container - The containing element that will contain this label.
    */
   createLabel(container) {
-    if (
-      !this.component.label ||
-      this.component.hideLabel ||
-      this.options.inputsOnly
-    ) {
+    if (this.labelIsHidden()) {
       return;
     }
     let className = 'control-label';
@@ -777,14 +837,16 @@ export class BaseComponent {
     // Determine label styles/classes depending on position.
     if (labelPosition === 'bottom') {
       className += ' control-label--bottom';
-    } else if (labelPosition && labelPosition !== 'top') {
+    }
+    else if (labelPosition && labelPosition !== 'top') {
       const labelWidth = this.getLabelWidth();
       const labelMargin = this.getLabelMargin();
 
       // Label is on the left or right.
       if (this.labelOnTheLeft(labelPosition)) {
         style += `float: left; width: ${labelWidth}%; margin-right: ${labelMargin}%; `;
-      } else if (this.labelOnTheRight(labelPosition)) {
+      }
+      else if (this.labelOnTheRight(labelPosition)) {
         style += `float: right; width: ${labelWidth}%; margin-left: ${labelMargin}%; `;
       }
       if (this.rightAlignedLabel(labelPosition)) {
@@ -792,7 +854,7 @@ export class BaseComponent {
       }
     }
 
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' field-required';
     }
     this.labelElement = this.ce('label', {
@@ -826,7 +888,6 @@ export class BaseComponent {
       return label;
     }
 
-    const char = match[0];
     const index = match.index + 1;
     const lowLineCombinator = '\u0332';
 
@@ -873,7 +934,7 @@ export class BaseComponent {
    */
   createTooltip(container, component, classes) {
     component = component || this.component;
-    classes = classes || 'glyphicon glyphicon-question-sign text-muted';
+    classes = classes || `${this.iconClass('question-sign')} text-muted`;
     if (!component.tooltip) {
       return;
     }
@@ -903,7 +964,7 @@ export class BaseComponent {
     this.description = this.ce('div', {
       class: 'help-block'
     });
-    this.description.appendChild(this.text(this.component.description));
+    this.description.innerHTML = this.t(this.component.description);
     container.appendChild(this.description);
   }
 
@@ -915,7 +976,7 @@ export class BaseComponent {
       return;
     }
     this.errorElement = this.ce('div', {
-      class: 'formio-errors'
+      class: 'formio-errors invalid-feedback'
     });
     this.errorContainer.appendChild(this.errorElement);
   }
@@ -977,46 +1038,12 @@ export class BaseComponent {
   }
 
   /**
-   * Returns an input mask that is compatible with the input mask library.
-   * @param {string} mask - The Form.io input mask.
-   * @returns {Array} - The input mask for the mask library.
-   */
-  getInputMask(mask) {
-    if (mask instanceof Array) {
-      return mask;
-    }
-    let maskArray = [];
-    maskArray.numeric = true;
-    for (let i=0; i < mask.length; i++) {
-      switch (mask[i]) {
-        case '9':
-          maskArray.push(/\d/);
-          break;
-        case 'A':
-          maskArray.numeric = false;
-          maskArray.push(/[a-zA-Z]/);
-          break;
-        case '*':
-          maskArray.numeric = false;
-          maskArray.push(/[a-zA-Z0-9]/);
-          break;
-        default:
-          maskArray.push(mask[i]);
-          break;
-      }
-    }
-    return maskArray;
-  }
-
-  /**
    * Creates a new input mask placeholder.
    * @param {HTMLElement} mask - The input mask.
    * @returns {string} - The placeholder that will exist within the input as they type.
    */
   maskPlaceholder(mask) {
-    return mask.map((char) => {
-      return (char instanceof RegExp) ? '_' : char
-    }).join('')
+    return mask.map((char) => (char instanceof RegExp) ? '_' : char).join('');
   }
 
   /**
@@ -1025,13 +1052,14 @@ export class BaseComponent {
    */
   setInputMask(input) {
     if (input && this.component.inputMask) {
-      let mask = this.getInputMask(this.component.inputMask);
-      this.inputMask = maskInput({
+      const mask = FormioUtils.getInputMask(this.component.inputMask);
+      this._inputMask = mask;
+      input.mask = maskInput({
         inputElement: input,
-        mask: mask
+        mask
       });
       if (mask.numeric) {
-        input.setAttribute('pattern', "\\d*");
+        input.setAttribute('pattern', '\\d*');
       }
       if (!this.component.placeholder) {
         input.setAttribute('placeholder', this.maskPlaceholder(mask));
@@ -1045,9 +1073,9 @@ export class BaseComponent {
    * @returns {HTMLElement} - Either the input or the group that contains the input.
    */
   createInput(container) {
-    let input = this.ce(this.info.type, this.info.attr);
+    const input = this.ce(this.info.type, this.info.attr);
     this.setInputMask(input);
-    let inputGroup = this.addInputGroup(input, container);
+    const inputGroup = this.addInputGroup(input, container);
     this.addPrefix(input, inputGroup);
     this.addInput(input, inputGroup || container);
     this.addSuffix(input, inputGroup);
@@ -1068,14 +1096,19 @@ export class BaseComponent {
    */
   addEventListener(obj, evt, func) {
     this.eventHandlers.push({type: evt, func: func});
-    if ('addEventListener' in obj){
+    if ('addEventListener' in obj) {
       obj.addEventListener(evt, func, false);
-    } else if ('attachEvent' in obj) {
+    }
+    else if ('attachEvent' in obj) {
       obj.attachEvent(`on${evt}`, func);
     }
   }
 
   redraw() {
+    // Don't bother if we have not built yet.
+    if (!this.isBuilt) {
+      return;
+    }
     this.clear();
     this.build();
   }
@@ -1084,17 +1117,49 @@ export class BaseComponent {
    * Remove all event handlers.
    */
   destroy(all) {
-    if (this.inputMask) {
-      this.inputMask.destroy();
-    }
-    _each(this.eventListeners, (listener) => {
+    _.each(this.eventListeners, (listener) => {
       if (all || listener.internal) {
         this.events.off(listener.type, listener.listener);
       }
     });
-    _each(this.eventHandlers, (handler) => {
-      window.removeEventListener(handler.event, handler.func);
+    _.each(this.eventHandlers, (handler) => {
+      if (handler.event) {
+        window.removeEventListener(handler.event, handler.func);
+      }
     });
+    _.each(this.inputs, (input) => {
+      if (input.mask) {
+        input.mask.destroy();
+      }
+    });
+    this.inputs = [];
+  }
+
+  /**
+   * Render a template string into html.
+   *
+   * @param template
+   * @param data
+   * @param actions
+   *
+   * @return {HTMLElement} - The created element.
+   */
+  renderTemplate(template, data, actions = []) {
+    // Create a container div.
+    const div = this.ce('div');
+
+    // Interpolate the template and populate
+    div.innerHTML = FormioUtils.interpolate(template, data);
+
+    // Add actions to matching elements.
+    actions.forEach(action => {
+      const elements = div.getElementsByClassName(action.class);
+      Array.prototype.forEach.call(elements, element => {
+        element.addEventListener(action.event, action.action);
+      });
+    });
+
+    return div;
   }
 
   /**
@@ -1126,9 +1191,9 @@ export class BaseComponent {
    *
    * @return {HTMLElement} - The created element.
    */
-  ce(type, attr, children = null, events = {}) {
+  ce(type, attr, children = null) {
     // Create the element.
-    let element = document.createElement(type);
+    const element = document.createElement(type);
 
     // Add attributes.
     if (attr) {
@@ -1155,7 +1220,7 @@ export class BaseComponent {
    * @param {Object} attr - The attributes to add to the input element.
    */
   attr(element, attr) {
-    _each(attr, (value, key) => {
+    _.each(attr, (value, key) => {
       if (typeof value !== 'undefined') {
         if (key.indexOf('on') === 0) {
           // If this is an event, add a listener.
@@ -1178,7 +1243,10 @@ export class BaseComponent {
    *   The name of the class to add.
    */
   addClass(element, className) {
-    element.setAttribute('class', `${element.getAttribute('class')} ${className}`);
+    const classes = element.getAttribute('class');
+    if (!classes || classes.indexOf(className) === -1) {
+      element.setAttribute('class', `${classes} ${className}`);
+    }
   }
 
   /**
@@ -1192,7 +1260,7 @@ export class BaseComponent {
   removeClass(element, className) {
     let cls = element.getAttribute('class');
     if (cls) {
-      cls = cls.replace(className, '');
+      cls = cls.replace(new RegExp(className, 'g'), '');
       element.setAttribute('class', cls);
     }
   }
@@ -1215,11 +1283,73 @@ export class BaseComponent {
    * Check for conditionals and hide/show the element based on those conditions.
    */
   checkConditions(data) {
+    // Check advanced conditions
+    let result;
+
     if (!this.hasCondition()) {
-      return this.show(true);
+      result = this.show(true);
+    }
+    else {
+      result = this.show(FormioUtils.checkCondition(this.component, this.data, data));
     }
 
-    return this.show(FormioUtils.checkCondition(this.component, this.data, data));
+    if (this.fieldLogic(data)) {
+      this.redraw();
+    }
+
+    return result;
+  }
+
+  /**
+   * Check all triggers and apply necessary actions.
+   *
+   * @param data
+   */
+  fieldLogic(data) {
+    const logics = this.component.logic || [];
+
+    // If there aren't logic, don't go further.
+    if (logics.length === 0) {
+      return;
+    }
+
+    const newComponent = _.cloneDeep(this.originalComponent);
+
+    let changed = logics.reduce((changed, logic) => {
+      const result = FormioUtils.checkTrigger(newComponent, logic.trigger, this.data, data);
+
+      if (result) {
+        changed |= logic.actions.reduce((changed, action) => {
+          switch (action.type) {
+            case 'property':
+              FormioUtils.setActionProperty(newComponent, action, this.data, data, newComponent, result);
+              break;
+            case 'value': {
+              const newValue = (new Function('row', 'data', 'component', 'result',
+                action.value))(this.data, data, newComponent, result);
+              if (!_.isEqual(this.getValue(), newValue)) {
+                this.setValue(newValue);
+                changed = true;
+              }
+              break;
+            }
+            case 'validation':
+              // TODO
+              break;
+          }
+          return changed;
+        }, false);
+      }
+      return changed;
+    }, false);
+
+    // If component definition changed, replace and mark as changed.
+    if (!_.isEqual(this.component, newComponent)) {
+      this.component = newComponent;
+      changed = true;
+    }
+
+    return changed;
   }
 
   /**
@@ -1234,7 +1364,7 @@ export class BaseComponent {
     }
 
     if (this.errorElement) {
-      let errorMessage = this.ce('p', {
+      const errorMessage = this.ce('p', {
         class: 'help-block'
       });
       errorMessage.appendChild(this.text(message));
@@ -1243,6 +1373,7 @@ export class BaseComponent {
 
     // Add error classes
     this.addClass(this.element, 'has-error');
+    this.inputs.forEach((input) => this.addClass(input, 'is-invalid'));
     if (dirty && this.options.highlightErrors) {
       this.addClass(this.element, 'alert alert-danger');
     }
@@ -1254,39 +1385,52 @@ export class BaseComponent {
    * @param show
    */
   show(show) {
-    // Ensure we stop any pending data clears.
-    if (this.clearPending) {
-      clearTimeout(this.clearPending);
-      this.clearPending = null;
-    }
-
     // Execute only if visibility changes.
     if (!show === !this._visible) {
       return show;
     }
 
     this._visible = show;
-    let element = this.getElement();
+    this.showElement(show && !this.component.hidden);
+    this.clearOnHide(show);
+    return show;
+  }
+
+  /**
+   * Show or hide the root element of this component.
+   *
+   * @param show
+   */
+  showElement(show) {
+    const element = this.getElement();
     if (element) {
-      if (show && !this.component.hidden) {
+      if (show) {
         element.removeAttribute('hidden');
         element.style.visibility = 'visible';
         element.style.position = 'relative';
       }
-      else if (!show || this.component.hidden) {
+      else {
         element.setAttribute('hidden', true);
         element.style.visibility = 'hidden';
         element.style.position = 'absolute';
       }
     }
-
-    if (!show && this.component.clearOnHide) {
-      this.clearPending = setTimeout(() => this.setValue(null, {
-        noValidate: true
-      }), 200);
-    }
-
     return show;
+  }
+
+  clearOnHide(show) {
+    // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+    if (this.component.clearOnHide !== false) {
+      if (!show) {
+        this.deleteValue();
+      }
+      else if (!this.hasValue) {
+        // If shown, ensure the default is set.
+        this.setValue(this.defaultValue, {
+          noUpdateEvent: true
+        });
+      }
+    }
   }
 
   onResize() {}
@@ -1331,9 +1475,9 @@ export class BaseComponent {
     }
 
     // Set the changed variable.
-    let changed = {
+    const changed = {
       component: this.component,
-      value: this.value,
+      value: this.dataValue,
       flags: flags
     };
 
@@ -1347,9 +1491,12 @@ export class BaseComponent {
   }
 
   addInputSubmitListener(input) {
+    if (!this.options.submitOnEnter) {
+      return;
+    }
     this.addEventListener(input, 'keypress', (event) => {
-      let key = event.keyCode || event.which;
-      if (key == 13) {
+      const key = event.keyCode || event.which;
+      if (key === 13) {
         event.preventDefault();
         event.stopPropagation();
         this.emit('submitButton');
@@ -1384,6 +1531,83 @@ export class BaseComponent {
   }
 
   /**
+   * The empty value for this component.
+   *
+   * @return {null}
+   */
+  get emptyValue() {
+    return null;
+  }
+
+  /**
+   * Returns if this component has a value set.
+   *
+   */
+  get hasValue() {
+    return _.has(this.data, this.component.key);
+  }
+
+  /**
+   * Get the value of this component.
+   *
+   * @return {*}
+   */
+  get value() {
+    return this.dataValue;
+  }
+
+  /**
+   * Get the static value of this component.
+   * @return {*}
+   */
+  get dataValue() {
+    if (!this.component.key) {
+      return this.emptyValue;
+    }
+    if (!this.hasValue) {
+      this.dataValue = this.emptyValue;
+    }
+    return _.get(this.data, this.component.key);
+  }
+
+  /**
+   * Sets the static value of this component.
+   *
+   * @param value
+   */
+  set dataValue(value) {
+    if (!this.component.key) {
+      return value;
+    }
+    _.set(this.data, this.component.key, value);
+    return value;
+  }
+
+  /**
+   * Splice a value from the dataValue.
+   *
+   * @param index
+   */
+  splice(index) {
+    if (this.hasValue) {
+      const dataValue = this.dataValue || [];
+      if (_.isArray(dataValue) && dataValue.hasOwnProperty(index)) {
+        dataValue.splice(index, 1);
+        this.dataValue = dataValue;
+        this.triggerChange();
+      }
+    }
+  }
+
+  /**
+   * Deletes the value of the component.
+   */
+  deleteValue() {
+    this.setValue(null);
+    _.unset(this.data, this.component.key);
+  }
+
+  /**
    * Get the value at a specific index.
    *
    * @param index
@@ -1393,21 +1617,27 @@ export class BaseComponent {
     return this.inputs[index].value;
   }
 
+  /**
+   * Get the input value of this component.
+   *
+   * @return {*}
+   */
   getValue() {
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return;
     }
+    if (this.viewOnly) {
+      return this.dataValue;
+    }
     const values = [];
-    for (let i in this.inputs) {
+    for (const i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
         if (!this.component.multiple) {
-          this.value = this.getValueAt(i);
-          return this.value;
+          return this.getValueAt(i);
         }
         values.push(this.getValueAt(i));
       }
     }
-    this.value = values;
     return values;
   }
 
@@ -1419,7 +1649,28 @@ export class BaseComponent {
    * @return {boolean}
    */
   hasChanged(before, after) {
-    return !_isEqual(before, after);
+    if (
+      ((before === undefined) || (before === null)) &&
+      ((after === undefined) || (after === null))
+    ) {
+      return false;
+    }
+    return !_.isEqual(before, after);
+  }
+
+  /**
+   * Update the value on change.
+   *
+   * @param flags
+   * @param changed
+   */
+  updateOnChange(flags, changed) {
+    delete flags.changed;
+    if (!flags.noUpdateEvent && changed) {
+      this.triggerChange(flags);
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -1428,14 +1679,19 @@ export class BaseComponent {
    * @param flags
    */
   updateValue(flags) {
-    flags = flags || {};
-    const value = this.data[this.component.key];
-    this.data[this.component.key] = this.getValue(flags);
-    const changed = flags.changed || this.hasChanged(value, this.data[this.component.key]);
-    delete flags.changed;
-    if (!flags.noUpdateEvent && changed) {
-      this.triggerChange(flags);
+    if (!this.hasInput) {
+      return false;
     }
+
+    flags = flags || {};
+    const value = this.getValue(flags);
+    const changed = flags.changed || this.hasChanged(value, this.dataValue);
+    this.dataValue = value;
+    if (this.viewOnly) {
+      this.updateViewOnlyValue(value);
+    }
+
+    this.updateOnChange(flags, changed);
     return changed;
   }
 
@@ -1443,14 +1699,14 @@ export class BaseComponent {
    * Restore the value of a control.
    */
   restoreValue() {
-    if (this.data && this.data.hasOwnProperty(this.component.key)) {
-      this.setValue(this.data[this.component.key], {
+    if (this.hasValue) {
+      this.setValue(this.dataValue, {
         noUpdateEvent: true
       });
     }
     else {
-      let defaultValue = this.defaultValue;
-      if (!this.data.hasOwnProperty(this.component.key) && defaultValue) {
+      const defaultValue = this.defaultValue;
+      if (defaultValue) {
         this.setValue(defaultValue, {
           noUpdateEvent: true
         });
@@ -1474,33 +1730,31 @@ export class BaseComponent {
     flags.noCheck = true;
     let changed = false;
 
-    // If this is a string, then use eval to evalulate it.
     if (typeof this.component.calculateValue === 'string') {
       try {
-        let value = [];
-        let row = this.data;
-        let component = this;
-        eval(this.component.calculateValue.toString());
+        const value = (new Function('component', 'row', 'data',
+          `value = []; ${this.component.calculateValue}; return value;`))(this, this.data, data);
         changed = this.setValue(value, flags);
       }
-      catch (e) {
+      catch (err) {
         /* eslint-disable no-console */
-        console.warn(`An error occurred calculating a value for ${this.component.key}`, e);
+        console.warn(`An error occurred calculating a value for ${this.component.key}`, err);
         changed = false;
         /* eslint-enable no-console */
       }
     }
     else {
       try {
-        let val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
-          data: data,
-          row: this.data
+        const val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
+          data,
+          row: this.data,
+          _
         });
         changed = this.setValue(val, flags);
       }
       catch (err) {
         /* eslint-disable no-console */
-        console.warn(`An error occurred calculating a value for ${this.component.key}`, e);
+        console.warn(`An error occurred calculating a value for ${this.component.key}`, err);
         changed = false;
         /* eslint-enable no-console */
       }
@@ -1546,7 +1800,7 @@ export class BaseComponent {
    */
   invalidMessage(data, dirty) {
     // No need to check for errors if there is no input or if it is pristine.
-    if (!this.component.input || (!dirty && this.pristine)) {
+    if (!this.hasInput || (!dirty && this.pristine)) {
       return '';
     }
 
@@ -1565,13 +1819,23 @@ export class BaseComponent {
   }
 
   checkValidity(data, dirty) {
-    let message = this.invalid || this.invalidMessage(data, dirty);
+    // Force valid if component is conditionally hidden.
+    if (!FormioUtils.checkCondition(this.component, data, this.data)) {
+      return true;
+    }
+
+    const message = this.invalid || this.invalidMessage(data, dirty);
     this.setCustomValidity(message, dirty);
     return message ? false : true;
   }
 
   getRawValue() {
-    return this.data[this.component.key];
+    console.warn('component.getRawValue() has been deprecated. Use component.validationValue or component.dataValue instead.');
+    return this.validationValue;
+  }
+
+  get validationValue() {
+    return this.dataValue;
   }
 
   isEmpty(value) {
@@ -1584,7 +1848,7 @@ export class BaseComponent {
    * @return {boolean}
    */
   validateMultiple(value) {
-    return this.component.multiple && _isArray(value);
+    return this.component.multiple && Array.isArray(value);
   }
 
   get errors() {
@@ -1598,12 +1862,10 @@ export class BaseComponent {
   setCustomValidity(message, dirty) {
     if (this.errorElement && this.errorContainer) {
       this.errorElement.innerHTML = '';
-      try {
-        this.errorContainer.removeChild(this.errorElement);
-      }
-      catch (err) {}
+      this.removeChildFrom(this.errorElement, this.errorContainer);
     }
     this.removeClass(this.element, 'has-error');
+    this.inputs.forEach((input) => this.removeClass(input, 'is-invalid'));
     if (this.options.highlightErrors) {
       this.removeClass(this.element, 'alert alert-danger');
     }
@@ -1619,7 +1881,7 @@ export class BaseComponent {
     else {
       this.error = null;
     }
-    _each(this.inputs, (input) => {
+    _.each(this.inputs, (input) => {
       if (typeof input.setCustomValidity === 'function') {
         input.setCustomValidity(message, dirty);
       }
@@ -1636,7 +1898,12 @@ export class BaseComponent {
     if (value === null || value === undefined) {
       value = this.defaultValue;
     }
-    this.inputs[index].value = value;
+    if (this.inputs[index].mask) {
+      this.inputs[index].mask.textMaskInputElement.update(value);
+    }
+    else {
+      this.inputs[index].value = value;
+    }
   }
 
   getFlags() {
@@ -1660,12 +1927,15 @@ export class BaseComponent {
    */
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return false;
     }
-    this.value = value;
-    const isArray = _isArray(value);
-    for (let i in this.inputs) {
+    if (this.component.multiple && !Array.isArray(value)) {
+      value = [value];
+    }
+    this.buildRows();
+    const isArray = Array.isArray(value);
+    for (const i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
         this.setValueAt(i, isArray ? value[i] : value);
       }
@@ -1678,7 +1948,7 @@ export class BaseComponent {
    */
   asString(value) {
     value = value || this.getValue();
-    return _isArray(value) ? value.join(', ') : value.toString();
+    return Array.isArray(value) ? value.join(', ') : value.toString();
   }
 
   /**
@@ -1701,35 +1971,59 @@ export class BaseComponent {
     }
 
     this._disabled = disabled;
-    // Disable all input.
-    _each(this.inputs, (input) => {
-      input.disabled = disabled;
-      if (disabled) {
-        input.setAttribute('disabled', 'disabled');
+
+    // Disable all inputs.
+    _.each(this.inputs, (input) => this.setDisabled(input, disabled));
+  }
+
+  setDisabled(element, disabled) {
+    element.disabled = disabled;
+    if (disabled) {
+      element.setAttribute('disabled', 'disabled');
+    }
+    else {
+      element.removeAttribute('disabled');
+    }
+  }
+
+  setLoading(element, loading) {
+    if (element.loading === loading) {
+      return;
+    }
+
+    element.loading = loading;
+    if (!element.loader && loading) {
+      element.loader = this.ce('i', {
+        class: `${this.iconClass('refresh', true)} button-icon-right`
+      });
+    }
+    if (element.loader) {
+      if (loading) {
+        this.appendTo(element.loader, element);
       }
       else {
-        input.removeAttribute('disabled');
+        this.removeChildFrom(element.loader, element);
       }
-    });
+    }
   }
 
   selectOptions(select, tag, options, defaultValue) {
-    _each(options, (option) => {
-      let attrs = {
+    _.each(options, (option) => {
+      const attrs = {
         value: option.value
       };
       if (defaultValue !== undefined && (option.value === defaultValue)) {
         attrs.selected = 'selected';
       }
-      let optionElement = this.ce('option', attrs);
+      const optionElement = this.ce('option', attrs);
       optionElement.appendChild(this.text(option.label));
       select.appendChild(optionElement);
     });
   }
 
   setSelectValue(select, value) {
-    let options = select.querySelectorAll('option');
-    _each(options, (option) => {
+    const options = select.querySelectorAll('option');
+    _.each(options, (option) => {
       if (option.value === value) {
         option.setAttribute('selected', 'selected');
       }
@@ -1747,45 +2041,65 @@ export class BaseComponent {
 
   clear() {
     this.destroy();
-    const element = this.getElement();
-    if (element) {
-      element.innerHTML = '';
+    this.empty(this.getElement());
+  }
+
+  appendTo(element, container) {
+    if (container) {
+      container.appendChild(element);
     }
   }
 
   append(element) {
-    if (this.element) {
-      this.element.appendChild(element);
+    this.appendTo(element, this.element);
+  }
+
+  prependTo(element, container) {
+    if (container) {
+      if (container.firstChild) {
+        try {
+          container.insertBefore(element, container.firstChild);
+        }
+        catch (err) {
+          console.warn(err);
+          container.appendChild(element);
+        }
+      }
+      else {
+        container.appendChild(element);
+      }
     }
   }
 
   prepend(element) {
-    if (this.element) {
-      if (this.element.firstChild) {
-        this.element.insertBefore(element, this.element.firstChild);
+    this.prependTo(element, this.element);
+  }
+
+  removeChildFrom(element, container) {
+    if (container && container.contains(element)) {
+      try {
+        container.removeChild(element);
       }
-      else {
-        this.element.appendChild(element);
+      catch (err) {
+        console.warn(err);
       }
     }
   }
 
   removeChild(element) {
-    if (this.element) {
-      this.element.removeChild(element);
-    }
+    this.removeChildFrom(element, this.element);
   }
 
   /**
    * Get the element information.
    */
   elementInfo() {
-    let attributes = {
+    const attributes = {
       name: this.options.name,
       type: this.component.inputType || 'text',
       class: 'form-control',
-      lang: this.options.i18n.lng
-  };
+      lang: this.options.language
+    };
 
     if (this.component.placeholder) {
       attributes.placeholder = this.t(this.component.placeholder);
@@ -1793,6 +2107,10 @@ export class BaseComponent {
 
     if (this.component.tabindex) {
       attributes.tabindex = this.component.tabindex;
+    }
+
+    if (this.component.autofocus) {
+      attributes.autofocus = this.component.autofocus;
     }
 
     return {
@@ -1822,12 +2140,12 @@ BaseComponent.requireLibrary = function(name, property, src, polling) {
     }
 
     // See if the plugin already exists.
-    let plugin = _get(window, property);
+    const plugin = _.get(window, property);
     if (plugin) {
       BaseComponent.externalLibraries[name].resolve(plugin);
     }
     else {
-      src = _isArray(src) ? src : [src];
+      src = Array.isArray(src) ? src : [src];
       src.forEach((lib) => {
         let attrs = {};
         let elementType = '';
@@ -1857,8 +2175,8 @@ BaseComponent.requireLibrary = function(name, property, src, polling) {
         }
 
         // Add the script to the top page.
-        let script = document.createElement(elementType);
-        for (let attr in attrs) {
+        const script = document.createElement(elementType);
+        for (const attr in attrs) {
           script.setAttribute(attr, attrs[attr]);
         }
         document.getElementsByTagName('head')[0].appendChild(script);
@@ -1867,7 +2185,7 @@ BaseComponent.requireLibrary = function(name, property, src, polling) {
       // if no callback is provided, then check periodically for the script.
       if (polling) {
         setTimeout(function checkLibrary() {
-          let plugin = _get(window, property);
+          const plugin = _.get(window, property);
           if (plugin) {
             BaseComponent.externalLibraries[name].resolve(plugin);
           }
@@ -1875,7 +2193,7 @@ BaseComponent.requireLibrary = function(name, property, src, polling) {
             // check again after 200 ms.
             setTimeout(checkLibrary, 200);
           }
-        }, 200)
+        }, 200);
       }
     }
   }

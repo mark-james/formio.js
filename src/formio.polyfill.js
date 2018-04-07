@@ -1,4 +1,8 @@
-"use strict";
+/**
+ * DO NOT DELETE THIS! THIS WILL BREAK THE PDF RENDERING IF YOU DO.
+ */
+
+'use strict';
 
 /**
  * Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
@@ -20,7 +24,7 @@ if (!Function.prototype.bind) {
         return fToBind.apply(this instanceof fNOP
           ? this
           : oThis,
-          aArgs.concat(Array.prototype.slice.call(arguments)));
+        aArgs.concat(Array.prototype.slice.call(arguments)));
       };
 
     if (this.prototype) {

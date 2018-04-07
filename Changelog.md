@@ -4,6 +4,365 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.30.2
+### Fixed
+ - Problem where values would not get reset before getting deleted with clear on hide.
+ - Issue where change events would fire continuously because of eroneous hasChanged checks.
+
+## 2.30.1
+### Added
+ - `moment` library in calculated value and advanced conditional.
+ - Add ability to pass options to currentUser function.
+
+### Changed
+ - Removed the duck-punch from choices library for strict equality since they pulled in our pull request.
+
+### Fixed
+ - Empty string in email validator.
+ - Min-max for DataGrid component.
+
+## 2.30.0
+### Fixed
+ - Required validator for Checkbox component.
+ - Radio and SelectBoxes components for the case with multiple nested forms.
+ - Number and Currency components default value.
+ - Input mask problems where a single instance was used to manage multiple inputs.
+ - Issues with onChange events not firing for Select components.
+ - Streamlined the language inititalization.
+
+### Added
+ - Better data handling using getters and setters.
+
+### Changed
+ - Deprecating "getRawValue" with reverse compatibility in favor of component.dataValue.
+ - Made currency component to have a delimiter unless specified otherwise.
+
+## 2.29.13
+### Fixed
+ - Problem with some crashes within the file component.
+ - Make sure the Submit button was not disabled even if form was readonly
+ - Problem with the DataGrid component default values copying from row to row.
+
+### Added
+ - The ability to prevent a component from being disabled with a "alwaysEnabled" property.
+
+## 2.29.12
+### Fixed
+ - Custom events not firing for button custom events.
+ - Issue with conditoinals not checking on form components before loading subforms.
+
+## 2.29.11
+### Changed
+ - Upgraded browserify@16.1.1 eslint@4.18.2 fetch-mock@6.0.1 mocha@5.0.4 watchify@3.11.0 gulp-strip-debug@3.0.0 marked@0.3.17
+ - Added exports that are reverse compatible with ES5.
+
+### Fixed
+ - Display for resource fields within submission grid.
+
+## 2.29.10
+### Fixed
+ - Issues with getView so that it does not throw errors.
+ - Min and Max settings on DataGrid to stop showing Add Another button.
+
+## 2.29.9
+### Fixed
+ - Issues with IE not translating Date's properly.
+
+## 2.29.8
+### Fixed
+ - Include polyfill for bind to fix PDF generation.
+
+### Changed
+ - Upgraded i18next to 10.5.0
+
+## 2.29.7
+### Fixed
+ - Fix validations automatically triggering if you have only a container on a form at the root level.
+
+## 2.29.6
+### Fixed
+ - Fix validation and nested form issues with wizard.
+
+## 2.29.5
+### Fixed
+ - Ensure that the form components do not load if conditions on the component return false.
+
+## 2.29.4
+### Added
+ - More input hooks to certain components.
+
+### Fixed
+ - Issue where file component values would reset.
+
+### Changed
+ - The select component will now enable search by default and can be turned off with "searchEnabled" flag on component.
+
+## 2.29.3
+### Fixed
+ - Issue with the providers not getting registered correctly.
+
+## 2.29.2
+### Changed
+ - Upgraded i18next to 10.4.1
+
+### Fixed
+ - Problem where DataGrid could add duplicate columns.
+
+### Added
+ - Add ability to have oauth initiated logins.
+
+## 2.29.1
+### Added
+ - 'Delimiter' property to Number component.
+ - Error message below submit button.
+ - WYSIWYG spellcheck option for the Quill editor.
+
+### Fixed
+ - Issues with clearOnHide
+ - Fixed radio button wrapping issue
+ - Problems with the wysiwyg editor clearing values within a datagrid.
+ - Asterisks for Checkbox component with 'inputsOnly' option.
+ - The Formio.cache to return new promises instead of using old ones.
+
+### Changed
+ - Cleanup and performance improvements on how conditions are checked and evaluated.
+ - How the loader icon is added to the renderer by adding an additional DOM element above the form components.
+ - Upgrade flatpickr to version 4.3.2
+ - Improved viewAsHtml and asString features.
+
+## 2.29.0
+### Added
+ - New Field Logic feature.
+ - Ability for buttons to be configured with a URL that will send the submission to that url when pressed.
+
+### Changed
+ - Upgraded all dependencies.
+ - Reverted choices.js to use npm version and duck-punch the deep equality checks.
+
+### Fixed
+ - Issue with Required WYSIWYG TextArea always triggering validation error on load.
+ - Problem where backspacing the wysiwyg editor was not working.
+ - Problem where tabbing into a wysiwyg editor would select buttons on the wysiwyg.
+ - Problem with the Form component where it would load the form when a default submission is provided.
+ - Performance issues with both EditGrid and DataGrid.
+ - Issue with false conditionals and null values.
+ - Issue with the "render" event not firing when form is rendered.
+ - Problems with the viewAsHtml flag not rendering the submission.
+
+## 2.28.6
+### Added
+ - Autofocus capability.
+ - Ability to provide spellcheck parameter to input.
+
+### Fixed
+ - Some issues with subforms when performing calcuated values
+ - Problems with subforms performing the load when they are not conditionally available.
+
+## 2.28.5
+### Fixed
+ - Issue with input mask crashing when no input mask is on the field.
+
+## 2.28.4
+### Added
+ - Mask validator for Phone Number.
+
+### Fixed
+ - Default value for component with input mask.
+
+## 2.28.3
+### Changed
+ - The conditional logic where a parent that is conditionally invisible is overridden by a child conditionally visible.
+   This logic is different from the Angular 1 renderer, so we made it consistent where a conditionally visible child will not
+   override a conditionally hidden parent. However, this behavior can be changed by providing the "conditional.overrideParent" flag
+   on the child component.
+
+## 2.28.2
+### Fixed
+ - Issues with the sub-form component not loading the proper source for remote servers.
+ - Issues with the sub-form component not passing along sub data to conditional checks properly.
+
+## 2.28.1
+### Fixed
+ - Text mask dependencies
+
+## 2.28.0
+### Added
+ - Support for Bootstrap 4
+ - EditGrid Component.
+ - Stripe integration within Contrib.
+
+### Fixed
+ - Small problem with read-only file uplaods where it would allow you to remove files.
+
+## 2.27.6
+### Fixed
+ - Issue where the ready promise was not getting fired if a submission is not provided.
+
+## 2.27.5
+### Fixed
+ - The package.json for the choices.js library to not use a git url.
+
+## 2.27.4
+### Added
+ - The ability for the search to be an array of values.
+
+## 2.27.3
+### Fixed
+ - Issue with the checkCalculated method not working for datagrids.
+
+## 2.27.2
+### Added
+ - Support for OAuth buttons in the renderer.
+ - Ability to add the "Add Another" button on datagrid to either above or below the grid.
+
+### Fixed
+ - Problem where a padding-right is applied to all has-feedback inputs even though an icon is not used.
+
+## 2.27.1
+### Fixed
+ - Problem with default values on wizards.
+ - Issue where row is not passed to calculated values.
+ - Select Resource component searching.
+
+### Added
+ - Ability to auto load the initial values for lazyLoad select with search enabled.
+ - CSS class ('radio-selected') for selected option of Radio component
+
+## 2.27.0
+### Fixed
+ - Issue where read-only forms would still try to submit.
+ - Problem with read-only wizards triggering beforeSubmit handlers.
+ - Fix issue where submissions made before revisions are made will sometimes cause the form to not load.
+
+### Changed
+ - Upgrade all dependencies
+
+## 2.26.2
+### Fixed
+ - Problem where a component has input should also return true if it has inputs.
+
+## 2.26.1
+### Fixed
+ - Problems where data keys are added even if component is not set with input.
+ - Failing tests.
+ - Datagrid data merging.
+
+### Changed
+ - Upgraded choices.js to 3.0.3 which includes performance fix.
+ - Removed performance hack in Select since 3.0.3 of choices resolves the problem.
+
+## 2.26.0
+### Added
+ - New contributed module system with Stripe integration.
+ - A way to pass the formio instance object to the currentUser and accessInfo methods.
+
+## 2.25.8
+### Added
+ - Support for JSONLogic dates.
+ - Added 'searchEnabled' option and defaulted it to false, user can enable it with component property
+ - Updated default value for 'removeItemButton' option to multi-select OR false, and if needed user can enable it with the component property
+ - Date formatting based on the locale configuration
+ - viewAsHTML feature.
+ - Confirmation dialog before a form/wizard is canceled.
+
+## 2.25.7
+### Fixed
+ - Problem with the Select dropdown from re-rendering after it has been destroyed.
+ - Issue with the default select for html5 widgets.
+
+### Changed
+ - Upgrade moment to 2.20.1
+
+## 2.25.6
+### Added
+ - Ability to dynamically alter text based on input data.
+ - Try/catch around the jsLogic for checkconditionals.
+ - LazyLoading for select dropdowns.
+
+### Fixed
+ - Caching issue with getTempToken method.
+ - Problem with the "in" operator for JSONLogic crashing with null inputs.
+
+## 2.25.5
+### Fixed
+ - getDownloadUrl to work with remote environments.
+
+## 2.25.4
+### Fixed
+ - Problems where conditionally hidden panels/wells were not making their children not required.
+ - Issues with setting default values on datagrids.
+
+### Added
+ - Ability to provide an input mask where it will force lowercase alphabetical.
+
+## 2.25.3
+### Fixed
+ - An issue where data values within a datagrid get messed up when rows are removed.
+
+## 2.25.2
+### Fixed
+ - A problem with Select dropdowns where the placeholder was getting included as the select value.
+
+## 2.25.1
+### Fixed
+ - Problem with the FormComponent crashing during a set language within the constructor.
+
+## 2.25.0
+### Added
+ - The ability to render Select component as plain select dropdown using widget: 'html5' setting.
+ - Performance improvements to language selection
+
+### Changed
+ - Moved all translation capabilities into FormioForm for performance reasons.
+
+### Fixed
+ - Issues with Lodash operators for JSONLogic.
+
+## 2.24.6
+### Changed
+ - Upgraded EventEmitter2 to version 5.0.0
+ - Upgraded flatpickr to 4.1.4
+
+### Fixed
+ - Major performance problems with the Select component with large datasets.
+
+## 2.24.5
+### Fixed
+ - Problem where pressing enter in a textarea would submit the form.
+
+## 2.24.4
+### Fixed
+ - Problem where change event would not get fired when a row is removed from datagrid.
+
+### Added
+ - Options to control the navigation and breadcrumb in wizards.
+
+## 2.24.3
+### Added
+ - Ability to provide HTML in the description of a form element.
+
+### Fixed
+ - Double submit issue with wizards.
+
+## 2.24.2
+### Fixed
+ - Issue loading form after submission when revisions not enabled.
+
+## 2.24.1
+### Fixed
+ - Date min and max settings.
+
+## 2.24.0
+### Fixed
+ - File component inside Datagrid component.
+ - Components with label position inside Datagrid component.
+
+### Added
+ - Interpolation to the select headers when requests are made.
+ - Option to make the wizard header buttons not clickable.
+ - Translations to the select dropdown elements.
+ - Form version handling
+
 ## 2.23.2
 ### Fixed
  - Path parameter for cookie fallback functions.

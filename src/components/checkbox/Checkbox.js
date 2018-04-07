@@ -1,12 +1,13 @@
-import { BaseComponent } from '../base/Base';
-import _assign from 'lodash/assign';
+import _ from 'lodash';
+
+import {BaseComponent} from '../base/Base';
 export class CheckBoxComponent extends BaseComponent {
   elementInfo() {
     const info = super.elementInfo();
     info.type = 'input';
     info.changeEvent = 'click';
     info.attr.type = this.component.inputType;
-    info.attr.class = '';
+    info.attr.class = 'form-check-input';
     if (this.component.name) {
       info.attr.name = `data[${this.component.name}]`;
     }
@@ -15,6 +16,10 @@ export class CheckBoxComponent extends BaseComponent {
   }
 
   build() {
+    if (this.viewOnly) {
+      return this.viewOnlyBuild();
+    }
+
     if (!this.component.input) {
       return;
     }
@@ -31,8 +36,12 @@ export class CheckBoxComponent extends BaseComponent {
     }
   }
 
+  get emptyValue() {
+    return false;
+  }
+
   createElement() {
-    let className = this.className;
+    let className = `form-check ${this.className}`;
     if (this.component.label) {
       className += ' checkbox';
     }
@@ -52,14 +61,14 @@ export class CheckBoxComponent extends BaseComponent {
 
   setInputLabelStyle(label) {
     if (this.component.labelPosition === 'left') {
-      _assign(label.style, {
+      _.assign(label.style, {
         textAlign: 'center',
         paddingLeft: 0,
       });
     }
 
     if (this.labelOnTheTopOrBottom()) {
-      _assign(label.style, {
+      _.assign(label.style, {
         display: 'block',
         textAlign: 'center',
         paddingLeft: 0,
@@ -69,14 +78,14 @@ export class CheckBoxComponent extends BaseComponent {
 
   setInputStyle(input) {
     if (this.component.labelPosition === 'left') {
-      _assign(input.style, {
+      _.assign(input.style, {
         position: 'initial',
         marginLeft: '7px'
       });
     }
 
     if (this.labelOnTheTopOrBottom()) {
-      _assign(input.style, {
+      _.assign(input.style, {
         width: '100%',
         position: 'initial',
         marginLeft: 0
@@ -84,13 +93,20 @@ export class CheckBoxComponent extends BaseComponent {
     }
   }
 
+  isEmpty(value) {
+    return super.isEmpty(value) || value === false;
+  }
+
   createLabel(container, input) {
     if (!this.component.label) {
       return null;
     }
 
-    let className = 'control-label';
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    let className = 'control-label form-check-label';
+    if (this.component.input
+      && !this.options.inputsOnly
+      && this.component.validate
+      && this.component.validate.required) {
       className += ' field-required';
     }
 
@@ -136,12 +152,11 @@ export class CheckBoxComponent extends BaseComponent {
 
   updateValueByName() {
     const component = this.getRoot().getComponent(this.component.name);
-
     if (component) {
-      component.setValue(this.component.value, { changed: true });
+      component.setValue(this.component.value, {changed: true});
     }
     else {
-      this.data[this.component.name] = this.component.value;
+      _.set(this.data, this.component.name, this.component.value);
     }
   }
 
@@ -165,7 +180,6 @@ export class CheckBoxComponent extends BaseComponent {
 
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
-    this.value = value;
     if (!this.input) {
       return;
     }
@@ -185,15 +199,29 @@ export class CheckBoxComponent extends BaseComponent {
       this.input.value = 0;
       this.input.checked = 0;
     }
-    this.updateValue(flags);
+    return this.updateValue(flags);
   }
 
-  getRawValue() {
+  get dataValue() {
     if (this.component.name) {
-      return this.data[this.component.name];
+      return _.get(this.data, this.component.name, this.emptyValue);
     }
 
-    return super.getRawValue();
+    return super.dataValue;
+  }
+
+  set dataValue(value) {
+    if (this.component.name) {
+      _.set(this.data, this.component.name, value);
+      return value;
+    }
+
+    super.dataValue = value;
+    return value;
+  }
+
+  getView(value) {
+    return value ? 'Yes' : 'No';
   }
 
   destroy() {

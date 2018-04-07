@@ -1,17 +1,30 @@
-import { BaseComponent } from '../base/Base';
 import Flatpickr from 'flatpickr';
-import _get from 'lodash/get';
-import _each from 'lodash/each';
-const momentModule = require('moment');
+import _ from 'lodash';
+
+import {BaseComponent} from '../base/Base';
+
+import {
+  getDateSetting,
+  getLocaleDateFormatInfo,
+  convertFormatToFlatpickr,
+  convertFormatToMoment,
+} from '../../utils';
+import moment from 'moment';
 export class DateTimeComponent extends BaseComponent {
   constructor(component, options, data) {
     super(component, options, data);
     this.validators.push('date');
     this.closedOn = 0;
+
+    const dateFormatInfo = getLocaleDateFormatInfo(this.options.language);
+    this.defaultFormat = {
+      date: dateFormatInfo.dayFirst ? 'd/m/Y ' : 'm/d/Y ',
+      time: 'h:i K'
+    };
   }
 
   elementInfo() {
-    let info = super.elementInfo();
+    const info = super.elementInfo();
     info.type = 'input';
     info.attr.type = 'text';
     info.changeEvent = 'input';
@@ -19,34 +32,8 @@ export class DateTimeComponent extends BaseComponent {
     return info;
   }
 
-  /**
-   * Return a translated date setting.
-   *
-   * @param date
-   * @return {*}
-   */
-  getDateSetting(date) {
-    if (!date) {
-      return null;
-    }
-
-    let dateSetting = new Date(date);
-    if (!dateSetting || isNaN(dateSetting.getDate())) {
-      try {
-        let moment = momentModule;
-        dateSetting = new Date(eval(date));
-      }
-      catch (e) {
-        dateSetting = null;
-      }
-    }
-
-    // Ensure this is a date.
-    if (dateSetting && isNaN(dateSetting.getDate())) {
-      dateSetting = null;
-    }
-
-    return dateSetting;
+  get emptyValue() {
+    return 0;
   }
 
   /**
@@ -54,7 +41,7 @@ export class DateTimeComponent extends BaseComponent {
    * @return {*}
    */
   get defaultDate() {
-    return this.getDateSetting(this.component.defaultDate);
+    return getDateSetting(this.component.defaultDate);
   }
 
   // This select component can handle multiple items on its own.
@@ -62,37 +49,17 @@ export class DateTimeComponent extends BaseComponent {
     return false;
   }
 
-  /**
-   * Convert the format from the angular-datepicker module.
-   * @param format
-   * @return {string|XML|*}
-   */
-  convertFormat(format) {
-    // Year conversion.
-    format = format.replace(/y/g, 'Y');
-    format = format.replace('YYYY', 'Y');
-    format = format.replace('YY', 'y');
+  getLocaleFormat() {
+    let format = '';
 
-    // Month conversion.
-    format = format.replace('MMMM', 'F');
-    format = format.replace(/M/g, 'n');
-    format = format.replace('nnn', 'M');
-    format = format.replace('nn', 'm');
+    if (this.component.enableDate) {
+      format += this.defaultFormat.date;
+    }
 
-    // Day in month.
-    format = format.replace(/d/g, 'j');
-    format = format.replace('jj', 'd');
+    if (this.component.enableTime) {
+      format += this.defaultFormat.time;
+    }
 
-    // Day in week.
-    format = format.replace('EEEE', 'l');
-    format = format.replace('EEE', 'D');
-
-    // Hours, minutes, seconds
-    format = format.replace('HH', 'H');
-    format = format.replace('hh', 'h');
-    format = format.replace('mm', 'i');
-    format = format.replace('ss', 'S');
-    format = format.replace(/a/g, 'K');
     return format;
   }
 
@@ -102,15 +69,17 @@ export class DateTimeComponent extends BaseComponent {
       clickOpens: true,
       enableDate: true,
       mode: this.component.multiple ? 'multiple' : 'single',
-      enableTime: _get(this.component, 'enableTime', true),
-      noCalendar: !_get(this.component, 'enableDate', true),
-      altFormat: this.convertFormat(_get(this.component, 'format', '')),
+      enableTime: _.get(this.component, 'enableTime', true),
+      noCalendar: !_.get(this.component, 'enableDate', true),
+      altFormat: this.component.useLocaleSettings
+        ? this.getLocaleFormat()
+        : convertFormatToFlatpickr(_.get(this.component, 'format', '')),
       dateFormat: 'U',
       defaultDate: this.defaultDate,
-      hourIncrement: _get(this.component, 'timePicker.hourStep', 1),
-      minuteIncrement: _get(this.component, 'timePicker.minuteStep', 5),
-      minDate: this.getDateSetting(_get(this.component, 'datePicker.minDate')),
-      maxDate: this.getDateSetting(_get(this.component, 'datePicker.maxDate')),
+      hourIncrement: _.get(this.component, 'timePicker.hourStep', 1),
+      minuteIncrement: _.get(this.component, 'timePicker.minuteStep', 5),
+      minDate: getDateSetting(_.get(this.component, 'datePicker.minDate')),
+      maxDate: getDateSetting(_.get(this.component, 'datePicker.maxDate')),
       onChange: () => this.onChange(),
       onClose: () => (this.closedOn = Date.now())
     };
@@ -118,8 +87,8 @@ export class DateTimeComponent extends BaseComponent {
 
   set disabled(disabled) {
     super.disabled = disabled;
-    _each(this.inputs, (input) => {
-      let calendar = this.getCalendar(input);
+    _.each(this.inputs, (input) => {
+      const calendar = this.getCalendar(input);
       if (calendar) {
         if (disabled) {
           calendar._input.setAttribute('disabled', 'disabled');
@@ -133,12 +102,12 @@ export class DateTimeComponent extends BaseComponent {
   }
 
   addSuffix(input, inputGroup) {
-    let suffix = this.ce('span', {
+    const suffix = this.ce('span', {
       class: 'input-group-addon',
       style: 'cursor: pointer'
     });
     suffix.appendChild(this.getIcon(this.component.enableDate ? 'calendar' : 'time'));
-    let calendar = this.getCalendar(input);
+    const calendar = this.getCalendar(input);
     if (calendar) {
       this.addEventListener(suffix, 'click', () => {
         // Make sure the calendar is not already open and that it did not just close (like from blur event).
@@ -164,16 +133,16 @@ export class DateTimeComponent extends BaseComponent {
   }
 
   getDate(value) {
-    let timestamp = parseInt(value, 10);
+    const timestamp = parseInt(value, 10);
     if (!timestamp) {
       return null;
     }
     return (new Date(timestamp * 1000));
   }
 
-  getRawValue() {
-    let values = [];
-    for (let i in this.inputs) {
+  get validationValue() {
+    const values = [];
+    for (const i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
         if (!this.component.multiple) {
           return this.getDate(this.inputs[i].value);
@@ -189,22 +158,29 @@ export class DateTimeComponent extends BaseComponent {
       return '';
     }
 
-    let calendar = this.getCalendar(this.inputs[index]);
+    const calendar = this.getCalendar(this.inputs[index]);
     if (!calendar) {
       return super.getValueAt(index);
     }
 
-    let dates = calendar.selectedDates;
+    const dates = calendar.selectedDates;
     if (!dates || !dates.length) {
       return '';
     }
 
-    return dates[0].toISOString();
+    return (typeof dates[0].toISOString === 'function') ? dates[0].toISOString() : 'Invalid Date';
+  }
+
+  getView(value) {
+    return value ? moment(value).format(convertFormatToMoment(_.get(this.component, 'format', ''))) : '';
   }
 
   setValueAt(index, value) {
     if (value) {
-      let calendar = this.getCalendar(this.inputs[index]);
+      // Convert to a standard ISO-8601 format. Needed for proper IE function.
+      value = moment(value).toISOString();
+
+      const calendar = this.getCalendar(this.inputs[index]);
       if (!calendar) {
         return super.setValueAt(index, value);
       }

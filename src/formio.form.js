@@ -1,20 +1,18 @@
-import Formio from './formio';
-import Promise from "native-promise-only";
-import { FormioComponents } from './components/Components';
-import _each from 'lodash/each';
-import _clone from 'lodash/clone';
-import _merge from 'lodash/merge';
-import _debounce from 'lodash/debounce';
-import _remove from 'lodash/remove';
-import _isArray from 'lodash/isArray';
-import _capitalize from 'lodash/capitalize';
+import _ from 'lodash';
 import EventEmitter from 'eventemitter2';
+import i18next from 'i18next';
+import Formio from './formio';
+import Promise from 'native-promise-only';
+import {FormioComponents} from './components/Components';
 
 // Initialize the available forms.
 Formio.forms = {};
 
-let getOptions = function(options) {
-  options = options || {};
+const getOptions = function(options) {
+  options = _.defaults(options, {
+    submitOnEnter: false,
+    i18next: i18next
+  });
   if (!options.events) {
     options.events = new EventEmitter({
       wildcard: false,
@@ -32,7 +30,7 @@ let getOptions = function(options) {
  * let form = new FormioForm(document.getElementById('formio'));
  * form.src = 'https://examples.form.io/example';
  */
-export class FormioForm extends FormioComponents {
+export default class FormioForm extends FormioComponents {
   /**
    * Creates a new FormioForm instance.
    *
@@ -56,6 +54,37 @@ export class FormioForm extends FormioComponents {
 
     // Keep track of all available forms globally.
     Formio.forms[this.id] = this;
+
+    /**
+     * The i18n configuration for this component.
+     */
+    let i18n = require('./i18n');
+    if (options && options.i18n && !options.i18nReady) {
+      // Support legacy way of doing translations.
+      if (options.i18n.resources) {
+        i18n = options.i18n;
+      }
+      else {
+        _.each(options.i18n, (lang, code) => {
+          if (!i18n.resources[code]) {
+            i18n.resources[code] = {translation: lang};
+          }
+          else {
+            _.assign(i18n.resources[code].translation, lang);
+          }
+        });
+      }
+
+      options.i18n = i18n;
+      options.i18nReady = true;
+    }
+
+    if (options && options.i18n) {
+      this.options.i18n = options.i18n;
+    }
+    else {
+      this.options.i18n = i18n;
+    }
 
     /**
      * The type of this element.
@@ -173,6 +202,65 @@ export class FormioForm extends FormioComponents {
     });
 
     this.shortcuts = [];
+
+    // Set language after everything is established.
+    this.localize().then(() => {
+      this.language = this.options.language;
+    });
+  }
+
+  /**
+   * Sets the language for this form.
+   *
+   * @param lang
+   * @return {Promise}
+   */
+  set language(lang) {
+    return new Promise((resolve, reject) => {
+      this.options.language = lang;
+      i18next.changeLanguage(lang, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        this.redraw();
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Add a language for translations
+   *
+   * @param code
+   * @param lang
+   * @param active
+   * @return {*}
+   */
+  addLanguage(code, lang, active = false) {
+    i18next.addResourceBundle(code, 'translation', lang, true, true);
+    if (active) {
+      this.language = code;
+    }
+  }
+
+  /**
+   * Perform the localization initialization.
+   * @returns {*}
+   */
+  localize() {
+    if (i18next.initialized) {
+      return Promise.resolve(i18next);
+    }
+    i18next.initialized = true;
+    return new Promise((resolve, reject) => {
+      i18next.init(this.options.i18n, (err) => {
+        this.options.language = i18next.language;
+        if (err) {
+          return reject(err);
+        }
+        resolve(i18next);
+      });
+    });
   }
 
   /**
@@ -188,19 +276,16 @@ export class FormioForm extends FormioComponents {
     if (this.element) {
       this.element.removeEventListener('keydown', this.executeShortcuts.bind(this));
     }
-    element.addEventListener('keydown', this.executeShortcuts.bind(this));
 
-    this.element = element;
-    var classNames = this.element.getAttribute('class');
+    this.wrapper = element;
+    this.element = this.ce('div');
+    this.wrapper.appendChild(this.element);
+    this.showElement(false);
+    this.element.addEventListener('keydown', this.executeShortcuts.bind(this));
+    let classNames = this.element.getAttribute('class');
     classNames += ' formio-form';
-    this.addClass(this.element, classNames);
+    this.addClass(this.wrapper, classNames);
     this.loading = true;
-    this.ready.then(
-      () => (this.loading = false),
-      () => (this.loading = false)
-    ).catch(
-      () => (this.loading = false)
-    );
     this.elementResolve(element);
   }
 
@@ -221,7 +306,7 @@ export class FormioForm extends FormioComponents {
   }
 
   executeShortcuts(event) {
-    const { target } = event;
+    const {target} = event;
     if (!this.keyboardCatchableElement(target)) {
       return;
     }
@@ -232,13 +317,15 @@ export class FormioForm extends FormioComponents {
 
     if (65 <= keyCode && keyCode <= 90) {
       char = String.fromCharCode(keyCode);
-    } else if (keyCode === 13) {
+    }
+    else if (keyCode === 13) {
       char = 'Enter';
-    } else if (keyCode === 27) {
+    }
+    else if (keyCode === 27) {
       char = 'Esc';
     }
 
-    _each(this.shortcuts, (shortcut) => {
+    _.each(this.shortcuts, (shortcut) => {
       if (shortcut.ctrl && !ctrl) {
         return;
       }
@@ -255,7 +342,7 @@ export class FormioForm extends FormioComponents {
       return;
     }
 
-    shortcut = _capitalize(shortcut);
+    shortcut = _.capitalize(shortcut);
 
     if (shortcut === 'Enter' || shortcut === 'Esc') {
       // Restrict Enter and Esc only for buttons
@@ -267,7 +354,8 @@ export class FormioForm extends FormioComponents {
         shortcut,
         element
       });
-    } else {
+    }
+    else {
       this.shortcuts.push({
         ctrl: true,
         shortcut,
@@ -281,7 +369,7 @@ export class FormioForm extends FormioComponents {
       return;
     }
 
-    _remove(this.shortcuts, {
+    _.remove(this.shortcuts, {
       shortcut,
       element
     });
@@ -308,6 +396,9 @@ export class FormioForm extends FormioComponents {
         (err) => this.submissionReadyReject(err)
       );
     }
+    else {
+      this.submissionReadyResolve();
+    }
   }
 
   /**
@@ -317,18 +408,18 @@ export class FormioForm extends FormioComponents {
    * @param options
    */
   setSrc(value, options) {
-    this.setUrl(value, options);
-    this.nosubmit = false;
-    this.formio.loadForm().then(
-      (form) => {
-        var setForm = this.setForm(form);
-        this.loadSubmission();
-        return setForm;
-      },
-      (err) => this.formReadyReject(err)
-    ).catch(
-      (err) => this.formReadyReject(err)
-    );
+    if (this.setUrl(value, options)) {
+      this.nosubmit = false;
+      this.formio.loadForm({params: {live: 1}}).then(
+        (form) => {
+          const setForm = this.setForm(form);
+          this.loadSubmission();
+          return setForm;
+        }).catch((err) => {
+        console.warn(err);
+        this.formReadyReject(err);
+      });
+    }
   }
 
   /**
@@ -363,8 +454,12 @@ export class FormioForm extends FormioComponents {
    * @param options
    */
   setUrl(value, options) {
-    if (!value || typeof value !== 'string') {
-      return;
+    if (
+      !value ||
+      (typeof value !== 'string') ||
+      (value === this._src)
+    ) {
+      return false;
     }
     this._src = value;
     this.nosubmit = true;
@@ -374,6 +469,7 @@ export class FormioForm extends FormioComponents {
       // Set the options source so this can be passed to other components.
       this.options.src = value;
     }
+    return true;
   }
 
   /**
@@ -415,7 +511,7 @@ export class FormioForm extends FormioComponents {
         this.loader = this.ce('div', {
           class: 'loader-wrapper'
         });
-        let spinner = this.ce('div', {
+        const spinner = this.ce('div', {
           class: 'loader text-center'
         });
         this.loader.appendChild(spinner);
@@ -423,13 +519,15 @@ export class FormioForm extends FormioComponents {
       if (this.loader) {
         try {
           if (loading) {
-            this.prepend(this.loader);
+            this.prependTo(this.loader, this.wrapper);
           }
           else {
-            this.removeChild(this.loader);
+            this.removeChildFrom(this.loader, this.wrapper);
           }
         }
-        catch (err) {}
+        catch (err) {
+          // ingore
+        }
       }
     }
   }
@@ -557,19 +655,39 @@ export class FormioForm extends FormioComponents {
     );
   }
 
-  setValue(submission, flags) {
+  get schema() {
+    return this._form;
+  }
+
+  mergeData(_this, _that) {
+    _.mergeWith(_this, _that, (thisValue, thatValue) => {
+      if (Array.isArray(thisValue) && Array.isArray(thatValue) && thisValue.length !== thatValue.length) {
+        return thatValue;
+      }
+    });
+  }
+
+  setValue(submission, flags, data) {
+    data = data || this.data;
+    if (!submission) {
+      return super.setValue(data, flags);
+    }
     submission = submission || {data: {}};
-    _merge(this._submission, submission);
-    return super.setValue(this._submission.data, flags);
+    this.mergeData(data, submission.data);
+    this._submission = submission;
+    this._submission.data = data;
+    return super.setValue(data, flags);
   }
 
   getValue() {
     if (!this._submission.data) {
       this._submission.data = {};
     }
-    let submission = _clone(this._submission);
+    if (this.viewOnly) {
+      return this._submission;
+    }
+    const submission = _.clone(this._submission);
     submission.data = this.data;
-    _merge(this._submission.data, submission.data);
     return submission;
   }
 
@@ -592,12 +710,11 @@ export class FormioForm extends FormioComponents {
     return this.onFormBuild = this.render().then(() => {
       this.formReadyResolve();
       this.onFormBuild = null;
-      this.setSubmission(this._submission);
-    },
-      (err) => this.formReadyReject(err)
-    ).catch(
-      (err) => this.formReadyReject(err)
-    );
+      this.setValue(this.submission);
+    }).catch((err) => {
+      console.warn(err);
+      this.formReadyReject(err);
+    });
   }
 
   /**
@@ -607,13 +724,16 @@ export class FormioForm extends FormioComponents {
   render() {
     return this.onElement.then(() => {
       this.clear();
-      return this.localize().then(() => {
-        this.build();
-        this.onResize();
-        this.on('resetForm', () => this.reset(), true);
-        this.on('refreshData', () => this.updateValue());
+      this.showElement(false);
+      this.build();
+      this.isBuilt = true;
+      this.onResize();
+      this.on('resetForm', () => this.reset(), true);
+      this.on('refreshData', () => this.updateValue());
+      setTimeout(() => {
+        this.onChange();
         this.emit('render');
-      });
+      }, 1);
     });
   }
 
@@ -635,11 +755,13 @@ export class FormioForm extends FormioComponents {
         this.removeChild(this.alert);
         this.alert = null;
       }
-      catch(err) {}
+      catch (err) {
+        // ingore
+      }
     }
     if (message) {
       this.alert = this.ce('div', {
-        class: 'alert alert-' + type,
+        class: `alert alert-${type}`,
         role: 'alert'
       });
       this.alert.innerHTML = message;
@@ -656,7 +778,7 @@ export class FormioForm extends FormioComponents {
   build() {
     this.on('submitButton', () => this.submit(), true);
     this.addComponents();
-    this.checkConditions(this.getValue());
+    this.on('requestUrl', (args) => (this.submitUrl(args.url,args.headers)), true);
   }
 
   /**
@@ -669,7 +791,7 @@ export class FormioForm extends FormioComponents {
     this.loading = false;
     let errors = this.errors;
     if (error) {
-      if (_isArray(error)) {
+      if (Array.isArray(error)) {
         errors = errors.concat(error);
       }
       else {
@@ -680,11 +802,11 @@ export class FormioForm extends FormioComponents {
       this.setAlert(false);
       return;
     }
-    let message = '<p>' + this.t('error') + '</p><ul>';
-    _each(errors, (err) => {
+    let message = `<p>${this.t('error')}</p><ul>`;
+    _.each(errors, (err) => {
       if (err) {
-        let errorMessage = err.message || err;
-        message += '<li><strong>' + errorMessage + '</strong></li>';
+        const errorMessage = err.message || err;
+        message += `<li><strong>${errorMessage}</strong></li>`;
       }
     });
     message += '</ul>';
@@ -707,7 +829,7 @@ export class FormioForm extends FormioComponents {
       noValidate: true,
       noCheck: true
     });
-    this.setAlert('success', '<p>' + this.t('complete') + '</p>');
+    this.setAlert('success', `<p>${this.t('complete')}</p>`);
     this.emit('submit', submission);
     if (saved) {
       this.emit('submitDone', submission);
@@ -730,6 +852,10 @@ export class FormioForm extends FormioComponents {
       error = {message: error};
     }
 
+    if ('details' in error) {
+      error = error.details;
+    }
+
     return this.showErrors(error);
   }
 
@@ -741,10 +867,12 @@ export class FormioForm extends FormioComponents {
    */
   onChange(flags, changed) {
     super.onChange(flags, true);
-    _merge(this._submission, this.submission);
-    let value = _clone(this._submission);
+    this.mergeData(this._submission, this.submission);
+    const value = _.clone(this._submission);
     value.changed = changed;
     value.isValid = this.checkData(value.data, flags);
+    this.showElement(true);
+    this.loading = false;
     this.emit('change', value);
   }
 
@@ -765,7 +893,7 @@ export class FormioForm extends FormioComponents {
    */
   reset() {
     // Reset the submission data.
-    this._submission.data = this.data = this.value = {};
+    this._submission.data = this.data = {};
     this.setSubmission({data: {}});
   }
 
@@ -774,13 +902,24 @@ export class FormioForm extends FormioComponents {
    *
    * @alias reset
    */
-  cancel() {
-    this.reset();
+  cancel(noconfirm) {
+    if (noconfirm || confirm('Are you sure you want to cancel?')) {
+      this.reset();
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   executeSubmit() {
     return new Promise((resolve, reject) => {
-      let submission = this.submission || {};
+      // Read-only forms should never submit.
+      if (this.options.readOnly) {
+        return resolve(this.submission);
+      }
+
+      const submission = this.submission || {};
       this.hook('beforeSubmit', submission, (err) => {
         if (err) {
           this.showErrors(err);
@@ -842,19 +981,57 @@ export class FormioForm extends FormioComponents {
       return this.executeSubmit();
     }
   }
+
+  submitUrl(URL,headers) {
+    if (!URL) {
+      return console.warn('Missing URL argument');
+    }
+
+    const submission = this.submission || {};
+    const API_URL  = URL;
+    const settings = {
+      method: 'POST',
+      headers: {}
+    };
+
+    if (headers && headers.length > 0) {
+      headers.map((e) => {
+        if (e.header !== '' && e.value !== '') {
+          settings.headers[e.header] = e.value;
+        }
+      });
+    }
+    if (API_URL && settings) {
+      try {
+        Formio.makeStaticRequest(API_URL,settings.method,submission,settings.headers).then(() => {
+          this.emit('requestDone');
+          this.setAlert('success', '<p> Success </p>');
+        });
+      }
+      catch (e) {
+        this.showErrors(`${e.statusText} ${e.status}`);
+        this.emit('error',`${e.statusText} ${e.status}`);
+        console.error(`${e.statusText} ${e.status}`);
+      }
+    }
+    else {
+      this.emit('error', 'You should add a URL to this button.');
+      this.setAlert('warning', 'You should add a URL to this button.');
+      return console.warn('You should add a URL to this button.');
+    }
+  }
 }
 
 // Used to trigger a resize.
-Formio.onResize = (scale) => _each(Formio.forms, (instance) => instance.onResize(scale));
-Formio.triggerResize = _debounce(Formio.onResize, 200);
+Formio.onResize = (scale) => _.each(Formio.forms, (instance) => instance.onResize(scale));
+Formio.triggerResize = _.debounce(Formio.onResize, 200);
 if ('addEventListener' in window) {
   window.addEventListener('resize', () => Formio.triggerResize(), false);
-} else if ('attachEvent' in window) {
+}
+else if ('attachEvent' in window) {
   window.attachEvent('onresize', () => Formio.triggerResize());
 }
-
 
 FormioForm.setBaseUrl = Formio.setBaseUrl;
 FormioForm.setApiUrl = Formio.setApiUrl;
 FormioForm.setAppUrl = Formio.setAppUrl;
-module.exports = global.FormioForm = FormioForm;

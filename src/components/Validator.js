@@ -1,18 +1,12 @@
-import _get from 'lodash/get';
-import _each from 'lodash/each';
-import _has from 'lodash/has';
-import _isNumber from 'lodash/isNumber';
-import FormioUtils from '../utils/index';
-export const Validator = {
-  get: _get,
-  each: _each,
-  has: _has,
-  checkValidator(component, validator, setting, value, data) {
-    // Make sure this component isn't conditionally disabled.
-    if (!FormioUtils.checkCondition(component.component, data, component.data)) {
-      return '';
-    }
+import _ from 'lodash';
 
+import FormioUtils from '../utils';
+
+export const Validator = {
+  get: _.get,
+  each: _.each,
+  has: _.has,
+  checkValidator(component, validator, setting, value, data) {
     const result = validator.check.call(this, component, setting, value, data);
     if (typeof result === 'string') {
       return result;
@@ -23,7 +17,7 @@ export const Validator = {
     return '';
   },
   validate(component, validator, value, data) {
-    if (validator.key && _has(component.component, validator.key)) {
+    if (validator.key && _.has(component.component, validator.key)) {
       const setting = this.get(component.component, validator.key);
       return this.checkValidator(component, validator, setting, value, data);
     }
@@ -31,13 +25,13 @@ export const Validator = {
   },
   check(component, data) {
     let result = '';
-    const value = component.getRawValue();
+    const value = component.validationValue;
     data = data || component.data;
-    _each(component.validators, (name) => {
+    _.each(component.validators, (name) => {
       if (this.validators.hasOwnProperty(name)) {
         const validator = this.validators[name];
         if (component.validateMultiple(value)) {
-          _each(value, (val) => {
+          _.each(value, (val) => {
             result = this.validate(component, validator, val, data);
             if (result) {
               return false;
@@ -53,7 +47,7 @@ export const Validator = {
       }
     });
 
-    const customErrorMessage = _get(component, 'component.validate.customMessage');
+    const customErrorMessage = _.get(component, 'component.validate.customMessage');
     if (result && customErrorMessage) {
       result = component.t(customErrorMessage, {
         data: component.data
@@ -65,7 +59,7 @@ export const Validator = {
   validators: {
     required: {
       key: 'validate.required',
-      message(component, setting) {
+      message(component) {
         return component.t(component.errorMessage('required'), {
           field: component.errorLabel,
           data: component.data
@@ -89,7 +83,7 @@ export const Validator = {
       },
       check(component, setting, value) {
         const min = parseFloat(setting);
-        if (!min || (!_isNumber(value))) {
+        if (!min || (!_.isNumber(value))) {
           return true;
         }
         return parseFloat(value) >= min;
@@ -106,7 +100,7 @@ export const Validator = {
       },
       check(component, setting, value) {
         const max = parseFloat(setting);
-        if (!max || (!_isNumber(value))) {
+        if (!max || (!_.isNumber(value))) {
           return true;
         }
         return parseFloat(value) <= max;
@@ -147,7 +141,7 @@ export const Validator = {
       }
     },
     email: {
-      message(component, setting) {
+      message(component) {
         return component.t(component.errorMessage('invalid_email'), {
           field: component.errorLabel,
           data: component.data
@@ -155,14 +149,14 @@ export const Validator = {
       },
       check(component, setting, value) {
         // From http://stackoverflow.com/questions/46155/validate-email-address-in-javascript
-        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
         // Allow emails to be valid if the component is pristine and no value is provided.
-        return (component.pristine && !value) || re.test(value);
+        return !value || re.test(value);
       }
     },
     date: {
-      message(component, setting) {
+      message(component) {
         return component.t(component.errorMessage('invalid_date'), {
           field: component.errorLabel,
           data: component.data
@@ -175,7 +169,7 @@ export const Validator = {
     pattern: {
       key: 'validate.pattern',
       message(component, setting) {
-        return component.t(_get(component, 'component.validate.patternMessage', component.errorMessage('pattern'), {
+        return component.t(_.get(component, 'component.validate.patternMessage', component.errorMessage('pattern'), {
           field: component.errorLabel,
           pattern: setting,
           data: component.data
@@ -200,14 +194,30 @@ export const Validator = {
         let valid = true;
         try {
           valid = FormioUtils.jsonLogic.apply(setting, {
-            data: data,
-            row: component.data
+            data,
+            row: component.data,
+            _
           });
         }
         catch (err) {
           valid = err.message;
         }
         return valid;
+      }
+    },
+    mask: {
+      message(component) {
+        return component.t(component.errorMessage('mask'), {
+          field: component.errorLabel,
+          data: component.data
+        });
+      },
+      check(component, setting, value) {
+        if (value && component._inputMask) {
+          return FormioUtils.matchInputMask(value, component._inputMask);
+        }
+
+        return true;
       }
     },
     custom: {
@@ -222,27 +232,23 @@ export const Validator = {
         if (!setting) {
           return true;
         }
-        let valid = true;
-        let row = component.data;
         let custom = setting;
-        /*eslint-disable no-unused-vars */
-        let input = value;
-        /*eslint-enable no-unused-vars */
+
         custom = custom.replace(/({{\s+(.*)\s+}})/, (match, $1, $2) => {
           if ($2.indexOf('data.') === 0) {
-            return _get(data, $2.replace('data.', ''));
+            return _.get(data, $2.replace('data.', ''));
           }
           else if ($2.indexOf('row.') === 0) {
-            return _get(row, $2.replace('row.', ''));
+            return _.get(component.data, $2.replace('row.', ''));
           }
 
           // Support legacy...
-          return _get(data, $2);
+          return _.get(data, $2);
         });
 
         /* jshint evil: true */
-        eval(custom);
-        return valid;
+        return (new Function('row', 'data', 'component', 'input',
+          `var valid = true; ${custom}; return valid;`))(component.data, data, component, value);
       }
     }
   }

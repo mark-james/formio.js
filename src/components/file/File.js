@@ -1,6 +1,5 @@
-import { BaseComponent } from '../base/Base';
+import {BaseComponent} from '../base/Base';
 import FormioUtils from '../../utils';
-import Formio from '../../formio';
 
 export class FileComponent extends BaseComponent {
   constructor(component, options, data) {
@@ -9,22 +8,31 @@ export class FileComponent extends BaseComponent {
       filereader: typeof FileReader != 'undefined',
       dnd: 'draggable' in document.createElement('span'),
       formdata: !!window.FormData,
-      progress: "upload" in new XMLHttpRequest
+      progress: 'upload' in new XMLHttpRequest
     };
   }
 
+  get emptyValue() {
+    return [];
+  }
+
   getValue() {
-    return this.data[this.component.key];
+    return this.dataValue;
   }
 
   setValue(value) {
-    this.data[this.component.key] = value;
+    this.dataValue = value || [];
     this.refreshDOM();
   }
 
+  get defaultValue() {
+    const value = super.defaultValue;
+    return Array.isArray(value) ? value : [];
+  }
+
   build() {
-    // Set default to empty array.
-    this.setValue([]);
+    // Restore the value.
+    this.restoreValue();
 
     const labelAtTheBottom = this.component.labelPosition === 'bottom';
 
@@ -39,6 +47,7 @@ export class FileComponent extends BaseComponent {
     this.inputsContainer.appendChild(this.listContainer);
     this.uploadContainer = this.buildUpload();
     this.hiddenFileInputElement = this.buildHiddenFileInput();
+    this.hook('input', this.hiddenFileInputElement, this.inputsContainer);
     this.inputsContainer.appendChild(this.hiddenFileInputElement);
     this.inputsContainer.appendChild(this.uploadContainer);
     this.addWarnings(this.inputsContainer);
@@ -49,6 +58,11 @@ export class FileComponent extends BaseComponent {
       this.createLabel(this.element);
     }
     this.createDescription(this.element);
+
+    // Disable if needed.
+    if (this.shouldDisable) {
+      this.disabled = true;
+    }
   }
 
   refreshDOM() {
@@ -56,12 +70,12 @@ export class FileComponent extends BaseComponent {
     if (this.listContainer && this.uploadContainer) {
       // Refresh file list.
       const newList = this.buildList();
-      this.element.replaceChild(newList, this.listContainer);
+      this.inputsContainer.replaceChild(newList, this.listContainer);
       this.listContainer = newList;
 
       // Refresh upload container.
       const newUpload = this.buildUpload();
-      this.element.replaceChild(newUpload, this.uploadContainer);
+      this.inputsContainer.replaceChild(newUpload, this.uploadContainer);
       this.uploadContainer = newUpload;
     }
   }
@@ -90,7 +104,7 @@ export class FileComponent extends BaseComponent {
           ]
         )
       ),
-      this.data[this.component.key].map((fileInfo, index) => this.createFileListItem(fileInfo, index))
+      this.dataValue.map((fileInfo, index) => this.createFileListItem(fileInfo, index))
     ]);
   }
 
@@ -99,7 +113,10 @@ export class FileComponent extends BaseComponent {
     return this.ce('input', {
       type: 'file',
       style: 'opacity: 0; position: absolute;',
-      onChange: () => {this.upload(this.hiddenFileInputElement.files)}
+      tabindex: -1,
+      onChange: () => {
+        this.upload(this.hiddenFileInputElement.files);
+      }
     });
   }
 
@@ -109,18 +126,16 @@ export class FileComponent extends BaseComponent {
         [
           this.ce('div', {class: 'col-md-1'},
             (
-              !this.disabled ?
-                this.ce('span', {
-                  class: 'glyphicon glyphicon-remove',
+              (!this.disabled && !this.shouldDisable) ?
+                this.ce('i', {
+                  class: this.iconClass('remove'),
                   onClick: event => {
-                    if (this.component.storage === 'url') {
-                      this.options.formio.makeRequest('', this.data[this.component.key][index].url, 'delete');
+                    if (fileInfo && (this.component.storage === 'url')) {
+                      this.options.formio.makeRequest('', fileInfo.url, 'delete');
                     }
                     event.preventDefault();
-                    this.data[this.component.key].splice(index, 1);
+                    this.splice(index);
                     this.refreshDOM();
-                    this.triggerChange();
-
                   }
                 }) :
                 null
@@ -130,7 +145,7 @@ export class FileComponent extends BaseComponent {
           this.ce('div', {class: 'col-md-2'}, this.fileSize(fileInfo.size))
         ]
       )
-    )
+    );
   }
 
   createFileLink(file) {
@@ -142,7 +157,7 @@ export class FileComponent extends BaseComponent {
 
   buildImageList() {
     return this.ce('div', {},
-      this.data[this.component.key].map((fileInfo, index) => this.createImageListItem(fileInfo, index))
+      this.dataValue.map((fileInfo, index) => this.createImageListItem(fileInfo, index))
     );
   }
 
@@ -153,7 +168,7 @@ export class FileComponent extends BaseComponent {
   createImageListItem(fileInfo, index) {
     let image;
 
-    let fileService = this.fileService;
+    const fileService = this.fileService;
     if (fileService) {
       fileService.downloadFile(fileInfo)
         .then(result => {
@@ -163,19 +178,22 @@ export class FileComponent extends BaseComponent {
     return this.ce('div', {},
       this.ce('span', {},
         [
-          image = this.ce('img', {src: '', alt: fileInfo.originalName || fileInfo.name, style: 'width:' + this.component.imageSize + 'px'}),
+          image = this.ce('img', {
+            src: '',
+            alt: fileInfo.originalName || fileInfo.name,
+            style: `width:${this.component.imageSize}px`
+          }),
           (
             !this.disabled ?
-              this.ce('span', {
-                class: 'glyphicon glyphicon-remove',
+              this.ce('i', {
+                class: this.iconClass('remove'),
                 onClick: event => {
-                  if (this.component.storage === 'url') {
-                    this.options.formio.makeRequest('', this.data[this.component.key][index].url, 'delete');
+                  if (fileInfo && (this.component.storage === 'url')) {
+                    this.options.formio.makeRequest('', fileInfo.url, 'delete');
                   }
                   event.preventDefault();
-                  this.data[this.component.key].splice(index, 1);
+                  this.splice(index);
                   this.refreshDOM();
-                  this.triggerChange();
                 }
               }) :
               null
@@ -191,14 +209,14 @@ export class FileComponent extends BaseComponent {
     // If this is disabled or a single value with a value, don't show the upload div.
     return this.ce('div', {},
       (
-        (!this.disabled && (this.component.multiple || this.data[this.component.key].length === 0)) ?
+        (!this.disabled && (this.component.multiple || this.dataValue.length === 0)) ?
           this.ce('div', {
             class: 'fileSelector',
-            onDragover: function (event) {
+            onDragover: function(event) {
               this.className = 'fileSelector fileDragOver';
               event.preventDefault();
             },
-            onDragleave: function (event) {
+            onDragleave: function(event) {
               this.className = 'fileSelector';
               event.preventDefault();
             },
@@ -209,24 +227,25 @@ export class FileComponent extends BaseComponent {
               return false;
             }
           },
-            [
-              this.ce('i', {class: 'glyphicon glyphicon-cloud-upload'}),
-              this.text(' Drop files to attach, or '),
-              this.ce('a', {
-                onClick: event => {
-                  event.preventDefault();
-                  // There is no direct way to trigger a file dialog. To work around this, create an input of type file and trigger
-                  // a click event on it.
-                  if (typeof this.hiddenFileInputElement.trigger === 'function') {
-                    this.hiddenFileInputElement.trigger('click');
-                  }
-                  else {
-                    this.hiddenFileInputElement.click();
-                  }
-                },
-                class: 'browse'
-              }, 'browse')
-            ]
+          [
+            this.ce('i', {class: this.iconClass('cloud-upload')}),
+            this.text(' Drop files to attach, or '),
+            this.ce('a', {
+              href: '#',
+              onClick: event => {
+                event.preventDefault();
+                // There is no direct way to trigger a file dialog. To work around this, create an input of type file and trigger
+                // a click event on it.
+                if (typeof this.hiddenFileInputElement.trigger === 'function') {
+                  this.hiddenFileInputElement.trigger('click');
+                }
+                else {
+                  this.hiddenFileInputElement.click();
+                }
+              },
+              class: 'browse'
+            }, 'browse')
+          ]
           ) :
           this.ce('div')
       )
@@ -234,17 +253,18 @@ export class FileComponent extends BaseComponent {
   }
 
   buildUploadStatusList(container) {
-    let list = this.ce('div');
+    const list = this.ce('div');
     this.uploadStatusList = list;
     container.appendChild(list);
   }
 
   addWarnings(container) {
     let hasWarnings = false;
-    let warnings = this.ce('div', {class: 'alert alert-warning'});
+    const warnings = this.ce('div', {class: 'alert alert-warning'});
     if (!this.component.storage) {
       hasWarnings = true;
-      warnings.appendChild(this.ce('p').appendChild(this.text('No storage has been set for this field. File uploads are disabled until storage is set up.')));
+      warnings.appendChild(this.ce('p').appendChild(this.text(
+        'No storage has been set for this field. File uploads are disabled until storage is set up.')));
     }
     if (!this.support.dnd) {
       hasWarnings = true;
@@ -268,22 +288,24 @@ export class FileComponent extends BaseComponent {
   }
 
   fileSize(a, b, c, d, e) {
-    return (b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2) + ' ' + (e ? 'kMGTPEZY'[--e] + 'B' : 'Bytes');
-  };
+    return `${(b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2)} ${e ? `${'kMGTPEZY'[--e]}B` : 'Bytes'}`;
+  }
 
   createUploadStatus(fileUpload) {
     let container;
-    return container = this.ce('div', {class: 'file' + (fileUpload.status === 'error' ? ' has-error' : '')}, [
+    return container = this.ce('div', {class: `file${fileUpload.status === 'error' ? ' has-error' : ''}`}, [
       this.ce('div', {class: 'row'}, [
-          this.ce('div', {class: 'fileName control-label col-sm-10'}, [
-            fileUpload.originalName,
-            this.ce('span', {
-              class: 'glyphicon glyphicon-remove',
-              onClick: () => {this.uploadStatusList.removeChild(container)}
-            })
-          ]),
-          this.ce('div', {class: 'fileSize control-label col-sm-2 text-right'}, this.fileSize(fileUpload.size))
+        this.ce('div', {class: 'fileName control-label col-sm-10'}, [
+          fileUpload.originalName,
+          this.ce('i', {
+            class: this.iconClass('remove'),
+            onClick: () => {
+              this.removeChildFrom(container, this.uploadStatusList);
+            }
+          })
         ]),
+        this.ce('div', {class: 'fileSize control-label col-sm-2 text-right'}, this.fileSize(fileUpload.size))
+      ]),
       this.ce('div', {class: 'row'}, [
         this.ce('div', {class: 'col-sm-12'}, [
           (fileUpload.status === 'progress' ?
@@ -294,12 +316,12 @@ export class FileComponent extends BaseComponent {
                 'aria-valuenow': fileUpload.progress,
                 'aria-valuemin': 0,
                 'aria-valuemax': 100,
-                style: 'width:' + fileUpload.progress + '%'
+                style: `width:${fileUpload.progress}%`
               },
-                this.ce('span', {class: 'sr-only'}, fileUpload.progress + '% Complete')
+              this.ce('span', {class: 'sr-only'}, `${fileUpload.progress}% Complete`)
               )
             ) :
-            this.ce('div', {class: 'bg-' + fileUpload.status}, fileUpload.message)
+            this.ce('div', {class: `bg-${fileUpload.status}`}, fileUpload.message)
           )
         ])
       ])
@@ -307,31 +329,35 @@ export class FileComponent extends BaseComponent {
   }
 
   globStringToRegex(str) {
-    var regexp = '', excludes = [];
+    let regexp = '', excludes = [];
     if (str.length > 2 && str[0] === '/' && str[str.length - 1] === '/') {
       regexp = str.substring(1, str.length - 1);
-    } else {
-      var split = str.split(',');
+    }
+    else {
+      const split = str.split(',');
       if (split.length > 1) {
-        for (var i = 0; i < split.length; i++) {
-          var r = this.globStringToRegex(split[i]);
+        for (let i = 0; i < split.length; i++) {
+          const r = this.globStringToRegex(split[i]);
           if (r.regexp) {
-            regexp += '(' + r.regexp + ')';
+            regexp += `(${r.regexp})`;
             if (i < split.length - 1) {
               regexp += '|';
             }
-          } else {
+          }
+          else {
             excludes = excludes.concat(r.excludes);
           }
         }
-      } else {
+      }
+      else {
         if (str.indexOf('!') === 0) {
-          excludes.push('^((?!' + this.globStringToRegex(str.substring(1)).regexp + ').)*$');
-        } else {
+          excludes.push(`^((?!${this.globStringToRegex(str.substring(1)).regexp}).)*$`);
+        }
+        else {
           if (str.indexOf('.') === 0) {
-            str = '*' + str;
+            str = `*${str}`;
           }
-          regexp = '^' + str.replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\-]', 'g'), '\\$&') + '$';
+          regexp = `^${str.replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\-]', 'g'), '\\$&')}$`;
           regexp = regexp.replace(/\\\*/g, '.*').replace(/\\\?/g, '.');
         }
       }
@@ -343,49 +369,56 @@ export class FileComponent extends BaseComponent {
     if (typeof str === 'string') {
       if (str.search(/kb/i) === str.length - 2) {
         return parseFloat(str.substring(0, str.length - 2) * 1024);
-      } else if (str.search(/mb/i) === str.length - 2) {
+      }
+      else if (str.search(/mb/i) === str.length - 2) {
         return parseFloat(str.substring(0, str.length - 2) * 1048576);
-      } else if (str.search(/gb/i) === str.length - 2) {
+      }
+      else if (str.search(/gb/i) === str.length - 2) {
         return parseFloat(str.substring(0, str.length - 2) * 1073741824);
-      } else if (str.search(/b/i) === str.length - 1) {
+      }
+      else if (str.search(/b/i) === str.length - 1) {
         return parseFloat(str.substring(0, str.length - 1));
-      } else if (str.search(/s/i) === str.length - 1) {
+      }
+      else if (str.search(/s/i) === str.length - 1) {
         return parseFloat(str.substring(0, str.length - 1));
-      } else if (str.search(/m/i) === str.length - 1) {
+      }
+      else if (str.search(/m/i) === str.length - 1) {
         return parseFloat(str.substring(0, str.length - 1) * 60);
-      } else if (str.search(/h/i) === str.length - 1) {
+      }
+      else if (str.search(/h/i) === str.length - 1) {
         return parseFloat(str.substring(0, str.length - 1) * 3600);
       }
     }
     return str;
-  };
+  }
 
   validatePattern(file, val) {
     if (!val) {
       return true;
     }
-    var pattern = this.globStringToRegex(val), valid = true;
+    const pattern = this.globStringToRegex(val);
+    let valid = true;
     if (pattern.regexp && pattern.regexp.length) {
-      var regexp = new RegExp(pattern.regexp, 'i');
+      const regexp = new RegExp(pattern.regexp, 'i');
       valid = (file.type != null && regexp.test(file.type)) ||
         (file.name != null && regexp.test(file.name));
     }
-    var len = pattern.excludes.length;
+    let len = pattern.excludes.length;
     while (len--) {
-      var exclude = new RegExp(pattern.excludes[len], 'i');
+      const exclude = new RegExp(pattern.excludes[len], 'i');
       valid = valid && (file.type == null || exclude.test(file.type)) &&
         (file.name == null || exclude.test(file.name));
     }
     return valid;
-  };
+  }
 
   validateMinSize(file, val) {
     return file.size + 0.1 >= this.translateScalars(val);
-  };
+  }
 
   validateMaxSize(file, val) {
     return file.size - 0.1 <= this.translateScalars(val);
-  };
+  }
 
   upload(files) {
     // Only allow one upload if not multiple.
@@ -412,7 +445,7 @@ export class FileComponent extends BaseComponent {
 
         // Get a unique name for this file to keep file collisions from occurring.
         const fileName = FormioUtils.uniqueName(file.name);
-        let fileUpload = {
+        const fileUpload = {
           originalName: file.name,
           name: fileName,
           size: file.size,
@@ -439,9 +472,9 @@ export class FileComponent extends BaseComponent {
             this.uploadStatusList.replaceChild(uploadStatus, originalStatus);
           }, this.component.url)
             .then(fileInfo => {
-              this.uploadStatusList.removeChild(uploadStatus);
+              this.removeChildFrom(uploadStatus, this.uploadStatusList);
               fileInfo.originalName = file.name;
-              this.data[this.component.key].push(fileInfo);
+              this.dataValue.push(fileInfo);
               this.refreshDOM();
               this.triggerChange();
             })
@@ -463,12 +496,12 @@ export class FileComponent extends BaseComponent {
     if (!fileService) {
       return alert('File Service not provided');
     }
-    fileService.downloadFile(fileInfo).then(function(file) {
+    fileService.downloadFile(fileInfo).then((file) => {
       if (file) {
         window.open(file.url, '_blank');
       }
     })
-      .catch(function(response) {
+      .catch((response) => {
         // Is alert the best way to do this?
         // User is expecting an immediate notification due to attempting to download a file.
         alert(response);
