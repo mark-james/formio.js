@@ -9,13 +9,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get2 = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _vanilla = require('text-mask-all/vanilla');
+var _vanillaTextMask = require('vanilla-text-mask');
 
-var _vanilla2 = _interopRequireDefault(_vanilla);
+var _vanillaTextMask2 = _interopRequireDefault(_vanillaTextMask);
 
-var _createNumberMask = require('text-mask-all/addons/dist/createNumberMask');
-
-var _createNumberMask2 = _interopRequireDefault(_createNumberMask);
+var _textMaskAddons = require('text-mask-addons');
 
 var _get3 = require('lodash/get');
 
@@ -83,9 +81,9 @@ var CurrencyComponent = exports.CurrencyComponent = function (_NumberComponent) 
   }, {
     key: 'setInputMask',
     value: function setInputMask(input) {
-      this.inputMask = (0, _vanilla2.default)({
+      this.inputMask = (0, _vanillaTextMask2.default)({
         inputElement: input,
-        mask: (0, _createNumberMask2.default)({
+        mask: (0, _textMaskAddons.createNumberMask)({
           prefix: this.prefix,
           suffix: this.suffix,
           thousandsSeparatorSymbol: (0, _get4.default)(this.component, 'thousandsSeparator', this.thousandsSeparator),

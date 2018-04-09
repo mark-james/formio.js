@@ -72,6 +72,12 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "formiojs/src/components/editrgrid/editgrid.js~editgridcomponent",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html",
+    "<span>EditGridComponent</span> <span class=\"search-result-import-path\">formiojs/src/components/editrgrid/EditGrid.js</span>",
+    "class"
+  ],
+  [
     "formiojs/src/components/email/email.js~emailcomponent",
     "class/src/components/email/Email.js~EmailComponent.html",
     "<span>EmailComponent</span> <span class=\"search-result-import-path\">formiojs/src/components/email/Email.js</span>",
@@ -318,6 +324,18 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
+    "formiojs/src/components/editrgrid/fixtures/comp1.js~component",
+    "variable/index.html#static-variable-component",
+    "<span>component</span> <span class=\"search-result-import-path\">formiojs/src/components/editrgrid/fixtures/comp1.js</span>",
+    "variable"
+  ],
+  [
+    "formiojs/src/components/editrgrid/fixtures/comp2.js~component",
+    "variable/index.html#static-variable-component",
+    "<span>component</span> <span class=\"search-result-import-path\">formiojs/src/components/editrgrid/fixtures/comp2.js</span>",
+    "variable"
+  ],
+  [
     "formiojs/src/components/email/fixtures/comp1.js~component",
     "variable/index.html#static-variable-component",
     "<span>component</span> <span class=\"search-result-import-path\">formiojs/src/components/email/fixtures/comp1.js</span>",
@@ -528,6 +546,12 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
+    "formiojs/src/components/editrgrid/fixtures/index.js~components",
+    "variable/index.html#static-variable-components",
+    "<span>components</span> <span class=\"search-result-import-path\">formiojs/src/components/editrgrid/fixtures/index.js</span>",
+    "variable"
+  ],
+  [
     "formiojs/src/components/email/fixtures/index.js~components",
     "variable/index.html#static-variable-components",
     "<span>components</span> <span class=\"search-result-import-path\">formiojs/src/components/email/fixtures/index.js</span>",
@@ -651,6 +675,12 @@ window.esdocSearchIndex = [
     "formiojs/src/components/well/fixtures/index.js~components",
     "variable/index.html#static-variable-components",
     "<span>components</span> <span class=\"search-result-import-path\">formiojs/src/components/well/fixtures/index.js</span>",
+    "variable"
+  ],
+  [
+    "formiojs/src/utils/jsonlogic/operators.js~lodashoperators",
+    "variable/index.html#static-variable-lodashOperators",
+    "<span>lodashOperators</span> <span class=\"search-result-import-path\">formiojs/src/utils/jsonlogic/operators.js</span>",
     "variable"
   ],
   [
@@ -1584,10 +1614,28 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/components/base/base.js~basecomponent#datavalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-dataValue",
+    "src/components/base/Base.js~BaseComponent#dataValue",
+    "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#datavalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-dataValue",
+    "src/components/base/Base.js~BaseComponent#dataValue",
+    "member"
+  ],
+  [
     "src/components/base/base.js~basecomponent#defaultvalue",
     "class/src/components/base/Base.js~BaseComponent.html#instance-get-defaultValue",
     "src/components/base/Base.js~BaseComponent#defaultValue",
     "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#deletevalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-deleteValue",
+    "src/components/base/Base.js~BaseComponent#deleteValue",
+    "method"
   ],
   [
     "src/components/base/base.js~basecomponent#description",
@@ -1603,13 +1651,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
@@ -1630,6 +1678,12 @@ window.esdocSearchIndex = [
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-emit",
     "src/components/base/Base.js~BaseComponent#emit",
     "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#emptyvalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-emptyValue",
+    "src/components/base/Base.js~BaseComponent#emptyValue",
+    "member"
   ],
   [
     "src/components/base/base.js~basecomponent#error",
@@ -1764,6 +1818,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#hasvalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-hasValue",
+    "src/components/base/Base.js~BaseComponent#hasValue",
+    "member"
+  ],
+  [
     "src/components/base/base.js~basecomponent#hook",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-hook",
     "src/components/base/Base.js~BaseComponent#hook",
@@ -1825,13 +1885,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
@@ -1863,18 +1923,6 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#labelontheright",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-labelOnTheRight",
     "src/components/base/Base.js~BaseComponent#labelOnTheRight",
-    "method"
-  ],
-  [
-    "src/components/base/base.js~basecomponent#language",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-language",
-    "src/components/base/Base.js~BaseComponent#language",
-    "member"
-  ],
-  [
-    "src/components/base/base.js~basecomponent#localize",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-method-localize",
-    "src/components/base/Base.js~BaseComponent#localize",
     "method"
   ],
   [
@@ -1965,6 +2013,12 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#removevalue",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-removeValue",
     "src/components/base/Base.js~BaseComponent#removeValue",
+    "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#rendertemplate",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-renderTemplate",
+    "src/components/base/Base.js~BaseComponent#renderTemplate",
     "method"
   ],
   [
@@ -2064,6 +2118,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#splice",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-splice",
+    "src/components/base/Base.js~BaseComponent#splice",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#t",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-t",
     "src/components/base/Base.js~BaseComponent#t",
@@ -2119,7 +2179,7 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#value",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-member-value",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-value",
     "src/components/base/Base.js~BaseComponent#value",
     "member"
   ],
@@ -2985,6 +3045,204 @@ window.esdocSearchIndex = [
     "src/components/day/fixtures/index.js",
     "file/src/components/day/fixtures/index.js.html",
     "src/components/day/fixtures/index.js",
+    "file"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js",
+    "file/src/components/editrgrid/EditGrid.js.html",
+    "src/components/editrgrid/EditGrid.js",
+    "file"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#addrow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-addRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#addRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#build",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-build",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#build",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#buildtable",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-buildTable",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#buildTable",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#cancelrow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-cancelRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#cancelRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#checkdata",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-checkData",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#checkData",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#checkvalidity",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-checkValidity",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#checkValidity",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#constructor",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-constructor-constructor",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#constructor",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#createaddbutton",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-createAddButton",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#createAddButton",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#createfooter",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-createFooter",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#createFooter",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#createheader",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-createHeader",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#createHeader",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#createrow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-createRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#createRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#datavalue",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-dataValue",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#dataValue",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#defaultrowtemplate",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-get-defaultRowTemplate",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#defaultRowTemplate",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#defaultvalue",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-get-defaultValue",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#defaultValue",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#editrow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-editRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#editRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#editrows",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-editRows",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#editRows",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#footerelement",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-footerElement",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#footerElement",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#getvalue",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-getValue",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#getValue",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#headerelement",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-headerElement",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#headerElement",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#refreshdom",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-refreshDOM",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#refreshDOM",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#removerow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-removeRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#removeRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#removerowcomponents",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-removeRowComponents",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#removeRowComponents",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#saverow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-saveRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#saveRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#setcustomvalidity",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-setCustomValidity",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#setCustomValidity",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#setvalue",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-setValue",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#setValue",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#tableelement",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-tableElement",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#tableElement",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#type",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-type",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#type",
+    "member"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#validaterow",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-validateRow",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#validateRow",
+    "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.spec.js",
+    "file/src/components/editrgrid/EditGrid.spec.js.html",
+    "src/components/editrgrid/EditGrid.spec.js",
+    "file"
+  ],
+  [
+    "src/components/editrgrid/fixtures/comp1.js",
+    "file/src/components/editrgrid/fixtures/comp1.js.html",
+    "src/components/editrgrid/fixtures/comp1.js",
+    "file"
+  ],
+  [
+    "src/components/editrgrid/fixtures/comp2.js",
+    "file/src/components/editrgrid/fixtures/comp2.js.html",
+    "src/components/editrgrid/fixtures/comp2.js",
+    "file"
+  ],
+  [
+    "src/components/editrgrid/fixtures/index.js",
+    "file/src/components/editrgrid/fixtures/index.js.html",
+    "src/components/editrgrid/fixtures/index.js",
     "file"
   ],
   [
@@ -3912,6 +4170,24 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/components/select/select.js~selectcomponent#activate",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-activate",
+    "src/components/select/Select.js~SelectComponent#activate",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#activated",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-activated",
+    "src/components/select/Select.js~SelectComponent#activated",
+    "member"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#active",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-get-active",
+    "src/components/select/Select.js~SelectComponent#active",
+    "member"
+  ],
+  [
     "src/components/select/select.js~selectcomponent#addcurrentchoices",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-addCurrentChoices",
     "src/components/select/Select.js~SelectComponent#addCurrentChoices",
@@ -3921,6 +4197,24 @@ window.esdocSearchIndex = [
     "src/components/select/select.js~selectcomponent#addinput",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-addInput",
     "src/components/select/Select.js~SelectComponent#addInput",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#addoption",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-addOption",
+    "src/components/select/Select.js~SelectComponent#addOption",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#addplaceholder",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-addPlaceholder",
+    "src/components/select/Select.js~SelectComponent#addPlaceholder",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#addvalueoptions",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-addValueOptions",
+    "src/components/select/Select.js~SelectComponent#addValueOptions",
     "method"
   ],
   [
@@ -3939,6 +4233,12 @@ window.esdocSearchIndex = [
     "src/components/select/select.js~selectcomponent#constructor",
     "class/src/components/select/Select.js~SelectComponent.html#instance-constructor-constructor",
     "src/components/select/Select.js~SelectComponent#constructor",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#createinput",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-createInput",
+    "src/components/select/Select.js~SelectComponent#createInput",
     "method"
   ],
   [
@@ -3984,15 +4284,21 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/select/select.js~selectcomponent#lazyloadinit",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-lazyLoadInit",
+    "src/components/select/Select.js~SelectComponent#lazyLoadInit",
+    "member"
+  ],
+  [
     "src/components/select/select.js~selectcomponent#loaditems",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-loadItems",
     "src/components/select/Select.js~SelectComponent#loadItems",
     "method"
   ],
   [
-    "src/components/select/select.js~selectcomponent#placeholder",
-    "class/src/components/select/Select.js~SelectComponent.html#instance-member-placeholder",
-    "src/components/select/Select.js~SelectComponent#placeholder",
+    "src/components/select/select.js~selectcomponent#loading",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-loading",
+    "src/components/select/Select.js~SelectComponent#loading",
     "member"
   ],
   [
@@ -4008,6 +4314,24 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/components/select/select.js~selectcomponent#selectcontainer",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-selectContainer",
+    "src/components/select/Select.js~SelectComponent#selectContainer",
+    "member"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#selectinput",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-selectInput",
+    "src/components/select/Select.js~SelectComponent#selectInput",
+    "member"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#selectoptions",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-selectOptions",
+    "src/components/select/Select.js~SelectComponent#selectOptions",
+    "member"
+  ],
+  [
     "src/components/select/select.js~selectcomponent#setitems",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-setItems",
     "src/components/select/Select.js~SelectComponent#setItems",
@@ -4017,6 +4341,12 @@ window.esdocSearchIndex = [
     "src/components/select/select.js~selectcomponent#setvalue",
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-setValue",
     "src/components/select/Select.js~SelectComponent#setValue",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#setupvalueelement",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-setupValueElement",
+    "src/components/select/Select.js~SelectComponent#setupValueElement",
     "method"
   ],
   [
@@ -4036,6 +4366,18 @@ window.esdocSearchIndex = [
     "class/src/components/select/Select.js~SelectComponent.html#instance-method-updateItems",
     "src/components/select/Select.js~SelectComponent#updateItems",
     "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#updateviewonlyvalue",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-method-updateViewOnlyValue",
+    "src/components/select/Select.js~SelectComponent#updateViewOnlyValue",
+    "method"
+  ],
+  [
+    "src/components/select/select.js~selectcomponent#usetemplate",
+    "class/src/components/select/Select.js~SelectComponent.html#instance-member-useTemplate",
+    "src/components/select/Select.js~SelectComponent#useTemplate",
+    "member"
   ],
   [
     "src/components/select/select.js~selectcomponent#validatemultiple",
@@ -4374,6 +4716,12 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "src/components/textarea/textarea.js~textareacomponent#constructor",
+    "class/src/components/textarea/TextArea.js~TextAreaComponent.html#instance-constructor-constructor",
+    "src/components/textarea/TextArea.js~TextAreaComponent#constructor",
+    "method"
+  ],
+  [
     "src/components/textarea/textarea.js~textareacomponent#createinput",
     "class/src/components/textarea/TextArea.js~TextAreaComponent.html#instance-method-createInput",
     "src/components/textarea/TextArea.js~TextAreaComponent#createInput",
@@ -4596,6 +4944,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/formio.form.js~formioform#addlanguage",
+    "class/src/formio.form.js~FormioForm.html#instance-method-addLanguage",
+    "src/formio.form.js~FormioForm#addLanguage",
+    "method"
+  ],
+  [
     "src/formio.form.js~formioform#addshortcut",
     "class/src/formio.form.js~FormioForm.html#instance-method-addShortcut",
     "src/formio.form.js~FormioForm#addShortcut",
@@ -4663,13 +5017,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-set-form",
+    "class/src/formio.form.js~FormioForm.html#instance-get-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-get-form",
+    "class/src/formio.form.js~FormioForm.html#instance-set-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
@@ -4710,6 +5064,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/formio.form.js~formioform#language",
+    "class/src/formio.form.js~FormioForm.html#instance-set-language",
+    "src/formio.form.js~FormioForm#language",
+    "member"
+  ],
+  [
     "src/formio.form.js~formioform#loadsubmission",
     "class/src/formio.form.js~FormioForm.html#instance-method-loadSubmission",
     "src/formio.form.js~FormioForm#loadSubmission",
@@ -4732,6 +5092,12 @@ window.esdocSearchIndex = [
     "class/src/formio.form.js~FormioForm.html#instance-set-loading",
     "src/formio.form.js~FormioForm#loading",
     "member"
+  ],
+  [
+    "src/formio.form.js~formioform#localize",
+    "class/src/formio.form.js~FormioForm.html#instance-method-localize",
+    "src/formio.form.js~FormioForm#localize",
+    "method"
   ],
   [
     "src/formio.form.js~formioform#nosubmit",
@@ -5334,6 +5700,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/formio.js~formio.getoptions",
+    "class/src/formio.js~Formio.html#static-method-getOptions",
+    "src/formio.js~Formio.getOptions",
+    "method"
+  ],
+  [
     "src/formio.js~formio.getplugin",
     "class/src/formio.js~Formio.html#static-method-getPlugin",
     "src/formio.js~Formio.getPlugin",
@@ -5451,6 +5823,12 @@ window.esdocSearchIndex = [
     "src/formio.js~formio.setbaseurl",
     "class/src/formio.js~Formio.html#static-method-setBaseUrl",
     "src/formio.js~Formio.setBaseUrl",
+    "method"
+  ],
+  [
+    "src/formio.js~formio.setoptions",
+    "class/src/formio.js~Formio.html#static-method-setOptions",
+    "src/formio.js~Formio.setOptions",
     "method"
   ],
   [
@@ -5817,6 +6195,18 @@ window.esdocSearchIndex = [
     "src/utils/index.js",
     "file/src/utils/index.js.html",
     "src/utils/index.js",
+    "file"
+  ],
+  [
+    "src/utils/jsonlogic/operators.js",
+    "file/src/utils/jsonlogic/operators.js.html",
+    "src/utils/jsonlogic/operators.js",
+    "file"
+  ],
+  [
+    "src/utils/jsonlogic/operators.spec.js",
+    "file/src/utils/jsonlogic/operators.spec.js.html",
+    "src/utils/jsonlogic/operators.spec.js",
     "file"
   ],
   [

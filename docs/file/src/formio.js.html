@@ -70,6 +70,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day">components/day</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/day/Day.js~DayComponent.html">DayComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day-fixtures">components/day/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid">components/editrgrid</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/editrgrid/EditGrid.js~EditGridComponent.html">EditGridComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid-fixtures">components/editrgrid/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email">components/email</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/email/Email.js~EmailComponent.html">EmailComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email-fixtures">components/email/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
@@ -138,6 +142,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -183,6 +188,9 @@ export class Formio {
     this.vUrl = &apos;&apos;;
     this.query = &apos;&apos;;
 
+    if (Object.keys(options).length !== 0 &amp;&amp; options.constructor === Object) {
+      Formio.setOptions(options);
+    }
     if (options.hasOwnProperty(&apos;base&apos;)) {
       this.base = options.base;
     }
@@ -694,6 +702,16 @@ export class Formio {
       return canSubmit;
     });
   }
+
+  static getOptions() {
+    return JSON.parse(sessionStorage.formioOptions);
+
+  }
+
+  static setOptions(options) {
+    sessionStorage.formioOptions = JSON.stringify(options);
+  }
+
 
   static getUrlParts(url) {
     var regex = &apos;^(http[s]?:\\/\\/)&apos;;
@@ -1285,7 +1303,8 @@ export class Formio {
 
 // Define all the static properties.
 Formio.Headers = Headers;
-Formio.baseUrl = &apos;https://api.form.io&apos;;
+//Formio.baseUrl = &apos;http://localhost:4200&apos;;
+Formio.baseUrl = &apos;http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com&apos;;
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];

@@ -1612,6 +1612,7 @@ exports.set = function(name, value, options) {
   var path     = opts.path     !== undefined ? opts.path     : (defaults.path !== undefined ? defaults.path : '/');
   var secure   = opts.secure   !== undefined ? opts.secure   : defaults.secure;
   var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
+  var samesite = opts.samesite !== undefined ? opts.samesite : defaults.samesite;
 
   // Determine cookie expiration date
   // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
@@ -1620,7 +1621,7 @@ exports.set = function(name, value, options) {
       typeof expires === 'number' ? new Date().getTime() + (expires * 864e5) :
       // else expires should be either a Date object or in a format recognized by Date.parse()
       expires
-  ) : '';
+  ) : 0;
 
   // Set cookie
   document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent)                // Encode cookie name
@@ -1628,31 +1629,31 @@ exports.set = function(name, value, options) {
   .replace(')', '%29') +
   '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) +                  // Encode cookie value (RFC6265)
   (expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + // Add expiration date
-  (domain   ? ';domain=' + domain : '') +                                          // Add domain
-  (path     ? ';path='   + path   : '') +                                          // Add path
-  (secure   ? ';secure'           : '') +                                          // Add secure option
-  (httponly ? ';httponly'         : '');                                           // Add httponly option
+  (domain   ? ';domain=' + domain     : '') +                                      // Add domain
+  (path     ? ';path='   + path       : '') +                                      // Add path
+  (secure   ? ';secure'               : '') +                                      // Add secure option
+  (httponly ? ';httponly'             : '') +                                      // Add httponly option
+  (samesite ? ';samesite=' + samesite : '');                                       // Add samesite option
 };
 
 exports.get = function(name) {
   var cookies = document.cookie.split(';');
-
+  
   // Iterate all cookies
-  for(var i = 0; i < cookies.length; i++) {
-    var cookie = cookies[i];
-    var cookieLength = cookie.length;
+  while(cookies.length) {
+    var cookie = cookies.pop();
 
     // Determine separator index ("name=value")
     var separatorIndex = cookie.indexOf('=');
 
     // IE<11 emits the equal sign when the cookie value is empty
-    separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
+    separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
 
-    var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
+    var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
 
     // Return cookie value if the name matches
     if (cookie_name === name) {
-      return decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
+      return decodeURIComponent(cookie.slice(separatorIndex + 1));
     }
   }
 
@@ -1675,20 +1676,19 @@ exports.all = function() {
   var cookies = document.cookie.split(';');
 
   // Iterate all cookies
-  for(var i = 0; i < cookies.length; i++) {
-	  var cookie = cookies[i];
-    var cookieLength = cookie.length;
+  while(cookies.length) {
+    var cookie = cookies.pop();
 
-	  // Determine separator index ("name=value")
-	  var separatorIndex = cookie.indexOf('=');
+    // Determine separator index ("name=value")
+    var separatorIndex = cookie.indexOf('=');
 
-	  // IE<11 emits the equal sign when the cookie value is empty
-	  separatorIndex = separatorIndex < 0 ? cookieLength : separatorIndex;
+    // IE<11 emits the equal sign when the cookie value is empty
+    separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
 
     // add the cookie name and value to the `all` object
-	  var cookie_name = decodeURIComponent(cookie.substring(0, separatorIndex).replace(/^\s+/, ''));
-	  all[cookie_name] = decodeURIComponent(cookie.substring(separatorIndex + 1, cookieLength));
-	}
+    var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
+    all[cookie_name] = decodeURIComponent(cookie.slice(separatorIndex + 1));
+  }
 
   return all;
 };
@@ -1724,7 +1724,8 @@ exports.all = function() {
       this._maxListeners = conf.maxListeners !== undefined ? conf.maxListeners : defaultMaxListeners;
 
       conf.wildcard && (this.wildcard = conf.wildcard);
-      conf.newListener && (this.newListener = conf.newListener);
+      conf.newListener && (this._newListener = conf.newListener);
+      conf.removeListener && (this._removeListener = conf.removeListener);
       conf.verboseMemoryLeak && (this.verboseMemoryLeak = conf.verboseMemoryLeak);
 
       if (this.wildcard) {
@@ -1761,7 +1762,8 @@ exports.all = function() {
 
   function EventEmitter(conf) {
     this._events = {};
-    this.newListener = false;
+    this._newListener = false;
+    this._removeListener = false;
     this.verboseMemoryLeak = false;
     configure.call(this, conf);
   }
@@ -1998,7 +2000,7 @@ exports.all = function() {
 
     var type = arguments[0];
 
-    if (type === 'newListener' && !this.newListener) {
+    if (type === 'newListener' && !this._newListener) {
       if (!this._events.newListener) {
         return false;
       }
@@ -2104,7 +2106,7 @@ exports.all = function() {
 
     var type = arguments[0];
 
-    if (type === 'newListener' && !this.newListener) {
+    if (type === 'newListener' && !this._newListener) {
         if (!this._events.newListener) { return Promise.resolve([false]); }
     }
 
@@ -2245,7 +2247,8 @@ exports.all = function() {
 
     // To avoid recursion in the case that type == "newListeners"! Before
     // adding it to the listeners, first emit "newListeners".
-    this.emit('newListener', type, listener);
+    if (this._newListener)
+       this.emit('newListener', type, listener);
 
     if (this.wildcard) {
       growListenerTree.call(this, type, listener);
@@ -2336,8 +2339,8 @@ exports.all = function() {
             delete this._events[type];
           }
         }
-
-        this.emit("removeListener", type, listener);
+        if (this._removeListener)
+          this.emit("removeListener", type, listener);
 
         return this;
       }
@@ -2350,8 +2353,8 @@ exports.all = function() {
         else {
           delete this._events[type];
         }
-
-        this.emit("removeListener", type, listener);
+        if (this._removeListener)
+          this.emit("removeListener", type, listener);
       }
     }
 
@@ -2385,14 +2388,17 @@ exports.all = function() {
       for(i = 0, l = fns.length; i < l; i++) {
         if(fn === fns[i]) {
           fns.splice(i, 1);
-          this.emit("removeListenerAny", fn);
+          if (this._removeListener)
+            this.emit("removeListenerAny", fn);
           return this;
         }
       }
     } else {
       fns = this._all;
-      for(i = 0, l = fns.length; i < l; i++)
-        this.emit("removeListenerAny", fns[i]);
+      if (this._removeListener) {
+        for(i = 0, l = fns.length; i < l; i++)
+          this.emit("removeListenerAny", fns[i]);
+      }
       this._all = [];
     }
     return this;
@@ -2401,7 +2407,7 @@ exports.all = function() {
   EventEmitter.prototype.removeListener = EventEmitter.prototype.off;
 
   EventEmitter.prototype.removeAllListeners = function(type) {
-    if (arguments.length === 0) {
+    if (type === undefined) {
       !this._events || init.call(this);
       return this;
     }
@@ -3434,7 +3440,10 @@ var isArray = Array.isArray || function (xs) {
 
   function parseHeaders(rawHeaders) {
     var headers = new Headers()
-    rawHeaders.split(/\r?\n/).forEach(function(line) {
+    // Replace instances of \r\n and \n followed by at least one space or horizontal tab with a space
+    // https://tools.ietf.org/html/rfc7230#section-3.2
+    var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
+    preProcessedHeaders.split(/\r?\n/).forEach(function(line) {
       var parts = line.split(':')
       var key = parts.shift().trim()
       if (key) {
@@ -3453,7 +3462,7 @@ var isArray = Array.isArray || function (xs) {
     }
 
     this.type = 'default'
-    this.status = 'status' in options ? options.status : 200
+    this.status = options.status === undefined ? 200 : options.status
     this.ok = this.status >= 200 && this.status < 300
     this.statusText = 'statusText' in options ? options.statusText : 'OK'
     this.headers = new Headers(options.headers)
@@ -3520,6 +3529,8 @@ var isArray = Array.isArray || function (xs) {
 
       if (request.credentials === 'include') {
         xhr.withCredentials = true
+      } else if (request.credentials === 'omit') {
+        xhr.withCredentials = false
       }
 
       if ('responseType' in xhr && support.blob) {

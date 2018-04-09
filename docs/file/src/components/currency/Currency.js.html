@@ -70,6 +70,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day">components/day</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/day/Day.js~DayComponent.html">DayComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day-fixtures">components/day/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid">components/editrgrid</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/editrgrid/EditGrid.js~EditGridComponent.html">EditGridComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid-fixtures">components/editrgrid/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email">components/email</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/email/Email.js~EmailComponent.html">EmailComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email-fixtures">components/email/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
@@ -138,13 +142,14 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/components/currency/Currency.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import maskInput from &apos;text-mask-all/vanilla&apos;;
-import createNumberMask from &apos;text-mask-all/addons/dist/createNumberMask&apos;;
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import maskInput from &apos;vanilla-text-mask&apos;;
+import { createNumberMask } from &apos;text-mask-addons&apos;;
 import _get from &apos;lodash/get&apos;;
 import { NumberComponent } from &apos;../number/Number&apos;;
 
@@ -157,7 +162,7 @@ export class CurrencyComponent extends NumberComponent {
 
     // Get the prefix and suffix from the localized string.
     const regex = &apos;(.*)?100(&apos; + (this.decimalSeparator === &apos;.&apos; ? &apos;\.&apos; : this.decimalSeparator) + &apos;0{&apos; + this.decimalLimit + &apos;})?(.*)?&apos;;
-    const parts = (100).toLocaleString(this.options.i18n.lng, this.getFormatOptions()).match(new RegExp(regex));
+    const parts = (100).toLocaleString(options.language, this.getFormatOptions()).match(new RegExp(regex));
     this.prefix = parts[1] || &apos;&apos;;
     this.suffix = parts[3] || &apos;&apos;;
   }

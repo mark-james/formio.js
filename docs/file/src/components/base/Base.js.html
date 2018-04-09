@@ -70,6 +70,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day">components/day</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/day/Day.js~DayComponent.html">DayComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day-fixtures">components/day/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid">components/editrgrid</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/editrgrid/EditGrid.js~EditGridComponent.html">EditGridComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid-fixtures">components/editrgrid/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email">components/email</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/email/Email.js~EmailComponent.html">EmailComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email-fixtures">components/email/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
@@ -138,13 +142,15 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/components/base/Base.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import maskInput from &apos;text-mask-all/vanilla&apos;;
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import maskInput, { conformToMask } from &apos;vanilla-text-mask&apos;;
 import Promise from &quot;native-promise-only&quot;;
+import _ from &apos;lodash&apos;;
 import _get from &apos;lodash/get&apos;;
 import _each from &apos;lodash/each&apos;;
 import _assign from &apos;lodash/assign&apos;;
@@ -158,8 +164,6 @@ import i18next from &apos;i18next&apos;;
 import FormioUtils from &apos;../../utils&apos;;
 import { Validator } from &apos;../Validator&apos;;
 import Tooltip from &apos;tooltip.js&apos;;
-
-i18next.initialized = false;
 
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
@@ -187,37 +191,6 @@ export class BaseComponent {
     this.options = _defaults(_clone(options), {
       highlightErrors: true
     });
-
-    /**
-     * The i18n configuration for this component.
-     */
-    let i18n = require(&apos;../../i18n&apos;);
-    if (options &amp;&amp; options.i18n &amp;&amp; !options.i18nReady) {
-      // Support legacy way of doing translations.
-      if (options.i18n.resources) {
-        i18n = options.i18n;
-      }
-      else {
-        _each(options.i18n, (lang, code) =&gt; {
-          if (!i18n.resources[code]) {
-            i18n.resources[code] = {translation: lang};
-          }
-          else {
-            _assign(i18n.resources[code].translation, lang);
-          }
-        });
-      }
-
-      options.i18n = i18n;
-      options.i18nReady = true;
-    }
-
-    if (options &amp;&amp; options.i18n) {
-      this.options.i18n = options.i18n;
-    }
-    else {
-      this.options.i18n = i18n;
-    }
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -397,24 +370,6 @@ export class BaseComponent {
   }
 
   /**
-   * Sets the language for this form.
-   *
-   * @param lang
-   * @return {*}
-   */
-  set language(lang) {
-    return new Promise((resolve, reject) =&gt; {
-      i18next.changeLanguage(lang, (err) =&gt; {
-        if (err) {
-          return reject(err);
-        }
-        this.redraw();
-        resolve();
-      });
-    });
-  }
-
-  /**
    * Register for a new event within this component.
    *
    * @example
@@ -494,25 +449,6 @@ export class BaseComponent {
   }
 
   /**
-   * Perform the localization initialization.
-   * @returns {*}
-   */
-  localize() {
-    if (i18next.initialized) {
-      return Promise.resolve(i18next);
-    }
-    i18next.initialized = true;
-    return new Promise((resolve, reject) =&gt; {
-      i18next.init(this.options.i18n, (err, t) =&gt; {
-        if (err) {
-          return reject(err);
-        }
-        resolve(i18next);
-      });
-    });
-  }
-
-  /**
    * Called before a next page is triggered allowing the components
    * to perform special functions.
    *
@@ -533,7 +469,8 @@ export class BaseComponent {
   }
 
   get shouldDisable() {
-    return (this.options.readOnly || this.component.disabled);
+    return Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled;
+    //return (this.options.readOnly || this.component.disabled);
   }
 
   /**
@@ -680,7 +617,8 @@ export class BaseComponent {
         try {
           defaultValue = FormioUtils.jsonLogic.apply(this.component.customDefaultValue, {
             data: this.data,
-            row: this.data
+            row: this.data,
+            _
           });
         }
         catch (err) {
@@ -1267,6 +1205,33 @@ export class BaseComponent {
   }
 
   /**
+   * Render a template string into html.
+   *
+   * @param template
+   * @param data
+   * @param actions
+   *
+   * @return {HTMLElement} - The created element.
+   */
+  renderTemplate(template, data, actions = []) {
+    // Create a container div.
+    const div = this.ce(&apos;div&apos;);
+
+    // Interpolate the template and populate
+    div.innerHTML = FormioUtils.interpolate(template, data);
+
+    // Add actions to matching elements.
+    actions.forEach(action =&gt; {
+      const elements = div.getElementsByClassName(action.class);
+      Array.prototype.forEach.call(elements, element =&gt; {
+        element.addEventListener(action.event, action.action);
+      });
+    });
+
+    return div;
+  }
+
+  /**
    * Alias for document.createElement.
    *
    * @param {string} type - The type of element to create
@@ -1328,7 +1293,10 @@ export class BaseComponent {
    *   The name of the class to add.
    */
   addClass(element, className) {
-    element.setAttribute(&apos;class&apos;, `${element.getAttribute(&apos;class&apos;)} ${className}`);
+    const classes = element.getAttribute(&apos;class&apos;);
+    if (!classes || classes.indexOf(className) === -1) {
+      element.setAttribute(&apos;class&apos;, `${classes} ${className}`);
+    }
   }
 
   /**
@@ -1342,7 +1310,7 @@ export class BaseComponent {
   removeClass(element, className) {
     let cls = element.getAttribute(&apos;class&apos;);
     if (cls) {
-      cls = cls.replace(className, &apos;&apos;);
+      cls = cls.replace(new RegExp(className, &apos;g&apos;), &apos;&apos;);
       element.setAttribute(&apos;class&apos;, cls);
     }
   }
@@ -1497,6 +1465,9 @@ export class BaseComponent {
   }
 
   addInputSubmitListener(input) {
+    if (!this.options.submitOnEnter) {
+      return;
+    }
     this.addEventListener(input, &apos;keypress&apos;, (event) =&gt; {
       let key = event.keyCode || event.which;
       if (key == 13) {
@@ -1531,6 +1502,82 @@ export class BaseComponent {
     this.hook(&apos;input&apos;, input, container);
     this.addInputEventListener(input);
     this.addInputSubmitListener(input);
+  }
+
+  /**
+   * The empty value for this component.
+   *
+   * @return {null}
+   */
+  get emptyValue() {
+    return null;
+  }
+
+  /**
+   * Returns if this component has a value set.
+   *
+   */
+  get hasValue() {
+    return _.has(this.data, this.component.key);
+  }
+
+  /**
+   * Get the value of this component.
+   *
+   * @return {*}
+   */
+  get value() {
+    return this.dataValue;
+  }
+
+  /**
+   * Get the static value of this component.
+   * @return {*}
+   */
+  get dataValue() {
+    if (!this.component.key) {
+      return this.data;
+    }
+    if (!this.hasValue) {
+      this.dataValue = this.emptyValue;
+    }
+    return _.get(this.data, this.component.key);
+  }
+
+  /**
+   * Sets the static value of this component.
+   *
+   * @param value
+   */
+  set dataValue(value) {
+    if (!this.component.key) {
+      return value;
+    }
+    _.set(this.data, this.component.key, value);
+    return value;
+  }
+
+  /**
+   * Splice a value from the dataValue.
+   *
+   * @param index
+   */
+  splice(index) {
+    if (this.hasValue) {
+      let dataValue = this.dataValue || [];
+      if (_.isArray(dataValue) &amp;&amp; dataValue.hasOwnProperty(index)) {
+        dataValue.splice(index, 1);
+        this.dataValue = dataValue;
+        this.triggerChange();
+      }
+    }
+  }
+
+  /**
+   * Deletes the value of the component.
+   */
+  deleteValue() {
+    _.unset(this.data, this.component.key);
   }
 
   /**
@@ -1643,8 +1690,9 @@ export class BaseComponent {
     else {
       try {
         let val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
-          data: data,
-          row: this.data
+          data,
+          row: this.data,
+          _
         });
         changed = this.setValue(val, flags);
       }
@@ -1958,7 +2006,7 @@ export class BaseComponent {
       name: this.options.name,
       type: this.component.inputType || &apos;text&apos;,
       class: &apos;form-control&apos;,
-      lang: this.options.i18n.lng
+      lang: this.options.language
   };
 
     if (this.component.placeholder) {

@@ -70,6 +70,10 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day">components/day</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/day/Day.js~DayComponent.html">DayComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-day-fixtures">components/day/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid">components/editrgrid</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/editrgrid/EditGrid.js~EditGridComponent.html">EditGridComponent</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-editrgrid-fixtures">components/editrgrid/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email">components/email</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/email/Email.js~EmailComponent.html">EmailComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-email-fixtures">components/email/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
@@ -138,6 +142,7 @@
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well">components/well</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/well/Well.js~WellComponent.html">WellComponent</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-well-fixtures">components/well/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#utils-jsonlogic">utils/jsonlogic</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-lodashOperators">lodashOperators</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -163,10 +168,11 @@ import _isPlainObject from &apos;lodash/isPlainObject&apos;;
 import _forOwn from &apos;lodash/forOwn&apos;;
 import compile from &apos;lodash/template&apos;;
 import jsonLogic from &apos;json-logic-js&apos;;
+import { lodashOperators } from &apos;./jsonlogic/operators&apos;;
 import momentModule from &apos;moment&apos;;
 
 // Configure JsonLogic
-jsonLogic.add_operation(&apos;_&apos;, _);
+lodashOperators.forEach((name) =&gt; jsonLogic.add_operation(`_${name}`, _[name]));
 
 const FormioUtils = {
   jsonLogic, // Share
@@ -253,11 +259,13 @@ const FormioUtils = {
         noRecurse = fn(component, newPath);
       }
 
-      const subPath = () =&gt; {
+      var subPath = function() {
         if (
           component.key &amp;&amp;
           (
-            [ &apos;datagrid&apos;, &apos;container&apos;, &apos;editgrid&apos; ].includes(component.type) ||
+            (component.type === &apos;datagrid&apos;) ||
+            (component.type === &apos;container&apos;) ||
+            (component.type === &apos;editgrid&apos;) ||
             component.tree
           )
         ) {
@@ -470,7 +478,8 @@ const FormioUtils = {
         try {
           data[component.key] = this.jsonLogic.apply(component.calculateValue, {
             data: submission ? submission.data : data,
-            row: data
+            row: data,
+            _
           });
         }
         catch (e) {
@@ -531,7 +540,8 @@ const FormioUtils = {
     else if (component.conditional &amp;&amp; component.conditional.json) {
       return jsonLogic.apply(component.conditional.json, {
         data,
-        row
+        row,
+        _
       });
     }
 

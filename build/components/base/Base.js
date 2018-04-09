@@ -7,9 +7,9 @@ exports.BaseComponent = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _vanilla = require('text-mask-all/vanilla');
+var _vanillaTextMask = require('vanilla-text-mask');
 
-var _vanilla2 = _interopRequireDefault(_vanilla);
+var _vanillaTextMask2 = _interopRequireDefault(_vanillaTextMask);
 
 var _nativePromiseOnly = require('native-promise-only');
 
@@ -1033,7 +1033,7 @@ var BaseComponent = function () {
     value: function setInputMask(input) {
       if (input && this.component.inputMask) {
         var mask = this.getInputMask(this.component.inputMask);
-        this.inputMask = (0, _vanilla2.default)({
+        this.inputMask = (0, _vanillaTextMask2.default)({
           inputElement: input,
           mask: mask
         });
@@ -1139,6 +1139,38 @@ var BaseComponent = function () {
     }
 
     /**
+     * Render a template string into html.
+     *
+     * @param template
+     * @param data
+     * @param actions
+     *
+     * @return {HTMLElement} - The created element.
+     */
+
+  }, {
+    key: 'renderTemplate',
+    value: function renderTemplate(template, data) {
+      var actions = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+      // Create a container div.
+      var div = this.ce('div');
+
+      // Interpolate the template and populate
+      div.innerHTML = _utils2.default.interpolate(template, data);
+
+      // Add actions to matching elements.
+      actions.forEach(function (action) {
+        var elements = div.getElementsByClassName(action.class);
+        Array.prototype.forEach.call(elements, function (element) {
+          element.addEventListener(action.event, action.action);
+        });
+      });
+
+      return div;
+    }
+
+    /**
      * Alias for document.createElement.
      *
      * @param {string} type - The type of element to create
@@ -1216,7 +1248,10 @@ var BaseComponent = function () {
   }, {
     key: 'addClass',
     value: function addClass(element, className) {
-      element.setAttribute('class', element.getAttribute('class') + ' ' + className);
+      var classes = element.getAttribute('class');
+      if (!classes || classes.indexOf(className) === -1) {
+        element.setAttribute('class', classes + ' ' + className);
+      }
     }
 
     /**
@@ -1233,7 +1268,7 @@ var BaseComponent = function () {
     value: function removeClass(element, className) {
       var cls = element.getAttribute('class');
       if (cls) {
-        cls = cls.replace(className, '');
+        cls = cls.replace(new RegExp(className, 'g'), '');
         element.setAttribute('class', cls);
       }
     }
@@ -1444,6 +1479,42 @@ var BaseComponent = function () {
       this.hook('input', input, container);
       this.addInputEventListener(input);
       this.addInputSubmitListener(input);
+    }
+
+    /**
+     * The empty value for this component.
+     *
+     * @return {null}
+     */
+
+  }, {
+    key: 'splice',
+
+
+    /**
+     * Splice a value from the dataValue.
+     *
+     * @param index
+     */
+    value: function splice(index) {
+      if (this.hasValue) {
+        var dataValue = this.dataValue || [];
+        if (_lodash2.default.isArray(dataValue) && dataValue.hasOwnProperty(index)) {
+          dataValue.splice(index, 1);
+          this.dataValue = dataValue;
+          this.triggerChange();
+        }
+      }
+    }
+
+    /**
+     * Deletes the value of the component.
+     */
+
+  }, {
+    key: 'deleteValue',
+    value: function deleteValue() {
+      _lodash2.default.unset(this.data, this.component.key);
     }
 
     /**
@@ -2000,6 +2071,65 @@ var BaseComponent = function () {
     },
     get: function get() {
       return this._visible;
+    }
+  }, {
+    key: 'emptyValue',
+    get: function get() {
+      return null;
+    }
+
+    /**
+     * Returns if this component has a value set.
+     *
+     */
+
+  }, {
+    key: 'hasValue',
+    get: function get() {
+      return _lodash2.default.has(this.data, this.component.key);
+    }
+
+    /**
+     * Get the value of this component.
+     *
+     * @return {*}
+     */
+
+  }, {
+    key: 'value',
+    get: function get() {
+      return this.dataValue;
+    }
+
+    /**
+     * Get the static value of this component.
+     * @return {*}
+     */
+
+  }, {
+    key: 'dataValue',
+    get: function get() {
+      if (!this.component.key) {
+        return this.data;
+      }
+      if (!this.hasValue) {
+        this.dataValue = this.emptyValue;
+      }
+      return _lodash2.default.get(this.data, this.component.key);
+    }
+
+    /**
+     * Sets the static value of this component.
+     *
+     * @param value
+     */
+    ,
+    set: function set(value) {
+      if (!this.component.key) {
+        return value;
+      }
+      _lodash2.default.set(this.data, this.component.key, value);
+      return value;
     }
   }, {
     key: 'label',

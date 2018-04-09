@@ -14,6 +14,8 @@ var _DateTime = require('./datetime/DateTime');
 
 var _Day = require('./day/Day');
 
+var _EditGrid = require('./editrgrid/EditGrid');
+
 var _HTML = require('./html/HTML');
 
 var _Hidden = require('./hidden/Hidden');
@@ -80,6 +82,7 @@ module.exports = {
   day: _Day.DayComponent,
   htmlelement: _HTML.HTMLComponent,
   hidden: _Hidden.HiddenComponent,
+  editgrid: _EditGrid.EditGridComponent,
   form: _Form.FormComponent,
   textfield: _TextField.TextFieldComponent,
   phoneNumber: _PhoneNumber.PhoneNumberComponent,
