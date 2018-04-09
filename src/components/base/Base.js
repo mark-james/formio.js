@@ -1372,15 +1372,6 @@ export class BaseComponent {
   }
 
   /**
-   * Get the value of this component.
-   *
-   * @return {*}
-   */
-  get value() {
-    return this.dataValue;
-  }
-
-  /**
    * Get the static value of this component.
    * @return {*}
    */

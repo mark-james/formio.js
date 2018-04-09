@@ -3588,18 +3588,6 @@ var BaseComponent = function () {
     }
 
     /**
-     * Get the value of this component.
-     *
-     * @return {*}
-     */
-
-  }, {
-    key: 'value',
-    get: function get() {
-      return this.dataValue;
-    }
-
-    /**
      * Get the static value of this component.
      * @return {*}
      */

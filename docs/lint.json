@@ -165,35 +165,35 @@
     "filePath": "src/components/base/Base.js",
     "lines": [
       {
-        "lineNumber": 1507,
+        "lineNumber": 1498,
         "line": "  /**"
       },
       {
-        "lineNumber": 1508,
+        "lineNumber": 1499,
         "line": "   * Perform a calculated value operation."
       },
       {
-        "lineNumber": 1509,
+        "lineNumber": 1500,
         "line": "   *"
       },
       {
-        "lineNumber": 1510,
+        "lineNumber": 1501,
         "line": "   * @param data - The global data object."
       },
       {
-        "lineNumber": 1511,
+        "lineNumber": 1502,
         "line": "   *"
       },
       {
-        "lineNumber": 1512,
+        "lineNumber": 1503,
         "line": "   * @return {boolean} - If the value changed during calculation."
       },
       {
-        "lineNumber": 1513,
+        "lineNumber": 1504,
         "line": "   */"
       },
       {
-        "lineNumber": 1514,
+        "lineNumber": 1505,
         "line": "  calculateValue(data, flags) {"
       }
     ],
