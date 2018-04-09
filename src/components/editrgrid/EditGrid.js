@@ -1,6 +1,5 @@
 import _each from 'lodash/each';
 import _map from 'lodash/map';
-import _get from 'lodash/get';
 import _cloneDeep from 'lodash/cloneDeep';
 import _clone from 'lodash/clone';
 import _isArray from 'lodash/isArray';
@@ -11,6 +10,7 @@ export class EditGridComponent extends FormioComponents {
   constructor(component, options, data) {
     super(component, options, data);
     this.type = 'datagrid';
+    this.rows = [];
     this.editRows = [];
   }
 
@@ -44,31 +44,13 @@ export class EditGridComponent extends FormioComponents {
   }
 
   createHeader() {
-    const templateHeader = _get(this.component, 'templates.header');
-    if (!templateHeader) {
-      return this.text('');
-    }
-    return this.ce('li', {class: 'list-group-item list-group-header'}, this.renderTemplate(templateHeader, {
-      components: this.component.components,
-      util: FormioUtils,
-      value: this.dataValue
-    }));
-  }
-
-  get defaultRowTemplate() {
-    return `<div class="row">
-      {% util.eachComponent(components, function(component) { %}
-        <div class="col-sm-2">
-          {{ row[component.key] }}
-        </div>
-      {% }) %}
-      <div class="col-sm-2">
-        <div class="btn-group pull-right">
-          <div class="btn btn-default editRow">Edit</div>
-          <div class="btn btn-danger removeRow">Delete</div>
-        </div>
-      </div>
-    </div>`;
+    return this.component.templates.header ?
+      this.ce('li', {class: 'list-group-item list-group-header'}, this.renderTemplate(this.component.templates.header, {
+        components: this.component.components,
+        util: FormioUtils,
+        value: this.rows
+      })) :
+      this.text('');
   }
 
   createRow(row, rowIndex) {
@@ -144,15 +126,13 @@ export class EditGridComponent extends FormioComponents {
   }
 
   createFooter() {
-    const footerTemplate = _get(this.component, 'templates.footer');
-    if (!footerTemplate) {
-      return this.text('');
-    }
-    return this.ce('li', {class: 'list-group-item list-group-footer'}, this.renderTemplate(footerTemplate, {
-      components: this.component.components,
-      util: FormioUtils,
-      value: this.dataValue
-    }));
+    return this.component.templates.footer ?
+      this.ce('li', {class: 'list-group-item list-group-footer'}, this.renderTemplate(this.component.templates.footer, {
+        components: this.component.components,
+        util: FormioUtils,
+        value: this.rows
+      })) :
+      this.text('');
   }
 
   checkData(data, flags = {}, index) {
@@ -190,12 +170,13 @@ export class EditGridComponent extends FormioComponents {
 
   createAddButton() {
     this.element.appendChild(this.ce('div', {class: 'editgrid-add'},
-      this.ce('a', {
+      this.ce('button', {
           class: 'btn btn-primary',
+          role: 'button',
           onClick: this.addRow.bind(this)
         },
         [
-          this.ce('span', {class: 'glyphicon glyphicon-plus', 'aria-hidden': true}),
+          this.ce('span', {class: this.iconClass('plus'), 'aria-hidden': true}),
           ' ',
           this.t(this.component.addAnother ? this.component.addAnother : 'Add Another', {})
         ],
@@ -262,11 +243,11 @@ export class EditGridComponent extends FormioComponents {
     if (!this.rows[rowIndex]) {
       this.tableElement.removeChild(this.editRows[rowIndex].element);
       this.editRows.splice(rowIndex, 1);
-      this.splice(rowIndex);
+      this.rows.splice(rowIndex, 1);
     }
     else {
       this.editRows[rowIndex].isOpen = false;
-      this.editRows[rowIndex].data = this.dataValue[rowIndex];
+      this.editRows[rowIndex].data = this.rows[rowIndex];
     }
     this.refreshDOM();
   }
@@ -282,7 +263,7 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
     this.removeRowComponents(rowIndex);
-    this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+    this.rows[rowIndex] = this.editRows[rowIndex].data;
     this.editRows[rowIndex].isOpen = false;
     this.checkValidity(this.data, true);
     this.updateValue();
@@ -400,7 +381,8 @@ export class EditGridComponent extends FormioComponents {
   }
 
   get defaultValue() {
-    return [];
+    const value = super.defaultValue;
+    return Array.isArray(value) ? value : [];
   }
 
   setValue(value, flags) {
@@ -412,9 +394,9 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
 
-    this.dataValue = value;
+    this.rows = this.data[this.component.key] = value;
     // Refresh editRow data when data changes.
-    this.dataValue.forEach((row, rowIndex) => {
+    this.rows.forEach((row, rowIndex) => {
       if (this.editRows[rowIndex]) {
         this.editRows[rowIndex].data = row;
       }
@@ -426,8 +408,8 @@ export class EditGridComponent extends FormioComponents {
       }
     });
     // Remove any extra edit rows.
-    if (this.dataValue.length < this.editRows.length) {
-      for (let rowIndex = this.editRows.length - 1; rowIndex >= this.dataValue.length; rowIndex--) {
+    if (this.rows.length < this.editRows.length) {
+      for (let rowIndex = this.editRows.length - 1; rowIndex >= this.rows.length; rowIndex--) {
         this.removeRowComponents(rowIndex);
         this.tableElement.removeChild(this.editRows[rowIndex].element);
         this.editRows.splice(rowIndex, 1);
@@ -442,6 +424,6 @@ export class EditGridComponent extends FormioComponents {
    * @returns {*}
    */
   getValue() {
-    return this.dataValue;
+    return this.rows;
   }
 }

@@ -15,10 +15,6 @@ var _nativePromiseOnly = require('native-promise-only');
 
 var _nativePromiseOnly2 = _interopRequireDefault(_nativePromiseOnly);
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
 var _get2 = require('lodash/get');
 
 var _get3 = _interopRequireDefault(_get2);
@@ -26,10 +22,6 @@ var _get3 = _interopRequireDefault(_get2);
 var _each2 = require('lodash/each');
 
 var _each3 = _interopRequireDefault(_each2);
-
-var _assign2 = require('lodash/assign');
-
-var _assign3 = _interopRequireDefault(_assign2);
 
 var _debounce2 = require('lodash/debounce');
 
@@ -43,6 +35,10 @@ var _clone2 = require('lodash/clone');
 
 var _clone3 = _interopRequireDefault(_clone2);
 
+var _cloneDeep2 = require('lodash/cloneDeep');
+
+var _cloneDeep3 = _interopRequireDefault(_cloneDeep2);
+
 var _defaults2 = require('lodash/defaults');
 
 var _defaults3 = _interopRequireDefault(_defaults2);
@@ -55,9 +51,9 @@ var _isUndefined2 = require('lodash/isUndefined');
 
 var _isUndefined3 = _interopRequireDefault(_isUndefined2);
 
-var _i18next = require('i18next');
+var _toString2 = require('lodash/toString');
 
-var _i18next2 = _interopRequireDefault(_i18next);
+var _toString3 = _interopRequireDefault(_toString2);
 
 var _utils = require('../../utils');
 
@@ -68,6 +64,10 @@ var _Validator = require('../Validator');
 var _tooltip = require('tooltip.js');
 
 var _tooltip2 = _interopRequireDefault(_tooltip);
+
+var _i18next = require('i18next');
+
+var _i18next2 = _interopRequireDefault(_i18next);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -87,6 +87,7 @@ var BaseComponent = function () {
   function BaseComponent(component, options, data) {
     _classCallCheck(this, BaseComponent);
 
+    this.originalComponent = (0, _cloneDeep3.default)(component);
     /**
      * The ID of this component. This value is auto-generated when the component is created, but
      * can also be provided from the component.id value passed into the constructor.
@@ -101,6 +102,9 @@ var BaseComponent = function () {
     this.options = (0, _defaults3.default)((0, _clone3.default)(options), {
       highlightErrors: true
     });
+
+    // Use the i18next that is passed in, otherwise use the global version.
+    this.i18next = this.options.i18next || _i18next2.default;
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -226,7 +230,7 @@ var BaseComponent = function () {
      * The validators that are assigned to this component.
      * @type {[string]}
      */
-    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json'];
+    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json', 'mask'];
 
     /**
      * Used to trigger a new change in this component.
@@ -243,6 +247,9 @@ var BaseComponent = function () {
     // To force this component to be invalid.
     this.invalid = false;
 
+    // Determine if the component has been built.
+    this.isBuilt = false;
+
     /**
      * An array of the event listeners so that the destroy command can deregister them.
      * @type {Array}
@@ -251,7 +258,7 @@ var BaseComponent = function () {
 
     if (this.component) {
       this.type = this.component.type;
-      if (this.component.input && this.component.key) {
+      if (this.hasInput && this.component.key) {
         this.options.name += '[' + this.component.key + ']';
       }
 
@@ -263,24 +270,27 @@ var BaseComponent = function () {
     }
   }
 
-  /**
-   * Translate a text using the i18n system.
-   *
-   * @param {string} text - The i18n identifier.
-   * @param {Object} params - The i18n parameters to use for translation.
-   */
-
-
   _createClass(BaseComponent, [{
     key: 't',
+
+
+    /**
+     * Translate a text using the i18n system.
+     *
+     * @param {string} text - The i18n identifier.
+     * @param {Object} params - The i18n parameters to use for translation.
+     */
     value: function t(text, params) {
       params = params || {};
+      params.data = this.root ? this.root.data : this.data;
+      params.row = this.data;
       params.component = this.component;
       params.nsSeparator = '::';
       params.keySeparator = '.|.';
       params.pluralSeparator = '._.';
       params.contextSeparator = '._.';
-      return _i18next2.default.t(text, params);
+      var translated = this.i18next.t(text, params);
+      return translated || text;
     }
 
     /**
@@ -423,9 +433,73 @@ var BaseComponent = function () {
       if (this.shouldDisable) {
         this.disabled = true;
       }
-
       // Restore the value.
       this.restoreValue();
+    }
+  }, {
+    key: 'viewOnlyBuild',
+    value: function viewOnlyBuild() {
+      this.createViewOnlyElement();
+      this.createViewOnlyLabel(this.element);
+      this.createViewOnlyValue(this.element);
+    }
+  }, {
+    key: 'createViewOnlyElement',
+    value: function createViewOnlyElement() {
+      this.element = this.ce('dl', {
+        id: this.id
+      });
+
+      if (this.element) {
+        // Ensure you can get the component info from the element.
+        this.element.component = this.component;
+      }
+
+      return this.element;
+    }
+  }, {
+    key: 'createViewOnlyLabel',
+    value: function createViewOnlyLabel(container) {
+      if (this.labelIsHidden()) {
+        return;
+      }
+
+      this.labelElement = this.ce('dt');
+      this.labelElement.appendChild(this.text(this.component.label));
+      this.createTooltip(this.labelElement);
+      container.appendChild(this.labelElement);
+    }
+  }, {
+    key: 'createViewOnlyValue',
+    value: function createViewOnlyValue(container) {
+      this.valueElement = this.ce('dd');
+      this.setupValueElement(this.valueElement);
+      container.appendChild(this.valueElement);
+    }
+  }, {
+    key: 'setupValueElement',
+    value: function setupValueElement(element) {
+      var value = this.value;
+      value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
+      element.appendChild(this.text(value));
+    }
+  }, {
+    key: 'getView',
+    value: function getView(value) {
+      return (0, _toString3.default)(value);
+    }
+  }, {
+    key: 'updateViewOnlyValue',
+    value: function updateViewOnlyValue() {
+      this.empty(this.valueElement);
+      this.setupValueElement(this.valueElement);
+    }
+  }, {
+    key: 'empty',
+    value: function empty(element) {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
     }
 
     /**
@@ -453,16 +527,19 @@ var BaseComponent = function () {
   }, {
     key: 'createElement',
     value: function createElement() {
+      // If the element is already created, don't recreate.
+      if (this.element) {
+        return this.element;
+      }
+
       this.element = this.ce('div', {
         id: this.id,
         class: this.className,
         style: this.customStyle
       });
 
-      if (this.element) {
-        // Ensure you can get the component info from the element.
-        this.element.component = this.component;
-      }
+      // Ensure you can get the component info from the element.
+      this.element.component = this.component;
 
       return this.element;
     }
@@ -522,7 +599,7 @@ var BaseComponent = function () {
       if (!this.data[this.component.key]) {
         this.data[this.component.key] = [];
       }
-      if (!(0, _isArray3.default)(this.data[this.component.key])) {
+      if (this.data[this.component.key] && !(0, _isArray3.default)(this.data[this.component.key])) {
         this.data[this.component.key] = [this.data[this.component.key]];
       }
       this.data[this.component.key].push(this.defaultValue);
@@ -537,6 +614,7 @@ var BaseComponent = function () {
     value: function addValue() {
       this.addNewValue();
       this.buildRows();
+      this.checkConditions(this.root ? this.root.data : this.data);
       this.restoreValue();
     }
 
@@ -599,6 +677,30 @@ var BaseComponent = function () {
         this.disabled = true;
       }
     }
+  }, {
+    key: 'bootstrap4Theme',
+    value: function bootstrap4Theme(name) {
+      return name === 'default' ? 'secondary' : name;
+    }
+  }, {
+    key: 'iconClass',
+    value: function iconClass(name, spinning) {
+      if (!this.options.icons || this.options.icons === 'glyphicon') {
+        return spinning ? 'glyphicon glyphicon-' + name + ' glyphicon-spin' : 'glyphicon glyphicon-' + name;
+      }
+      switch (name) {
+        case 'zoom-in':
+          return 'fa fa-search-plus';
+        case 'zoom-out':
+          return 'fa fa-search-minus';
+        case 'question-sign':
+          return 'fa fa-question-circle';
+        case 'remove-circle':
+          return 'fa fa-times-circle-o';
+        default:
+          return spinning ? 'fa fa-' + name + ' fa-spin' : 'fa fa-' + name;
+      }
+    }
 
     /**
      * Adds a new button to add new rows to the multiple input elements.
@@ -607,7 +709,7 @@ var BaseComponent = function () {
 
   }, {
     key: 'addButton',
-    value: function addButton() {
+    value: function addButton(justIcon) {
       var _this2 = this;
 
       var addButton = this.ce('a', {
@@ -657,7 +759,7 @@ var BaseComponent = function () {
 
       var removeButton = this.ce('button', {
         type: 'button',
-        class: 'btn btn-default',
+        class: 'btn btn-default btn-secondary',
         tabindex: '-1'
       });
 
@@ -769,7 +871,7 @@ var BaseComponent = function () {
         }
       }
 
-      if (this.component.input && this.component.validate && this.component.validate.required) {
+      if (this.hasInput && this.component.validate && this.component.validate.required) {
         className += ' field-required';
       }
       this.labelElement = this.ce('label', {
@@ -973,48 +1075,6 @@ var BaseComponent = function () {
       }
       return inputGroup;
     }
-
-    /**
-     * Returns an input mask that is compatible with the input mask library.
-     * @param {string} mask - The Form.io input mask.
-     * @returns {Array} - The input mask for the mask library.
-     */
-
-  }, {
-    key: 'getInputMask',
-    value: function getInputMask(mask) {
-      if (mask instanceof Array) {
-        return mask;
-      }
-      var maskArray = [];
-      maskArray.numeric = true;
-      for (var i = 0; i < mask.length; i++) {
-        switch (mask[i]) {
-          case '9':
-            maskArray.push(/\d/);
-            break;
-          case 'A':
-            maskArray.numeric = false;
-            maskArray.push(/[a-zA-Z]/);
-            break;
-          case '*':
-            maskArray.numeric = false;
-            maskArray.push(/[a-zA-Z0-9]/);
-            break;
-          default:
-            maskArray.push(mask[i]);
-            break;
-        }
-      }
-      return maskArray;
-    }
-
-    /**
-     * Creates a new input mask placeholder.
-     * @param {HTMLElement} mask - The input mask.
-     * @returns {string} - The placeholder that will exist within the input as they type.
-     */
-
   }, {
     key: 'maskPlaceholder',
     value: function maskPlaceholder(mask) {
@@ -1032,7 +1092,8 @@ var BaseComponent = function () {
     key: 'setInputMask',
     value: function setInputMask(input) {
       if (input && this.component.inputMask) {
-        var mask = this.getInputMask(this.component.inputMask);
+        var mask = _utils2.default.getInputMask(this.component.inputMask);
+        this._inputMask = mask;
         this.inputMask = (0, _vanillaTextMask2.default)({
           inputElement: input,
           mask: mask
@@ -1090,6 +1151,10 @@ var BaseComponent = function () {
   }, {
     key: 'redraw',
     value: function redraw() {
+      // Don't bother if we have not built yet.
+      if (!this.isBuilt) {
+        return;
+      }
       this.clear();
       this.build();
     }
@@ -1112,30 +1177,11 @@ var BaseComponent = function () {
         }
       });
       (0, _each3.default)(this.eventHandlers, function (handler) {
-        window.removeEventListener(handler.event, handler.func);
+        if (handler.event) {
+          window.removeEventListener(handler.event, handler.func);
+        }
       });
-    }
-
-    /**
-     * Append different types of children.
-     *
-     * @param child
-     */
-
-  }, {
-    key: 'appendChild',
-    value: function appendChild(element, child) {
-      var _this5 = this;
-
-      if (Array.isArray(child)) {
-        child.forEach(function (oneChild) {
-          _this5.appendChild(element, oneChild);
-        });
-      } else if (child instanceof HTMLElement || child instanceof Text) {
-        element.appendChild(child);
-      } else if (child) {
-        element.appendChild(this.text(child.toString()));
-      }
+      this.inputs = [];
     }
 
     /**
@@ -1168,6 +1214,28 @@ var BaseComponent = function () {
       });
 
       return div;
+    }
+
+    /**
+     * Append different types of children.
+     *
+     * @param child
+     */
+
+  }, {
+    key: 'appendChild',
+    value: function appendChild(element, child) {
+      var _this5 = this;
+
+      if (Array.isArray(child)) {
+        child.forEach(function (oneChild) {
+          _this5.appendChild(element, oneChild);
+        });
+      } else if (child instanceof HTMLElement || child instanceof Text) {
+        element.appendChild(child);
+      } else if (child) {
+        element.appendChild(this.text(child.toString()));
+      }
     }
 
     /**
@@ -1297,11 +1365,75 @@ var BaseComponent = function () {
   }, {
     key: 'checkConditions',
     value: function checkConditions(data) {
+      // Check advanced conditions
+      var result = void 0;
+
       if (!this.hasCondition()) {
-        return this.show(true);
+        result = this.show(true);
+      } else {
+        result = this.show(_utils2.default.checkCondition(this.component, this.data, data));
       }
 
-      return this.show(_utils2.default.checkCondition(this.component, this.data, data));
+      if (this.fieldLogic(data)) {
+        this.redraw();
+      }
+
+      return result;
+    }
+
+    /**
+     * Check all triggers and apply necessary actions.
+     *
+     * @param data
+     */
+
+  }, {
+    key: 'fieldLogic',
+    value: function fieldLogic(data) {
+      var _this7 = this;
+
+      var logics = this.component.logic || [];
+
+      // If there aren't logic, don't go further.
+      if (logics.length === 0) {
+        return;
+      }
+
+      var newComponent = (0, _cloneDeep3.default)(this.originalComponent);
+
+      var changed = logics.reduce(function (changed, logic) {
+        var result = _utils2.default.checkTrigger(newComponent, logic.trigger, _this7.data, data);
+
+        if (result) {
+          changed |= logic.actions.reduce(function (changed, action) {
+            switch (action.type) {
+              case 'property':
+                _utils2.default.setActionProperty(newComponent, action, _this7.data, data, newComponent, result);
+                break;
+              case 'value':
+                var newValue = new Function('row', 'data', 'component', 'result', action.value)(_this7.data, data, newComponent, result);
+                if (!(0, _isEqual3.default)(_this7.getValue(), newValue)) {
+                  _this7.setValue(newValue);
+                  changed = true;
+                }
+                break;
+              case 'validation':
+                // TODO
+                break;
+            }
+            return changed;
+          }, false);
+        }
+        return changed;
+      }, false);
+
+      // If component definition changed, replace and mark as changed.
+      if (!(0, _isEqual3.default)(this.component, newComponent)) {
+        this.component = newComponent;
+        changed = true;
+      }
+
+      return changed;
     }
 
     /**
@@ -1314,6 +1446,8 @@ var BaseComponent = function () {
   }, {
     key: 'addInputError',
     value: function addInputError(message, dirty) {
+      var _this8 = this;
+
       if (!message) {
         return;
       }
@@ -1328,6 +1462,9 @@ var BaseComponent = function () {
 
       // Add error classes
       this.addClass(this.element, 'has-error');
+      this.inputs.forEach(function (input) {
+        return _this8.addClass(input, 'is-invalid');
+      });
       if (dirty && this.options.highlightErrors) {
         this.addClass(this.element, 'alert alert-danger');
       }
@@ -1342,8 +1479,6 @@ var BaseComponent = function () {
   }, {
     key: 'show',
     value: function show(_show) {
-      var _this7 = this;
-
       // Ensure we stop any pending data clears.
       if (this.clearPending) {
         clearTimeout(this.clearPending);
@@ -1369,15 +1504,24 @@ var BaseComponent = function () {
         }
       }
 
-      if (!_show && this.component.clearOnHide) {
-        this.clearPending = setTimeout(function () {
-          return _this7.setValue(null, {
-            noValidate: true
-          });
-        }, 200);
-      }
+      this.clearOnHide(_show);
 
       return _show;
+    }
+  }, {
+    key: 'clearOnHide',
+    value: function clearOnHide(show) {
+      // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+      if (this.component.clearOnHide !== false) {
+        if (!show) {
+          delete this.data[this.component.key];
+        } else {
+          // If shown, ensure the default is set.
+          this.setValue(this.defaultValue, {
+            noUpdateEvent: true
+          });
+        }
+      }
     }
   }, {
     key: 'onResize',
@@ -1430,7 +1574,7 @@ var BaseComponent = function () {
   }, {
     key: 'addInputSubmitListener',
     value: function addInputSubmitListener(input) {
-      var _this8 = this;
+      var _this9 = this;
 
       if (!this.options.submitOnEnter) {
         return;
@@ -1440,7 +1584,7 @@ var BaseComponent = function () {
         if (key == 13) {
           event.preventDefault();
           event.stopPropagation();
-          _this8.emit('submitButton');
+          _this9.emit('submitButton');
         }
       });
     }
@@ -1454,10 +1598,10 @@ var BaseComponent = function () {
   }, {
     key: 'addInputEventListener',
     value: function addInputEventListener(input) {
-      var _this9 = this;
+      var _this10 = this;
 
       this.addEventListener(input, this.info.changeEvent, function () {
-        return _this9.updateValue({ changed: true });
+        return _this10.updateValue({ changed: true });
       });
     }
 
@@ -1482,40 +1626,13 @@ var BaseComponent = function () {
     }
 
     /**
-     * The empty value for this component.
-     *
-     * @return {null}
+     * Get the static value of this component.
+     * @return {*}
      */
 
   }, {
-    key: 'splice',
+    key: 'getValueAt',
 
-
-    /**
-     * Splice a value from the dataValue.
-     *
-     * @param index
-     */
-    value: function splice(index) {
-      if (this.hasValue) {
-        var dataValue = this.dataValue || [];
-        if (_lodash2.default.isArray(dataValue) && dataValue.hasOwnProperty(index)) {
-          dataValue.splice(index, 1);
-          this.dataValue = dataValue;
-          this.triggerChange();
-        }
-      }
-    }
-
-    /**
-     * Deletes the value of the component.
-     */
-
-  }, {
-    key: 'deleteValue',
-    value: function deleteValue() {
-      _lodash2.default.unset(this.data, this.component.key);
-    }
 
     /**
      * Get the value at a specific index.
@@ -1523,29 +1640,34 @@ var BaseComponent = function () {
      * @param index
      * @returns {*}
      */
-
-  }, {
-    key: 'getValueAt',
     value: function getValueAt(index) {
       return this.inputs[index].value;
     }
+
+    /**
+     * Get the input value of this component.
+     *
+     * @return {*}
+     */
+
   }, {
     key: 'getValue',
     value: function getValue() {
-      if (!this.component.input) {
+      if (!this.hasInput) {
         return;
+      }
+      if (this.viewOnly) {
+        return this.value;
       }
       var values = [];
       for (var i in this.inputs) {
         if (this.inputs.hasOwnProperty(i)) {
           if (!this.component.multiple) {
-            this.value = this.getValueAt(i);
-            return this.value;
+            return this.getValueAt(i);
           }
           values.push(this.getValueAt(i));
         }
       }
-      this.value = values;
       return values;
     }
 
@@ -1572,9 +1694,17 @@ var BaseComponent = function () {
   }, {
     key: 'updateValue',
     value: function updateValue(flags) {
+      if (!this.hasInput) {
+        return false;
+      }
+
       flags = flags || {};
       var value = this.data[this.component.key];
       this.data[this.component.key] = this.getValue(flags);
+      if (this.viewOnly) {
+        this.updateViewOnlyValue(this.value);
+      }
+
       var changed = flags.changed || this.hasChanged(value, this.data[this.component.key]);
       delete flags.changed;
       if (!flags.noUpdateEvent && changed) {
@@ -1626,14 +1756,11 @@ var BaseComponent = function () {
       // If this is a string, then use eval to evalulate it.
       if (typeof this.component.calculateValue === 'string') {
         try {
-          var value = [];
-          var row = this.data;
-          var component = this;
-          eval(this.component.calculateValue.toString());
+          var value = new Function('component', 'row', 'data', 'value = []; ' + this.component.calculateValue.toString() + '; return value;')(this, this.data, data);
           changed = this.setValue(value, flags);
-        } catch (e) {
+        } catch (err) {
           /* eslint-disable no-console */
-          console.warn('An error occurred calculating a value for ' + this.component.key, e);
+          console.warn('An error occurred calculating a value for ' + this.component.key, err);
           changed = false;
           /* eslint-enable no-console */
         }
@@ -1641,13 +1768,12 @@ var BaseComponent = function () {
         try {
           var val = _utils2.default.jsonLogic.apply(this.component.calculateValue, {
             data: data,
-            row: this.data,
-            _: _lodash2.default
+            row: this.data
           });
           changed = this.setValue(val, flags);
         } catch (err) {
           /* eslint-disable no-console */
-          console.warn('An error occurred calculating a value for ' + this.component.key, e);
+          console.warn('An error occurred calculating a value for ' + this.component.key, err);
           changed = false;
           /* eslint-enable no-console */
         }
@@ -1685,7 +1811,7 @@ var BaseComponent = function () {
     key: 'invalidMessage',
     value: function invalidMessage(data, dirty) {
       // No need to check for errors if there is no input or if it is pristine.
-      if (!this.component.input || !dirty && this.pristine) {
+      if (!this.hasInput || !dirty && this.pristine) {
         return '';
       }
 
@@ -1708,6 +1834,11 @@ var BaseComponent = function () {
   }, {
     key: 'checkValidity',
     value: function checkValidity(data, dirty) {
+      // Force valid if component is conditionally hidden.
+      if (!_utils2.default.checkCondition(this.component, data, this.data)) {
+        return true;
+      }
+
       var message = this.invalid || this.invalidMessage(data, dirty);
       this.setCustomValidity(message, dirty);
       return message ? false : true;
@@ -1742,6 +1873,8 @@ var BaseComponent = function () {
   }, {
     key: 'setCustomValidity',
     value: function setCustomValidity(message, dirty) {
+      var _this11 = this;
+
       if (this.errorElement && this.errorContainer) {
         this.errorElement.innerHTML = '';
         try {
@@ -1749,6 +1882,9 @@ var BaseComponent = function () {
         } catch (err) {}
       }
       this.removeClass(this.element, 'has-error');
+      this.inputs.forEach(function (input) {
+        return _this11.removeClass(input, 'is-invalid');
+      });
       if (this.options.highlightErrors) {
         this.removeClass(this.element, 'alert alert-danger');
       }
@@ -1812,10 +1948,13 @@ var BaseComponent = function () {
     key: 'setValue',
     value: function setValue(value, flags) {
       flags = this.getFlags.apply(this, arguments);
-      if (!this.component.input) {
+      if (!this.hasInput) {
         return false;
       }
-      this.value = value;
+      if (this.component.multiple && !(0, _isArray3.default)(value)) {
+        value = [value];
+      }
+      this.buildRows();
       var isArray = (0, _isArray3.default)(value);
       for (var i in this.inputs) {
         if (this.inputs.hasOwnProperty(i)) {
@@ -1875,7 +2014,7 @@ var BaseComponent = function () {
   }, {
     key: 'selectOptions',
     value: function selectOptions(select, tag, options, defaultValue) {
-      var _this10 = this;
+      var _this12 = this;
 
       (0, _each3.default)(options, function (option) {
         var attrs = {
@@ -1884,8 +2023,8 @@ var BaseComponent = function () {
         if (defaultValue !== undefined && option.value === defaultValue) {
           attrs.selected = 'selected';
         }
-        var optionElement = _this10.ce('option', attrs);
-        optionElement.appendChild(_this10.text(option.label));
+        var optionElement = _this12.ce('option', attrs);
+        optionElement.appendChild(_this12.text(option.label));
         select.appendChild(optionElement);
       });
     }
@@ -1913,7 +2052,9 @@ var BaseComponent = function () {
       this.destroy();
       var element = this.getElement();
       if (element) {
-        element.innerHTML = '';
+        while (element.lastChild) {
+          element.removeChild(element.lastChild);
+        }
       }
     }
   }, {
@@ -1964,6 +2105,10 @@ var BaseComponent = function () {
         attributes.tabindex = this.component.tabindex;
       }
 
+      if (this.component.autofocus) {
+        attributes.autofocus = this.component.autofocus;
+      }
+
       return {
         type: 'input',
         component: this.component,
@@ -1972,15 +2117,30 @@ var BaseComponent = function () {
       };
     }
   }, {
+    key: 'hasInput',
+    get: function get() {
+      return this.component.input || this.inputs.length;
+    }
+  }, {
     key: 'shouldDisable',
     get: function get() {
       return Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled;
       //return (this.options.readOnly || this.component.disabled);
     }
   }, {
+    key: 'viewOnly',
+    get: function get() {
+      return this.options.readOnly && this.options.viewAsHtml;
+    }
+  }, {
+    key: 'defaultViewOnlyValue',
+    get: function get() {
+      return '-';
+    }
+  }, {
     key: 'className',
     get: function get() {
-      var className = this.component.input ? 'form-group has-feedback ' : '';
+      var className = this.hasInput ? 'form-group has-feedback ' : '';
       className += 'formio-component formio-component-' + this.component.type + ' ';
       if (this.component.key) {
         className += 'formio-component-' + this.component.key + ' ';
@@ -1988,7 +2148,7 @@ var BaseComponent = function () {
       if (this.component.customClass) {
         className += this.component.customClass;
       }
-      if (this.component.input && this.component.validate && this.component.validate.required) {
+      if (this.hasInput && this.component.validate && this.component.validate.required) {
         className += ' required';
       }
       return className;
@@ -2035,8 +2195,7 @@ var BaseComponent = function () {
           try {
             defaultValue = _utils2.default.jsonLogic.apply(this.component.customDefaultValue, {
               data: this.data,
-              row: this.data,
-              _: _lodash2.default
+              row: this.data
             });
           } catch (err) {
             defaultValue = null;
@@ -2046,6 +2205,14 @@ var BaseComponent = function () {
           }
         }
       }
+
+      if (this._inputMask) {
+        defaultValue = (0, _vanillaTextMask.conformToMask)(defaultValue, this._inputMask).conformedValue;
+        if (!_utils2.default.matchInputMask(defaultValue, this._inputMask)) {
+          defaultValue = '';
+        }
+      }
+
       return defaultValue;
     }
   }, {
@@ -2073,51 +2240,12 @@ var BaseComponent = function () {
       return this._visible;
     }
   }, {
-    key: 'emptyValue',
+    key: 'value',
     get: function get() {
-      return null;
-    }
-
-    /**
-     * Returns if this component has a value set.
-     *
-     */
-
-  }, {
-    key: 'hasValue',
-    get: function get() {
-      return _lodash2.default.has(this.data, this.component.key);
-    }
-
-    /**
-     * Get the static value of this component.
-     * @return {*}
-     */
-
-  }, {
-    key: 'dataValue',
-    get: function get() {
-      if (!this.component.key) {
-        return this.data;
+      if (!this.data) {
+        return null;
       }
-      if (!this.hasValue) {
-        this.dataValue = this.emptyValue;
-      }
-      return _lodash2.default.get(this.data, this.component.key);
-    }
-
-    /**
-     * Sets the static value of this component.
-     *
-     * @param value
-     */
-    ,
-    set: function set(value) {
-      if (!this.component.key) {
-        return value;
-      }
-      _lodash2.default.set(this.data, this.component.key, value);
-      return value;
+      return this.data[this.component.key];
     }
   }, {
     key: 'label',
@@ -2155,7 +2283,7 @@ var BaseComponent = function () {
      */
     ,
     set: function set(disabled) {
-      var _this11 = this;
+      var _this13 = this;
 
       // Do not allow a component to be disabled if it should be always...
       if (!disabled && this.shouldDisable) {
@@ -2166,7 +2294,7 @@ var BaseComponent = function () {
 
       // Disable all inputs.
       (0, _each3.default)(this.inputs, function (input) {
-        return _this11.setDisabled(input, disabled);
+        return _this13.setDisabled(input, disabled);
       });
     }
   }]);

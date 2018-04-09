@@ -47,23 +47,23 @@
     "filePath": "src/components/base/Base.js",
     "lines": [
       {
-        "lineNumber": 807,
+        "lineNumber": 921,
         "line": "  /**"
       },
       {
-        "lineNumber": 808,
+        "lineNumber": 922,
         "line": "   * Create the HTML element for the tooltip of this component."
       },
       {
-        "lineNumber": 809,
+        "lineNumber": 923,
         "line": "   * @param {HTMLElement} container - The containing element that will contain this tooltip."
       },
       {
-        "lineNumber": 810,
+        "lineNumber": 924,
         "line": "   */"
       },
       {
-        "lineNumber": 811,
+        "lineNumber": 925,
         "line": "  createTooltip(container, component, classes) {"
       }
     ],
@@ -81,27 +81,27 @@
     "filePath": "src/components/base/Base.js",
     "lines": [
       {
-        "lineNumber": 1037,
+        "lineNumber": 1148,
         "line": "  /**"
       },
       {
-        "lineNumber": 1038,
+        "lineNumber": 1149,
         "line": "   * Append different types of children."
       },
       {
-        "lineNumber": 1039,
+        "lineNumber": 1150,
         "line": "   *"
       },
       {
-        "lineNumber": 1040,
+        "lineNumber": 1151,
         "line": "   * @param child"
       },
       {
-        "lineNumber": 1041,
+        "lineNumber": 1152,
         "line": "   */"
       },
       {
-        "lineNumber": 1042,
+        "lineNumber": 1153,
         "line": "  appendChild(element, child) {"
       }
     ],
@@ -118,35 +118,35 @@
     "filePath": "src/components/base/Base.js",
     "lines": [
       {
-        "lineNumber": 1339,
+        "lineNumber": 1495,
         "line": "  /**"
       },
       {
-        "lineNumber": 1340,
+        "lineNumber": 1496,
         "line": "   * Add a new input to this comonent."
       },
       {
-        "lineNumber": 1341,
+        "lineNumber": 1497,
         "line": "   *"
       },
       {
-        "lineNumber": 1342,
+        "lineNumber": 1498,
         "line": "   * @param input"
       },
       {
-        "lineNumber": 1343,
+        "lineNumber": 1499,
         "line": "   * @param container"
       },
       {
-        "lineNumber": 1344,
+        "lineNumber": 1500,
         "line": "   * @param noSet"
       },
       {
-        "lineNumber": 1345,
+        "lineNumber": 1501,
         "line": "   */"
       },
       {
-        "lineNumber": 1346,
+        "lineNumber": 1502,
         "line": "  addInput(input, container) {"
       }
     ],
@@ -165,35 +165,35 @@
     "filePath": "src/components/base/Base.js",
     "lines": [
       {
-        "lineNumber": 1498,
+        "lineNumber": 1612,
         "line": "  /**"
       },
       {
-        "lineNumber": 1499,
+        "lineNumber": 1613,
         "line": "   * Perform a calculated value operation."
       },
       {
-        "lineNumber": 1500,
+        "lineNumber": 1614,
         "line": "   *"
       },
       {
-        "lineNumber": 1501,
+        "lineNumber": 1615,
         "line": "   * @param data - The global data object."
       },
       {
-        "lineNumber": 1502,
+        "lineNumber": 1616,
         "line": "   *"
       },
       {
-        "lineNumber": 1503,
+        "lineNumber": 1617,
         "line": "   * @return {boolean} - If the value changed during calculation."
       },
       {
-        "lineNumber": 1504,
+        "lineNumber": 1618,
         "line": "   */"
       },
       {
-        "lineNumber": 1505,
+        "lineNumber": 1619,
         "line": "  calculateValue(data, flags) {"
       }
     ],

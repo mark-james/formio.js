@@ -1,19 +1,19 @@
 import maskInput, { conformToMask } from 'vanilla-text-mask';
 import Promise from "native-promise-only";
-import _ from 'lodash';
 import _get from 'lodash/get';
 import _each from 'lodash/each';
-import _assign from 'lodash/assign';
 import _debounce from 'lodash/debounce';
 import _isArray from 'lodash/isArray';
 import _clone from 'lodash/clone';
+import _cloneDeep from 'lodash/cloneDeep';
 import _defaults from 'lodash/defaults';
 import _isEqual from 'lodash/isEqual';
 import _isUndefined from 'lodash/isUndefined';
-import i18next from 'i18next';
+import _toString from 'lodash/toString';
 import FormioUtils from '../../utils';
 import { Validator } from '../Validator';
 import Tooltip from 'tooltip.js';
+import i18next from 'i18next';
 
 /**
  * This is the BaseComponent class which all elements within the FormioForm derive from.
@@ -27,6 +27,7 @@ export class BaseComponent {
    * @param {Object} data - The global data submission object this component will belong.
    */
   constructor(component, options, data) {
+    this.originalComponent = _cloneDeep(component);
     /**
      * The ID of this component. This value is auto-generated when the component is created, but
      * can also be provided from the component.id value passed into the constructor.
@@ -41,6 +42,9 @@ export class BaseComponent {
     this.options = _defaults(_clone(options), {
       highlightErrors: true
     });
+
+    // Use the i18next that is passed in, otherwise use the global version.
+    this.i18next = this.options.i18next || i18next;
 
     /**
      * Determines if this component has a condition assigned to it.
@@ -166,7 +170,7 @@ export class BaseComponent {
      * The validators that are assigned to this component.
      * @type {[string]}
      */
-    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json'];
+    this.validators = ['required', 'minLength', 'maxLength', 'custom', 'pattern', 'json', 'mask'];
 
     /**
      * Used to trigger a new change in this component.
@@ -183,6 +187,9 @@ export class BaseComponent {
     // To force this component to be invalid.
     this.invalid = false;
 
+    // Determine if the component has been built.
+    this.isBuilt = false;
+
     /**
      * An array of the event listeners so that the destroy command can deregister them.
      * @type {Array}
@@ -191,7 +198,7 @@ export class BaseComponent {
 
     if (this.component) {
       this.type = this.component.type;
-      if (this.component.input && this.component.key) {
+      if (this.hasInput && this.component.key) {
         this.options.name += `[${this.component.key}]`;
       }
 
@@ -203,6 +210,10 @@ export class BaseComponent {
     }
   }
 
+  get hasInput() {
+    return this.component.input || this.inputs.length;
+  }
+
   /**
    * Translate a text using the i18n system.
    *
@@ -211,12 +222,15 @@ export class BaseComponent {
    */
   t(text, params) {
     params = params || {};
+    params.data = this.root ? this.root.data : this.data;
+    params.row = this.data;
     params.component = this.component;
     params.nsSeparator = '::';
     params.keySeparator = '.|.';
     params.pluralSeparator = '._.';
     params.contextSeparator = '._.';
-    return i18next.t(text, params);
+    let translated = this.i18next.t(text, params);
+    return translated || text;
   }
 
   /**
@@ -327,27 +341,91 @@ export class BaseComponent {
    * Builds the component.
    */
   build() {
-    this.createElement();
+      this.createElement();
 
-    const labelAtTheBottom = this.component.labelPosition === 'bottom';
-    if (!labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    if (!this.createWrapper()) {
-      this.createInput(this.element);
-    }
-    if (labelAtTheBottom) {
-      this.createLabel(this.element);
-    }
-    this.createDescription(this.element);
+      const labelAtTheBottom = this.component.labelPosition === 'bottom';
+      if (!labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      if (!this.createWrapper()) {
+        this.createInput(this.element);
+      }
+      if (labelAtTheBottom) {
+        this.createLabel(this.element);
+      }
+      this.createDescription(this.element);
 
-    // Disable if needed.
-    if (this.shouldDisable) {
-      this.disabled = true;
+      // Disable if needed.
+      if (this.shouldDisable) {
+        this.disabled = true;
+      }
+      // Restore the value.
+      this.restoreValue();
+  }
+
+  get viewOnly() {
+    return this.options.readOnly && this.options.viewAsHtml;
+  }
+
+  viewOnlyBuild() {
+    this.createViewOnlyElement();
+    this.createViewOnlyLabel(this.element);
+    this.createViewOnlyValue(this.element);
+  }
+
+  createViewOnlyElement() {
+    this.element = this.ce('dl', {
+      id: this.id
+    });
+
+    if (this.element) {
+      // Ensure you can get the component info from the element.
+      this.element.component = this.component;
     }
 
-    // Restore the value.
-    this.restoreValue();
+    return this.element;
+  }
+
+  createViewOnlyLabel(container) {
+    if (this.labelIsHidden()) {
+      return;
+    }
+
+    this.labelElement = this.ce('dt');
+    this.labelElement.appendChild(this.text(this.component.label));
+    this.createTooltip(this.labelElement);
+    container.appendChild(this.labelElement);
+  }
+
+  createViewOnlyValue(container) {
+    this.valueElement = this.ce('dd');
+    this.setupValueElement(this.valueElement);
+    container.appendChild(this.valueElement);
+  }
+
+  setupValueElement(element) {
+    let value = this.value;
+    value = this.isEmpty(value) ? this.defaultViewOnlyValue : this.getView(value);
+    element.appendChild(this.text(value));
+  }
+
+  get defaultViewOnlyValue() {
+    return '-';
+  }
+
+  getView(value) {
+    return _toString(value);
+  }
+
+  updateViewOnlyValue() {
+    this.empty(this.valueElement);
+    this.setupValueElement(this.valueElement);
+  }
+
+  empty(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
   }
 
   /**
@@ -355,7 +433,7 @@ export class BaseComponent {
    * @returns {string} - The class name of this component.
    */
   get className() {
-    let className = this.component.input ? 'form-group has-feedback ' : '';
+    let className = this.hasInput ? 'form-group has-feedback ' : '';
     className += `formio-component formio-component-${this.component.type} `;
     if (this.component.key) {
       className += `formio-component-${this.component.key} `;
@@ -363,7 +441,7 @@ export class BaseComponent {
     if (this.component.customClass) {
       className += this.component.customClass;
     }
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' required';
     }
     return className;
@@ -396,16 +474,19 @@ export class BaseComponent {
    * @returns {HTMLElement}
    */
   createElement() {
+    // If the element is already created, don't recreate.
+    if (this.element) {
+      return this.element;
+    }
+
     this.element = this.ce('div', {
       id: this.id,
       class: this.className,
       style: this.customStyle
     });
 
-    if (this.element) {
-      // Ensure you can get the component info from the element.
-      this.element.component = this.component;
-    }
+    // Ensure you can get the component info from the element.
+    this.element.component = this.component;
 
     return this.element;
   }
@@ -467,8 +548,7 @@ export class BaseComponent {
         try {
           defaultValue = FormioUtils.jsonLogic.apply(this.component.customDefaultValue, {
             data: this.data,
-            row: this.data,
-            _
+            row: this.data
           });
         }
         catch (err) {
@@ -479,6 +559,14 @@ export class BaseComponent {
         }
       }
     }
+
+    if (this._inputMask) {
+      defaultValue = conformToMask(defaultValue, this._inputMask).conformedValue;
+      if (!FormioUtils.matchInputMask(defaultValue, this._inputMask)) {
+        defaultValue = '';
+      }
+    }
+
     return defaultValue;
   }
 
@@ -498,7 +586,7 @@ export class BaseComponent {
     if (!this.data[this.component.key]) {
       this.data[this.component.key] = [];
     }
-    if (!_isArray(this.data[this.component.key])) {
+    if (this.data[this.component.key] && !_isArray(this.data[this.component.key])) {
       this.data[this.component.key] = [this.data[this.component.key]];
     }
     this.data[this.component.key].push(this.defaultValue);
@@ -510,6 +598,7 @@ export class BaseComponent {
   addValue() {
     this.addNewValue();
     this.buildRows();
+	  this.checkConditions(this.root ? this.root.data : this.data);
     this.restoreValue();
   }
 
@@ -565,11 +654,33 @@ export class BaseComponent {
     }
   }
 
+  bootstrap4Theme(name) {
+    return (name === 'default') ? 'secondary' : name;
+  }
+
+  iconClass(name, spinning) {
+    if (!this.options.icons || this.options.icons === 'glyphicon') {
+      return spinning ? `glyphicon glyphicon-${name} glyphicon-spin` : `glyphicon glyphicon-${name}`;
+    }
+    switch (name) {
+      case 'zoom-in':
+        return 'fa fa-search-plus';
+      case 'zoom-out':
+        return 'fa fa-search-minus';
+      case 'question-sign':
+        return `fa fa-question-circle`;
+      case 'remove-circle':
+        return `fa fa-times-circle-o`;
+      default:
+        return spinning ? `fa fa-${name} fa-spin` : `fa fa-${name}`;
+    }
+  }
+
   /**
    * Adds a new button to add new rows to the multiple input elements.
    * @returns {HTMLElement} - The "Add New" button html element.
    */
-  addButton() {
+  addButton(justIcon) {
     let addButton = this.ce('a', {
       class: 'btn btn-primary'
     });
@@ -581,10 +692,10 @@ export class BaseComponent {
     let addIcon = this.ce('span', {
       class: 'glyphicon glyphicon-plus'
     });
-    addButton.appendChild(addIcon);
-    addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
-    return addButton;
-  }
+      addButton.appendChild(addIcon);
+      addButton.appendChild(this.text(this.component.addAnother || ' Add Another'));
+      return addButton;
+    }
 
   /**
    * The readible name for this component.
@@ -619,7 +730,7 @@ export class BaseComponent {
   removeButton(index) {
     let removeButton = this.ce('button', {
       type: 'button',
-      class: 'btn btn-default',
+      class: 'btn btn-default btn-secondary',
       tabindex: '-1'
     });
 
@@ -687,7 +798,8 @@ export class BaseComponent {
 
       if (this.labelOnTheLeft(this.component.labelPosition)) {
         input.style.marginLeft = `${totalLabelWidth}%`
-      } else {
+      }
+      else {
         input.style.marginRight = `${totalLabelWidth}%`
       }
     }
@@ -715,14 +827,16 @@ export class BaseComponent {
     // Determine label styles/classes depending on position.
     if (labelPosition === 'bottom') {
       className += ' control-label--bottom';
-    } else if (labelPosition && labelPosition !== 'top') {
+    }
+    else if (labelPosition && labelPosition !== 'top') {
       const labelWidth = this.getLabelWidth();
       const labelMargin = this.getLabelMargin();
 
       // Label is on the left or right.
       if (this.labelOnTheLeft(labelPosition)) {
         style += `float: left; width: ${labelWidth}%; margin-right: ${labelMargin}%; `;
-      } else if (this.labelOnTheRight(labelPosition)) {
+      }
+      else if (this.labelOnTheRight(labelPosition)) {
         style += `float: right; width: ${labelWidth}%; margin-left: ${labelMargin}%; `;
       }
       if (this.rightAlignedLabel(labelPosition)) {
@@ -730,7 +844,7 @@ export class BaseComponent {
       }
     }
 
-    if (this.component.input && this.component.validate && this.component.validate.required) {
+    if (this.hasInput && this.component.validate && this.component.validate.required) {
       className += ' field-required';
     }
     this.labelElement = this.ce('label', {
@@ -914,47 +1028,8 @@ export class BaseComponent {
     return inputGroup;
   }
 
-  /**
-   * Returns an input mask that is compatible with the input mask library.
-   * @param {string} mask - The Form.io input mask.
-   * @returns {Array} - The input mask for the mask library.
-   */
-  getInputMask(mask) {
-    if (mask instanceof Array) {
-      return mask;
-    }
-    let maskArray = [];
-    maskArray.numeric = true;
-    for (let i=0; i < mask.length; i++) {
-      switch (mask[i]) {
-        case '9':
-          maskArray.push(/\d/);
-          break;
-        case 'A':
-          maskArray.numeric = false;
-          maskArray.push(/[a-zA-Z]/);
-          break;
-        case '*':
-          maskArray.numeric = false;
-          maskArray.push(/[a-zA-Z0-9]/);
-          break;
-        default:
-          maskArray.push(mask[i]);
-          break;
-      }
-    }
-    return maskArray;
-  }
-
-  /**
-   * Creates a new input mask placeholder.
-   * @param {HTMLElement} mask - The input mask.
-   * @returns {string} - The placeholder that will exist within the input as they type.
-   */
   maskPlaceholder(mask) {
-    return mask.map((char) => {
-      return (char instanceof RegExp) ? '_' : char
-    }).join('')
+    return mask.map((char) => (char instanceof RegExp) ? '_' : char).join('');
   }
 
   /**
@@ -963,10 +1038,11 @@ export class BaseComponent {
    */
   setInputMask(input) {
     if (input && this.component.inputMask) {
-      let mask = this.getInputMask(this.component.inputMask);
+      const mask = FormioUtils.getInputMask(this.component.inputMask);
+      this._inputMask = mask;
       this.inputMask = maskInput({
         inputElement: input,
-        mask: mask
+        mask
       });
       if (mask.numeric) {
         input.setAttribute('pattern', "\\d*");
@@ -1008,12 +1084,17 @@ export class BaseComponent {
     this.eventHandlers.push({type: evt, func: func});
     if ('addEventListener' in obj){
       obj.addEventListener(evt, func, false);
-    } else if ('attachEvent' in obj) {
+    }
+    else if ('attachEvent' in obj) {
       obj.attachEvent(`on${evt}`, func);
     }
   }
 
   redraw() {
+    // Don't bother if we have not built yet.
+    if (!this.isBuilt) {
+      return;
+    }
     this.clear();
     this.build();
   }
@@ -1031,27 +1112,11 @@ export class BaseComponent {
       }
     });
     _each(this.eventHandlers, (handler) => {
-      window.removeEventListener(handler.event, handler.func);
+      if (handler.event) {
+        window.removeEventListener(handler.event, handler.func);
+      }
     });
-  }
-
-  /**
-   * Append different types of children.
-   *
-   * @param child
-   */
-  appendChild(element, child) {
-    if (Array.isArray(child)) {
-      child.forEach(oneChild => {
-        this.appendChild(element, oneChild);
-      });
-    }
-    else if (child instanceof HTMLElement || child instanceof Text) {
-      element.appendChild(child);
-    }
-    else if (child) {
-      element.appendChild(this.text(child.toString()));
-    }
+    this.inputs = [];
   }
 
   /**
@@ -1079,6 +1144,25 @@ export class BaseComponent {
     });
 
     return div;
+  }
+
+  /**
+   * Append different types of children.
+   *
+   * @param child
+   */
+  appendChild(element, child) {
+    if (Array.isArray(child)) {
+      child.forEach(oneChild => {
+        this.appendChild(element, oneChild);
+      });
+    }
+    else if (child instanceof HTMLElement || child instanceof Text) {
+      element.appendChild(child);
+    }
+    else if (child) {
+      element.appendChild(this.text(child.toString()));
+    }
   }
 
   /**
@@ -1183,11 +1267,71 @@ export class BaseComponent {
    * Check for conditionals and hide/show the element based on those conditions.
    */
   checkConditions(data) {
+    // Check advanced conditions
+    let result;
+
     if (!this.hasCondition()) {
-      return this.show(true);
+      result = this.show(true);
+    }
+    else {
+      result = this.show(FormioUtils.checkCondition(this.component, this.data, data));
     }
 
-    return this.show(FormioUtils.checkCondition(this.component, this.data, data));
+    if (this.fieldLogic(data)) {
+      this.redraw();
+    }
+
+    return result;
+  }
+
+  /**
+   * Check all triggers and apply necessary actions.
+   *
+   * @param data
+   */
+  fieldLogic(data) {
+    const logics = this.component.logic || [];
+
+    // If there aren't logic, don't go further.
+    if (logics.length === 0) {
+      return;
+    }
+
+    const newComponent = _cloneDeep(this.originalComponent);
+
+    let changed = logics.reduce((changed, logic) => {
+      const result = FormioUtils.checkTrigger(newComponent, logic.trigger, this.data, data);
+
+      if (result) {
+        changed |= logic.actions.reduce((changed, action) => {
+          switch(action.type) {
+            case 'property':
+              FormioUtils.setActionProperty(newComponent, action, this.data, data, newComponent, result);
+              break;
+            case 'value':
+              const newValue = (new Function('row', 'data', 'component', 'result', action.value))(this.data, data, newComponent, result);
+              if (!_isEqual(this.getValue(), newValue)) {
+                this.setValue(newValue);
+                changed = true;
+              }
+              break;
+            case 'validation':
+              // TODO
+              break;
+          }
+          return changed;
+        }, false);
+      }
+      return changed;
+    }, false);
+
+    // If component definition changed, replace and mark as changed.
+    if (!_isEqual(this.component, newComponent)) {
+      this.component = newComponent;
+      changed = true;
+    }
+
+    return changed;
   }
 
   /**
@@ -1211,6 +1355,7 @@ export class BaseComponent {
 
     // Add error classes
     this.addClass(this.element, 'has-error');
+    this.inputs.forEach((input) => this.addClass(input, 'is-invalid'));
     if (dirty && this.options.highlightErrors) {
       this.addClass(this.element, 'alert alert-danger');
     }
@@ -1248,13 +1393,24 @@ export class BaseComponent {
       }
     }
 
-    if (!show && this.component.clearOnHide) {
-      this.clearPending = setTimeout(() => this.setValue(null, {
-        noValidate: true
-      }), 200);
-    }
+    this.clearOnHide(show);
 
     return show;
+  }
+
+  clearOnHide(show) {
+    // clearOnHide defaults to true for old forms (without the value set) so only trigger if the value is false.
+    if (this.component.clearOnHide !== false) {
+      if (!show) {
+        delete this.data[this.component.key];
+      }
+      else {
+        // If shown, ensure the default is set.
+        this.setValue(this.defaultValue, {
+          noUpdateEvent: true
+        });
+      }
+    }
   }
 
   onResize() {}
@@ -1355,70 +1511,14 @@ export class BaseComponent {
   }
 
   /**
-   * The empty value for this component.
-   *
-   * @return {null}
-   */
-  get emptyValue() {
-    return null;
-  }
-
-  /**
-   * Returns if this component has a value set.
-   *
-   */
-  get hasValue() {
-    return _.has(this.data, this.component.key);
-  }
-
-  /**
    * Get the static value of this component.
    * @return {*}
    */
-  get dataValue() {
-    if (!this.component.key) {
-      return this.data;
+  get value() {
+    if (!this.data) {
+      return null;
     }
-    if (!this.hasValue) {
-      this.dataValue = this.emptyValue;
-    }
-    return _.get(this.data, this.component.key);
-  }
-
-  /**
-   * Sets the static value of this component.
-   *
-   * @param value
-   */
-  set dataValue(value) {
-    if (!this.component.key) {
-      return value;
-    }
-    _.set(this.data, this.component.key, value);
-    return value;
-  }
-
-  /**
-   * Splice a value from the dataValue.
-   *
-   * @param index
-   */
-  splice(index) {
-    if (this.hasValue) {
-      let dataValue = this.dataValue || [];
-      if (_.isArray(dataValue) && dataValue.hasOwnProperty(index)) {
-        dataValue.splice(index, 1);
-        this.dataValue = dataValue;
-        this.triggerChange();
-      }
-    }
-  }
-
-  /**
-   * Deletes the value of the component.
-   */
-  deleteValue() {
-    _.unset(this.data, this.component.key);
+    return this.data[this.component.key];
   }
 
   /**
@@ -1431,21 +1531,27 @@ export class BaseComponent {
     return this.inputs[index].value;
   }
 
+  /**
+   * Get the input value of this component.
+   *
+   * @return {*}
+   */
   getValue() {
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return;
+    }
+    if (this.viewOnly) {
+      return this.value;
     }
     const values = [];
     for (let i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
         if (!this.component.multiple) {
-          this.value = this.getValueAt(i);
-          return this.value;
+          return this.getValueAt(i);
         }
         values.push(this.getValueAt(i));
       }
     }
-    this.value = values;
     return values;
   }
 
@@ -1466,9 +1572,17 @@ export class BaseComponent {
    * @param flags
    */
   updateValue(flags) {
+    if (!this.hasInput) {
+      return false;
+    }
+
     flags = flags || {};
     const value = this.data[this.component.key];
     this.data[this.component.key] = this.getValue(flags);
+    if (this.viewOnly) {
+      this.updateViewOnlyValue(this.value);
+    }
+
     const changed = flags.changed || this.hasChanged(value, this.data[this.component.key]);
     delete flags.changed;
     if (!flags.noUpdateEvent && changed) {
@@ -1515,15 +1629,12 @@ export class BaseComponent {
     // If this is a string, then use eval to evalulate it.
     if (typeof this.component.calculateValue === 'string') {
       try {
-        let value = [];
-        let row = this.data;
-        let component = this;
-        eval(this.component.calculateValue.toString());
+        let value = (new Function('component', 'row', 'data', `value = []; ${this.component.calculateValue.toString()}; return value;`))(this, this.data, data);
         changed = this.setValue(value, flags);
       }
-      catch (e) {
+      catch (err) {
         /* eslint-disable no-console */
-        console.warn(`An error occurred calculating a value for ${this.component.key}`, e);
+        console.warn(`An error occurred calculating a value for ${this.component.key}`, err);
         changed = false;
         /* eslint-enable no-console */
       }
@@ -1532,14 +1643,13 @@ export class BaseComponent {
       try {
         let val = FormioUtils.jsonLogic.apply(this.component.calculateValue, {
           data,
-          row: this.data,
-          _
+          row: this.data
         });
         changed = this.setValue(val, flags);
       }
       catch (err) {
         /* eslint-disable no-console */
-        console.warn(`An error occurred calculating a value for ${this.component.key}`, e);
+        console.warn(`An error occurred calculating a value for ${this.component.key}`, err);
         changed = false;
         /* eslint-enable no-console */
       }
@@ -1585,7 +1695,7 @@ export class BaseComponent {
    */
   invalidMessage(data, dirty) {
     // No need to check for errors if there is no input or if it is pristine.
-    if (!this.component.input || (!dirty && this.pristine)) {
+    if (!this.hasInput || (!dirty && this.pristine)) {
       return '';
     }
 
@@ -1604,6 +1714,11 @@ export class BaseComponent {
   }
 
   checkValidity(data, dirty) {
+    // Force valid if component is conditionally hidden.
+    if (!FormioUtils.checkCondition(this.component, data, this.data)) {
+      return true;
+    }
+
     let message = this.invalid || this.invalidMessage(data, dirty);
     this.setCustomValidity(message, dirty);
     return message ? false : true;
@@ -1643,6 +1758,7 @@ export class BaseComponent {
       catch (err) {}
     }
     this.removeClass(this.element, 'has-error');
+    this.inputs.forEach((input) => this.removeClass(input, 'is-invalid'));
     if (this.options.highlightErrors) {
       this.removeClass(this.element, 'alert alert-danger');
     }
@@ -1699,10 +1815,13 @@ export class BaseComponent {
    */
   setValue(value, flags) {
     flags = this.getFlags.apply(this, arguments);
-    if (!this.component.input) {
+    if (!this.hasInput) {
       return false;
     }
-    this.value = value;
+    if (this.component.multiple && !_isArray(value)) {
+      value = [value];
+    }
+    this.buildRows();
     const isArray = _isArray(value);
     for (let i in this.inputs) {
       if (this.inputs.hasOwnProperty(i)) {
@@ -1812,7 +1931,9 @@ export class BaseComponent {
     this.destroy();
     const element = this.getElement();
     if (element) {
-      element.innerHTML = '';
+      while (element.lastChild) {
+        element.removeChild(element.lastChild);
+      }
     }
   }
 
@@ -1848,7 +1969,7 @@ export class BaseComponent {
       type: this.component.inputType || 'text',
       class: 'form-control',
       lang: this.options.language
-  };
+    };
 
     if (this.component.placeholder) {
       attributes.placeholder = this.t(this.component.placeholder);
@@ -1856,6 +1977,10 @@ export class BaseComponent {
 
     if (this.component.tabindex) {
       attributes.tabindex = this.component.tabindex;
+    }
+
+    if (this.component.autofocus) {
+      attributes.autofocus = this.component.autofocus;
     }
 
     return {

@@ -150,7 +150,6 @@
 <div class="content" data-ice="content"><h1 data-ice="title">src/components/editrgrid/EditGrid.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _each from &apos;lodash/each&apos;;
 import _map from &apos;lodash/map&apos;;
-import _get from &apos;lodash/get&apos;;
 import _cloneDeep from &apos;lodash/cloneDeep&apos;;
 import _clone from &apos;lodash/clone&apos;;
 import _isArray from &apos;lodash/isArray&apos;;
@@ -161,6 +160,7 @@ export class EditGridComponent extends FormioComponents {
   constructor(component, options, data) {
     super(component, options, data);
     this.type = &apos;datagrid&apos;;
+    this.rows = [];
     this.editRows = [];
   }
 
@@ -194,31 +194,13 @@ export class EditGridComponent extends FormioComponents {
   }
 
   createHeader() {
-    const templateHeader = _get(this.component, &apos;templates.header&apos;);
-    if (!templateHeader) {
-      return this.text(&apos;&apos;);
-    }
-    return this.ce(&apos;li&apos;, {class: &apos;list-group-item list-group-header&apos;}, this.renderTemplate(templateHeader, {
-      components: this.component.components,
-      util: FormioUtils,
-      value: this.dataValue
-    }));
-  }
-
-  get defaultRowTemplate() {
-    return `&lt;div class=&quot;row&quot;&gt;
-      {% util.eachComponent(components, function(component) { %}
-        &lt;div class=&quot;col-sm-2&quot;&gt;
-          {{ row[component.key] }}
-        &lt;/div&gt;
-      {% }) %}
-      &lt;div class=&quot;col-sm-2&quot;&gt;
-        &lt;div class=&quot;btn-group pull-right&quot;&gt;
-          &lt;div class=&quot;btn btn-default editRow&quot;&gt;Edit&lt;/div&gt;
-          &lt;div class=&quot;btn btn-danger removeRow&quot;&gt;Delete&lt;/div&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;`;
+    return this.component.templates.header ?
+      this.ce(&apos;li&apos;, {class: &apos;list-group-item list-group-header&apos;}, this.renderTemplate(this.component.templates.header, {
+        components: this.component.components,
+        util: FormioUtils,
+        value: this.rows
+      })) :
+      this.text(&apos;&apos;);
   }
 
   createRow(row, rowIndex) {
@@ -294,15 +276,13 @@ export class EditGridComponent extends FormioComponents {
   }
 
   createFooter() {
-    const footerTemplate = _get(this.component, &apos;templates.footer&apos;);
-    if (!footerTemplate) {
-      return this.text(&apos;&apos;);
-    }
-    return this.ce(&apos;li&apos;, {class: &apos;list-group-item list-group-footer&apos;}, this.renderTemplate(footerTemplate, {
-      components: this.component.components,
-      util: FormioUtils,
-      value: this.dataValue
-    }));
+    return this.component.templates.footer ?
+      this.ce(&apos;li&apos;, {class: &apos;list-group-item list-group-footer&apos;}, this.renderTemplate(this.component.templates.footer, {
+        components: this.component.components,
+        util: FormioUtils,
+        value: this.rows
+      })) :
+      this.text(&apos;&apos;);
   }
 
   checkData(data, flags = {}, index) {
@@ -340,12 +320,13 @@ export class EditGridComponent extends FormioComponents {
 
   createAddButton() {
     this.element.appendChild(this.ce(&apos;div&apos;, {class: &apos;editgrid-add&apos;},
-      this.ce(&apos;a&apos;, {
+      this.ce(&apos;button&apos;, {
           class: &apos;btn btn-primary&apos;,
+          role: &apos;button&apos;,
           onClick: this.addRow.bind(this)
         },
         [
-          this.ce(&apos;span&apos;, {class: &apos;glyphicon glyphicon-plus&apos;, &apos;aria-hidden&apos;: true}),
+          this.ce(&apos;span&apos;, {class: this.iconClass(&apos;plus&apos;), &apos;aria-hidden&apos;: true}),
           &apos; &apos;,
           this.t(this.component.addAnother ? this.component.addAnother : &apos;Add Another&apos;, {})
         ],
@@ -412,11 +393,11 @@ export class EditGridComponent extends FormioComponents {
     if (!this.rows[rowIndex]) {
       this.tableElement.removeChild(this.editRows[rowIndex].element);
       this.editRows.splice(rowIndex, 1);
-      this.splice(rowIndex);
+      this.rows.splice(rowIndex, 1);
     }
     else {
       this.editRows[rowIndex].isOpen = false;
-      this.editRows[rowIndex].data = this.dataValue[rowIndex];
+      this.editRows[rowIndex].data = this.rows[rowIndex];
     }
     this.refreshDOM();
   }
@@ -432,7 +413,7 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
     this.removeRowComponents(rowIndex);
-    this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+    this.rows[rowIndex] = this.editRows[rowIndex].data;
     this.editRows[rowIndex].isOpen = false;
     this.checkValidity(this.data, true);
     this.updateValue();
@@ -550,7 +531,8 @@ export class EditGridComponent extends FormioComponents {
   }
 
   get defaultValue() {
-    return [];
+    const value = super.defaultValue;
+    return Array.isArray(value) ? value : [];
   }
 
   setValue(value, flags) {
@@ -562,9 +544,9 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
 
-    this.dataValue = value;
+    this.rows = this.data[this.component.key] = value;
     // Refresh editRow data when data changes.
-    this.dataValue.forEach((row, rowIndex) =&gt; {
+    this.rows.forEach((row, rowIndex) =&gt; {
       if (this.editRows[rowIndex]) {
         this.editRows[rowIndex].data = row;
       }
@@ -576,8 +558,8 @@ export class EditGridComponent extends FormioComponents {
       }
     });
     // Remove any extra edit rows.
-    if (this.dataValue.length &lt; this.editRows.length) {
-      for (let rowIndex = this.editRows.length - 1; rowIndex &gt;= this.dataValue.length; rowIndex--) {
+    if (this.rows.length &lt; this.editRows.length) {
+      for (let rowIndex = this.editRows.length - 1; rowIndex &gt;= this.rows.length; rowIndex--) {
         this.removeRowComponents(rowIndex);
         this.tableElement.removeChild(this.editRows[rowIndex].element);
         this.editRows.splice(rowIndex, 1);
@@ -592,10 +574,9 @@ export class EditGridComponent extends FormioComponents {
    * @returns {*}
    */
   getValue() {
-    return this.dataValue;
+    return this.rows;
   }
-}
-</code></pre>
+}</code></pre>
 
 </div>
 

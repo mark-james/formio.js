@@ -7,6 +7,8 @@ exports.EditGridComponent = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _each2 = require('lodash/each');
 
 var _each3 = _interopRequireDefault(_each2);
@@ -14,10 +16,6 @@ var _each3 = _interopRequireDefault(_each2);
 var _map2 = require('lodash/map');
 
 var _map3 = _interopRequireDefault(_map2);
-
-var _get2 = require('lodash/get');
-
-var _get3 = _interopRequireDefault(_get2);
 
 var _cloneDeep2 = require('lodash/cloneDeep');
 
@@ -54,6 +52,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
     var _this = _possibleConstructorReturn(this, (EditGridComponent.__proto__ || Object.getPrototypeOf(EditGridComponent)).call(this, component, options, data));
 
     _this.type = 'datagrid';
+    _this.rows = [];
     _this.editRows = [];
     return _this;
   }
@@ -90,15 +89,11 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'createHeader',
     value: function createHeader() {
-      var templateHeader = (0, _get3.default)(this.component, 'templates.header');
-      if (!templateHeader) {
-        return this.text('');
-      }
-      return this.ce('li', { class: 'list-group-item list-group-header' }, this.renderTemplate(templateHeader, {
+      return this.component.templates.header ? this.ce('li', { class: 'list-group-item list-group-header' }, this.renderTemplate(this.component.templates.header, {
         components: this.component.components,
         util: _utils2.default,
-        value: this.dataValue
-      }));
+        value: this.rows
+      })) : this.text('');
     }
   }, {
     key: 'createRow',
@@ -152,15 +147,11 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'createFooter',
     value: function createFooter() {
-      var footerTemplate = (0, _get3.default)(this.component, 'templates.footer');
-      if (!footerTemplate) {
-        return this.text('');
-      }
-      return this.ce('li', { class: 'list-group-item list-group-footer' }, this.renderTemplate(footerTemplate, {
+      return this.component.templates.footer ? this.ce('li', { class: 'list-group-item list-group-footer' }, this.renderTemplate(this.component.templates.footer, {
         components: this.component.components,
         util: _utils2.default,
-        value: this.dataValue
-      }));
+        value: this.rows
+      })) : this.text('');
     }
   }, {
     key: 'checkData',
@@ -204,10 +195,11 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'createAddButton',
     value: function createAddButton() {
-      this.element.appendChild(this.ce('div', { class: 'editgrid-add' }, this.ce('a', {
+      this.element.appendChild(this.ce('div', { class: 'editgrid-add' }, this.ce('button', {
         class: 'btn btn-primary',
+        role: 'button',
         onClick: this.addRow.bind(this)
-      }, [this.ce('span', { class: 'glyphicon glyphicon-plus', 'aria-hidden': true }), ' ', this.t(this.component.addAnother ? this.component.addAnother : 'Add Another', {})])));
+      }, [this.ce('span', { class: this.iconClass('plus'), 'aria-hidden': true }), ' ', this.t(this.component.addAnother ? this.component.addAnother : 'Add Another', {})])));
     }
   }, {
     key: 'refreshDOM',
@@ -270,10 +262,10 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       if (!this.rows[rowIndex]) {
         this.tableElement.removeChild(this.editRows[rowIndex].element);
         this.editRows.splice(rowIndex, 1);
-        this.splice(rowIndex);
+        this.rows.splice(rowIndex, 1);
       } else {
         this.editRows[rowIndex].isOpen = false;
-        this.editRows[rowIndex].data = this.dataValue[rowIndex];
+        this.editRows[rowIndex].data = this.rows[rowIndex];
       }
       this.refreshDOM();
     }
@@ -290,7 +282,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
         return;
       }
       this.removeRowComponents(rowIndex);
-      this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+      this.rows[rowIndex] = this.editRows[rowIndex].data;
       this.editRows[rowIndex].isOpen = false;
       this.checkValidity(this.data, true);
       this.updateValue();
@@ -424,9 +416,9 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
         return;
       }
 
-      this.dataValue = value;
+      this.rows = this.data[this.component.key] = value;
       // Refresh editRow data when data changes.
-      this.dataValue.forEach(function (row, rowIndex) {
+      this.rows.forEach(function (row, rowIndex) {
         if (_this9.editRows[rowIndex]) {
           _this9.editRows[rowIndex].data = row;
         } else {
@@ -437,8 +429,8 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
         }
       });
       // Remove any extra edit rows.
-      if (this.dataValue.length < this.editRows.length) {
-        for (var rowIndex = this.editRows.length - 1; rowIndex >= this.dataValue.length; rowIndex--) {
+      if (this.rows.length < this.editRows.length) {
+        for (var rowIndex = this.editRows.length - 1; rowIndex >= this.rows.length; rowIndex--) {
           this.removeRowComponents(rowIndex);
           this.tableElement.removeChild(this.editRows[rowIndex].element);
           this.editRows.splice(rowIndex, 1);
@@ -456,17 +448,13 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'getValue',
     value: function getValue() {
-      return this.dataValue;
-    }
-  }, {
-    key: 'defaultRowTemplate',
-    get: function get() {
-      return '<div class="row">\n      {% util.eachComponent(components, function(component) { %}\n        <div class="col-sm-2">\n          {{ row[component.key] }}\n        </div>\n      {% }) %}\n      <div class="col-sm-2">\n        <div class="btn-group pull-right">\n          <div class="btn btn-default editRow">Edit</div>\n          <div class="btn btn-danger removeRow">Delete</div>\n        </div>\n      </div>\n    </div>';
+      return this.rows;
     }
   }, {
     key: 'defaultValue',
     get: function get() {
-      return [];
+      var value = _get(EditGridComponent.prototype.__proto__ || Object.getPrototypeOf(EditGridComponent.prototype), 'defaultValue', this);
+      return Array.isArray(value) ? value : [];
     }
   }]);
 

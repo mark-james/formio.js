@@ -1368,6 +1368,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/components/base/base.js~basecomponent#_inputmask",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-_inputMask",
+    "src/components/base/Base.js~BaseComponent#_inputMask",
+    "member"
+  ],
+  [
     "src/components/base/base.js~basecomponent#_visible",
     "class/src/components/base/Base.js~BaseComponent.html#instance-member-_visible",
     "src/components/base/Base.js~BaseComponent#_visible",
@@ -1494,6 +1500,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#bootstrap4theme",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-bootstrap4Theme",
+    "src/components/base/Base.js~BaseComponent#bootstrap4Theme",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#build",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-build",
     "src/components/base/Base.js~BaseComponent#build",
@@ -1539,6 +1551,12 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#clear",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-clear",
     "src/components/base/Base.js~BaseComponent#clear",
+    "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#clearonhide",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-clearOnHide",
+    "src/components/base/Base.js~BaseComponent#clearOnHide",
     "method"
   ],
   [
@@ -1596,6 +1614,24 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#createviewonlyelement",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-createViewOnlyElement",
+    "src/components/base/Base.js~BaseComponent#createViewOnlyElement",
+    "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#createviewonlylabel",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-createViewOnlyLabel",
+    "src/components/base/Base.js~BaseComponent#createViewOnlyLabel",
+    "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#createviewonlyvalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-createViewOnlyValue",
+    "src/components/base/Base.js~BaseComponent#createViewOnlyValue",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#createwrapper",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-createWrapper",
     "src/components/base/Base.js~BaseComponent#createWrapper",
@@ -1614,28 +1650,16 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/components/base/base.js~basecomponent#datavalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-dataValue",
-    "src/components/base/Base.js~BaseComponent#dataValue",
-    "member"
-  ],
-  [
-    "src/components/base/base.js~basecomponent#datavalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-dataValue",
-    "src/components/base/Base.js~BaseComponent#dataValue",
-    "member"
-  ],
-  [
     "src/components/base/base.js~basecomponent#defaultvalue",
     "class/src/components/base/Base.js~BaseComponent.html#instance-get-defaultValue",
     "src/components/base/Base.js~BaseComponent#defaultValue",
     "member"
   ],
   [
-    "src/components/base/base.js~basecomponent#deletevalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-method-deleteValue",
-    "src/components/base/Base.js~BaseComponent#deleteValue",
-    "method"
+    "src/components/base/base.js~basecomponent#defaultviewonlyvalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-defaultViewOnlyValue",
+    "src/components/base/Base.js~BaseComponent#defaultViewOnlyValue",
+    "member"
   ],
   [
     "src/components/base/base.js~basecomponent#description",
@@ -1651,13 +1675,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
@@ -1680,10 +1704,10 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/components/base/base.js~basecomponent#emptyvalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-emptyValue",
-    "src/components/base/Base.js~BaseComponent#emptyValue",
-    "member"
+    "src/components/base/base.js~basecomponent#empty",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-empty",
+    "src/components/base/Base.js~BaseComponent#empty",
+    "method"
   ],
   [
     "src/components/base/base.js~basecomponent#error",
@@ -1740,6 +1764,12 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/components/base/base.js~basecomponent#fieldlogic",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-fieldLogic",
+    "src/components/base/Base.js~BaseComponent#fieldLogic",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#getbrowserlanguage",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-getBrowserLanguage",
     "src/components/base/Base.js~BaseComponent#getBrowserLanguage",
@@ -1761,12 +1791,6 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#geticon",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-getIcon",
     "src/components/base/Base.js~BaseComponent#getIcon",
-    "method"
-  ],
-  [
-    "src/components/base/base.js~basecomponent#getinputmask",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-method-getInputMask",
-    "src/components/base/Base.js~BaseComponent#getInputMask",
     "method"
   ],
   [
@@ -1806,6 +1830,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#getview",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-getView",
+    "src/components/base/Base.js~BaseComponent#getView",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#haschanged",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-hasChanged",
     "src/components/base/Base.js~BaseComponent#hasChanged",
@@ -1818,15 +1848,27 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/components/base/base.js~basecomponent#hasvalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-hasValue",
-    "src/components/base/Base.js~BaseComponent#hasValue",
+    "src/components/base/base.js~basecomponent#hasinput",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-hasInput",
+    "src/components/base/Base.js~BaseComponent#hasInput",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#hook",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-hook",
     "src/components/base/Base.js~BaseComponent#hook",
+    "method"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#i18next",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-i18next",
+    "src/components/base/Base.js~BaseComponent#i18next",
+    "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#iconclass",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-iconClass",
+    "src/components/base/Base.js~BaseComponent#iconClass",
     "method"
   ],
   [
@@ -1872,6 +1914,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#isbuilt",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-isBuilt",
+    "src/components/base/Base.js~BaseComponent#isBuilt",
+    "member"
+  ],
+  [
     "src/components/base/base.js~basecomponent#isempty",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-isEmpty",
     "src/components/base/Base.js~BaseComponent#isEmpty",
@@ -1885,13 +1933,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
@@ -1959,6 +2007,12 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#options",
     "class/src/components/base/Base.js~BaseComponent.html#instance-member-options",
     "src/components/base/Base.js~BaseComponent#options",
+    "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#originalcomponent",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-originalComponent",
+    "src/components/base/Base.js~BaseComponent#originalComponent",
     "member"
   ],
   [
@@ -2106,6 +2160,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#setupvalueelement",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-setupValueElement",
+    "src/components/base/Base.js~BaseComponent#setupValueElement",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#shoulddisable",
     "class/src/components/base/Base.js~BaseComponent.html#instance-get-shouldDisable",
     "src/components/base/Base.js~BaseComponent#shouldDisable",
@@ -2115,12 +2175,6 @@ window.esdocSearchIndex = [
     "src/components/base/base.js~basecomponent#show",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-show",
     "src/components/base/Base.js~BaseComponent#show",
-    "method"
-  ],
-  [
-    "src/components/base/base.js~basecomponent#splice",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-method-splice",
-    "src/components/base/Base.js~BaseComponent#splice",
     "method"
   ],
   [
@@ -2166,6 +2220,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/components/base/base.js~basecomponent#updateviewonlyvalue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-updateViewOnlyValue",
+    "src/components/base/Base.js~BaseComponent#updateViewOnlyValue",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#validatemultiple",
     "class/src/components/base/Base.js~BaseComponent.html#instance-method-validateMultiple",
     "src/components/base/Base.js~BaseComponent#validateMultiple",
@@ -2179,19 +2239,37 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#value",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-member-value",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-value",
     "src/components/base/Base.js~BaseComponent#value",
     "member"
   ],
   [
+    "src/components/base/base.js~basecomponent#valueelement",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-valueElement",
+    "src/components/base/Base.js~BaseComponent#valueElement",
+    "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#viewonly",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-viewOnly",
+    "src/components/base/Base.js~BaseComponent#viewOnly",
+    "member"
+  ],
+  [
+    "src/components/base/base.js~basecomponent#viewonlybuild",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-method-viewOnlyBuild",
+    "src/components/base/Base.js~BaseComponent#viewOnlyBuild",
+    "method"
+  ],
+  [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
@@ -3120,18 +3198,6 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/components/editrgrid/editgrid.js~editgridcomponent#datavalue",
-    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-dataValue",
-    "src/components/editrgrid/EditGrid.js~EditGridComponent#dataValue",
-    "member"
-  ],
-  [
-    "src/components/editrgrid/editgrid.js~editgridcomponent#defaultrowtemplate",
-    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-get-defaultRowTemplate",
-    "src/components/editrgrid/EditGrid.js~EditGridComponent#defaultRowTemplate",
-    "member"
-  ],
-  [
     "src/components/editrgrid/editgrid.js~editgridcomponent#defaultvalue",
     "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-get-defaultValue",
     "src/components/editrgrid/EditGrid.js~EditGridComponent#defaultValue",
@@ -3184,6 +3250,12 @@ window.esdocSearchIndex = [
     "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-method-removeRowComponents",
     "src/components/editrgrid/EditGrid.js~EditGridComponent#removeRowComponents",
     "method"
+  ],
+  [
+    "src/components/editrgrid/editgrid.js~editgridcomponent#rows",
+    "class/src/components/editrgrid/EditGrid.js~EditGridComponent.html#instance-member-rows",
+    "src/components/editrgrid/EditGrid.js~EditGridComponent#rows",
+    "member"
   ],
   [
     "src/components/editrgrid/editgrid.js~editgridcomponent#saverow",
@@ -5017,13 +5089,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-get-form",
+    "class/src/formio.form.js~FormioForm.html#instance-set-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-set-form",
+    "class/src/formio.form.js~FormioForm.html#instance-get-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
@@ -5275,13 +5347,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#url",
-    "class/src/formio.form.js~FormioForm.html#instance-set-url",
+    "class/src/formio.form.js~FormioForm.html#instance-get-url",
     "src/formio.form.js~FormioForm#url",
     "member"
   ],
   [
     "src/formio.form.js~formioform#url",
-    "class/src/formio.form.js~FormioForm.html#instance-get-url",
+    "class/src/formio.form.js~FormioForm.html#instance-set-url",
     "src/formio.form.js~FormioForm#url",
     "member"
   ],
