@@ -3129,9 +3129,12 @@ var BaseComponent = function () {
      * Get the static value of this component.
      * @return {*}
      */
-
-  }, {
-    key: 'getValueAt',
+    // get value() {
+    //   if (!this.data) {
+    //     return null;
+    //   }
+    //   return this.data[this.component.key];
+    // }
 
     /**
      * Get the value at a specific index.
@@ -3139,6 +3142,9 @@ var BaseComponent = function () {
      * @param index
      * @returns {*}
      */
+
+  }, {
+    key: 'getValueAt',
     value: function getValueAt(index) {
       return this.inputs[index].value;
     }
@@ -3736,14 +3742,6 @@ var BaseComponent = function () {
     },
     get: function get() {
       return this._visible;
-    }
-  }, {
-    key: 'value',
-    get: function get() {
-      if (!this.data) {
-        return null;
-      }
-      return this.data[this.component.key];
     }
   }, {
     key: 'label',
@@ -6216,6 +6214,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       }
       this.removeRowComponents(rowIndex);
       this.rows[rowIndex] = this.editRows[rowIndex].data;
+      this.data[this.component.key] = this.rows;
       this.editRows[rowIndex].isOpen = false;
       this.checkValidity(this.data, true);
       this.updateValue();

@@ -283,6 +283,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       }
       this.removeRowComponents(rowIndex);
       this.rows[rowIndex] = this.editRows[rowIndex].data;
+      this.data[this.component.key] = this.rows;
       this.editRows[rowIndex].isOpen = false;
       this.checkValidity(this.data, true);
       this.updateValue();

@@ -1514,12 +1514,12 @@ export class BaseComponent {
    * Get the static value of this component.
    * @return {*}
    */
-  get value() {
-    if (!this.data) {
-      return null;
-    }
-    return this.data[this.component.key];
-  }
+  // get value() {
+  //   if (!this.data) {
+  //     return null;
+  //   }
+  //   return this.data[this.component.key];
+  // }
 
   /**
    * Get the value at a specific index.

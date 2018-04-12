@@ -1933,13 +1933,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#label",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-label",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-label",
     "src/components/base/Base.js~BaseComponent#label",
     "member"
   ],
@@ -2239,7 +2239,7 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#value",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-value",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-member-value",
     "src/components/base/Base.js~BaseComponent#value",
     "member"
   ],
@@ -2263,13 +2263,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#visible",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-visible",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-visible",
     "src/components/base/Base.js~BaseComponent#visible",
     "member"
   ],
@@ -5089,13 +5089,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-set-form",
+    "class/src/formio.form.js~FormioForm.html#instance-get-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
   [
     "src/formio.form.js~formioform#form",
-    "class/src/formio.form.js~FormioForm.html#instance-get-form",
+    "class/src/formio.form.js~FormioForm.html#instance-set-form",
     "src/formio.form.js~FormioForm#form",
     "member"
   ],
@@ -5305,13 +5305,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#submission",
-    "class/src/formio.form.js~FormioForm.html#instance-get-submission",
+    "class/src/formio.form.js~FormioForm.html#instance-set-submission",
     "src/formio.form.js~FormioForm#submission",
     "member"
   ],
   [
     "src/formio.form.js~formioform#submission",
-    "class/src/formio.form.js~FormioForm.html#instance-set-submission",
+    "class/src/formio.form.js~FormioForm.html#instance-get-submission",
     "src/formio.form.js~FormioForm#submission",
     "member"
   ],

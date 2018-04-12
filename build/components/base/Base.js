@@ -1629,10 +1629,12 @@ var BaseComponent = function () {
      * Get the static value of this component.
      * @return {*}
      */
-
-  }, {
-    key: 'getValueAt',
-
+    // get value() {
+    //   if (!this.data) {
+    //     return null;
+    //   }
+    //   return this.data[this.component.key];
+    // }
 
     /**
      * Get the value at a specific index.
@@ -1640,6 +1642,9 @@ var BaseComponent = function () {
      * @param index
      * @returns {*}
      */
+
+  }, {
+    key: 'getValueAt',
     value: function getValueAt(index) {
       return this.inputs[index].value;
     }
@@ -2238,14 +2243,6 @@ var BaseComponent = function () {
     },
     get: function get() {
       return this._visible;
-    }
-  }, {
-    key: 'value',
-    get: function get() {
-      if (!this.data) {
-        return null;
-      }
-      return this.data[this.component.key];
     }
   }, {
     key: 'label',
