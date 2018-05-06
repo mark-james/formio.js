@@ -48,7 +48,8 @@ export class Formio {
       this.base = Formio.baseUrl;
     }
     else {
-      this.base = window.location.href.match(/http[s]?:\/\/api./)[0];
+      this.base = window.location.href.match(/http[s]?:\/\/.+?(?=\/)/)[0];
+      //this.base = window.location.href.match(/http[s]?:\/\/api./)[0];
     }
 
     if (!path) {
@@ -1154,7 +1155,7 @@ export class Formio {
 // Define all the static properties.
 Formio.Headers = Headers;
 //Formio.baseUrl = 'http://localhost:4200';
-Formio.baseUrl = 'http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com';
+//Formio.baseUrl = 'http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com';
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];

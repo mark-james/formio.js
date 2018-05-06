@@ -7244,7 +7244,6 @@ var FormComponent = exports.FormComponent = function (_FormioForm) {
         return this.submit(true).then(function (submission) {
           // Before we submit, we need to filter out the references.
           _this2.data[_this2.component.key] = _this2.component.reference ? { _id: submission._id, form: submission.form } : submission;
-
           return _this2.data[_this2.component.key];
         });
       } else {
@@ -12041,7 +12040,8 @@ var Formio = function () {
     } else if (Formio.baseUrl) {
       this.base = Formio.baseUrl;
     } else {
-      this.base = window.location.href.match(/http[s]?:\/\/api./)[0];
+      this.base = window.location.href.match(/http[s]?:\/\/.+?(?=\/)/)[0];
+      //this.base = window.location.href.match(/http[s]?:\/\/api./)[0];
     }
 
     if (!path) {
@@ -13194,7 +13194,7 @@ var Formio = function () {
 exports.Formio = Formio;
 Formio.Headers = Headers;
 //Formio.baseUrl = 'http://localhost:4200';
-Formio.baseUrl = 'http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com';
+//Formio.baseUrl = 'http://test.getsmartchain.com.s3-website-ap-southeast-2.amazonaws.com';
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];

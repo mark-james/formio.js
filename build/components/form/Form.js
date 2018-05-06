@@ -157,7 +157,6 @@ var FormComponent = exports.FormComponent = function (_FormioForm) {
         return this.submit(true).then(function (submission) {
           // Before we submit, we need to filter out the references.
           _this2.data[_this2.component.key] = _this2.component.reference ? { _id: submission._id, form: submission.form } : submission;
-
           return _this2.data[_this2.component.key];
         });
       } else {
