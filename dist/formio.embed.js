@@ -11361,8 +11361,8 @@ var FormioForm = exports.FormioForm = function (_FormioComponents) {
         this._submission.data = {};
       }
       var submission = (0, _clone3.default)(this._submission);
-      submission.data = this.data;
       (0, _merge3.default)(this._submission.data, submission.data);
+      submission.data = this.data;
       return submission;
     }
 

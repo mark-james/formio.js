@@ -816,8 +816,8 @@ export class FormioForm extends FormioComponents {
       this._submission.data = {};
     }
     let submission = _clone(this._submission);
-    submission.data = this.data;
     _merge(this._submission.data, submission.data);
+    submission.data = this.data;
     return submission;
   }
 
