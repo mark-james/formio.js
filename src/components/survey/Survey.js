@@ -1,8 +1,32 @@
 import _ from 'lodash';
+import BaseComponent from '../base/Base';
 
-import {BaseComponent} from '../base/Base';
+export default class SurveyComponent extends BaseComponent {
+  static schema(...extend) {
+    return BaseComponent.schema({
+      type: 'survey',
+      label: 'Survey',
+      key: 'survey',
+      questions: [],
+      values: []
+    }, ...extend);
+  }
 
-export class SurveyComponent extends BaseComponent {
+  static get builderInfo() {
+    return {
+      title: 'Survey',
+      group: 'advanced',
+      icon: 'fa fa-list',
+      weight: 170,
+      documentation: 'http://help.form.io/userguide/#survey',
+      schema: SurveyComponent.schema()
+    };
+  }
+
+  get defaultSchema() {
+    return SurveyComponent.schema();
+  }
+
   build() {
     if (this.viewOnly) {
       this.viewOnlyBuild();
@@ -63,6 +87,7 @@ export class SurveyComponent extends BaseComponent {
       if (this.shouldDisable) {
         this.disabled = true;
       }
+      this.autofocus();
     }
   }
 

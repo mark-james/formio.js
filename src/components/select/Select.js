@@ -1,8 +1,8 @@
-import Choices from 'choices.js';
+import Choices from 'choices.js/assets/scripts/dist/choices.js';
 import _ from 'lodash';
-
-import {BaseComponent} from '../base/Base';
-import Formio from '../../formio';
+import BaseComponent from '../base/Base';
+import Formio from '../../Formio';
+import * as FormioUtils from '../../utils/utils';
 
 // Duck-punch the setValueByChoice to ensure we compare using _.isEqual.
 Choices.prototype.setValueByChoice = function(value) {
@@ -42,7 +42,40 @@ Choices.prototype.setValueByChoice = function(value) {
   return this;
 };
 
-export class SelectComponent extends BaseComponent {
+export default class SelectComponent extends BaseComponent {
+  static schema(...extend) {
+    return BaseComponent.schema({
+      type: 'select',
+      label: 'Select',
+      key: 'select',
+      data: {
+        values: [],
+        json: '',
+        url: '',
+        resource: '',
+        custom: ''
+      },
+      dataSrc: 'values',
+      valueProperty: '',
+      refreshOn: '',
+      filter: '',
+      authenticate: false,
+      template: '<span>{{ item.label }}</span>',
+      selectFields: ''
+    }, ...extend);
+  }
+
+  static get builderInfo() {
+    return {
+      title: 'Select',
+      group: 'basic',
+      icon: 'fa fa-th-list',
+      weight: 70,
+      documentation: 'http://help.form.io/userguide/#select',
+      schema: SelectComponent.schema()
+    };
+  }
+
   constructor(component, options, data) {
     super(component, options, data);
 
@@ -71,6 +104,10 @@ export class SelectComponent extends BaseComponent {
     }
   }
 
+  get defaultSchema() {
+    return SelectComponent.schema();
+  }
+
   refreshItems() {
     this.triggerUpdate();
     if (this.component.clearOnRefresh) {
@@ -96,7 +133,8 @@ export class SelectComponent extends BaseComponent {
 
     // Perform a fast interpretation if we should not use the template.
     if (data && !this.useTemplate) {
-      return this.t(data.label || data);
+      let itemLabel = data.label || data;
+      return (typeof itemLabel === 'string') ? this.t(itemLabel) : itemLabel;
     }
     if (typeof data === 'string') {
       return this.t(data);
@@ -180,9 +218,19 @@ export class SelectComponent extends BaseComponent {
       }
     }
 
+    // Allow js processing (needed for form builder)
+    if (this.component.onSetItems && typeof this.component.onSetItems === 'function') {
+      let newItems = this.component.onSetItems(this, items);
+      if (newItems) {
+        items = newItems;
+      }
+    }
+
     if (!this.choices && this.selectInput) {
-      // Detach from DOM and clear input.
-      this.removeChildFrom(this.selectInput, this.selectContainer);
+      if (this.loading) {
+        this.removeChildFrom(this.selectInput, this.selectContainer);
+      }
+
       this.selectInput.innerHTML = '';
     }
 
@@ -204,7 +252,7 @@ export class SelectComponent extends BaseComponent {
     if (this.choices) {
       this.choices.setChoices(this.selectOptions, 'value', 'label', true);
     }
-    else {
+    else if (this.loading) {
       // Re-attach select input.
       this.appendTo(this.selectInput, this.selectContainer);
     }
@@ -278,7 +326,7 @@ export class SelectComponent extends BaseComponent {
       .then((response) => this.setItems(response))
       .catch((err) => {
         this.loading = false;
-        this.events.emit('formio.error', err);
+        this.emit('error', err);
         console.warn(`Unable to load resources for ${this.component.key}`);
       });
   }
@@ -310,20 +358,24 @@ export class SelectComponent extends BaseComponent {
   }
 
   updateCustomItems() {
-    const data = _.cloneDeep(this.data);
-    const row = _.cloneDeep(this.row);
-    try {
-      this.setItems((new Function('data', 'row',
-        `var values = []; ${this.component.data.custom.toString()}; return values;`))(data, row));
-    }
-    catch (error) {
-      this.setItems([]);
-    }
+    this.setItems(FormioUtils.evaluate(this.component.data.custom, {
+      values: [],
+      component: this.component,
+      data: _.cloneDeep(this.root ? this.root.data : this.data),
+      row: _.cloneDeep(this.data),
+      utils: FormioUtils,
+      instance: this
+    }, 'values') || []);
   }
 
   updateItems(searchInput, forceUpdate) {
     if (!this.component.data) {
       console.warn(`Select component ${this.component.key} does not have data configuration.`);
+      return;
+    }
+
+    // Only load the data if it is visible.
+    if (!this.checkConditions()) {
       return;
     }
 
@@ -427,7 +479,7 @@ export class SelectComponent extends BaseComponent {
 
     if (this.component.widget === 'html5') {
       this.triggerUpdate();
-      this.addEventListener(input, 'focus', () => this.activate());
+      this.addEventListener(input, 'focus', () => this.update());
       return;
     }
 
@@ -452,7 +504,17 @@ export class SelectComponent extends BaseComponent {
     const tabIndex = input.tabIndex;
     this.addPlaceholder(input);
     this.choices = new Choices(input, choicesOptions);
-    this.choices.itemList.setAttribute('tabIndex', tabIndex);
+
+    if (this.component.multiple) {
+      this.focusableElement = this.choices.input;
+    }
+    else {
+      this.focusableElement = this.choices.containerInner;
+      this.choices.containerOuter.setAttribute('tabIndex', '-1');
+      this.addEventListener(this.choices.containerOuter, 'focus', () => this.focusableElement.focus());
+    }
+    this.focusableElement.setAttribute('tabIndex', tabIndex);
+
     this.setInputStyles(this.choices.containerOuter);
 
     // If a search field is provided, then add an event listener to update items on search.
@@ -461,18 +523,20 @@ export class SelectComponent extends BaseComponent {
       this.addEventListener(input, 'stopSearch', () => this.triggerUpdate());
     }
 
-    this.addEventListener(input, 'showDropdown', () => {
-      if (this.component.dataSrc === 'custom') {
-        this.updateCustomItems();
-      }
-
-      // Activate the control.
-      this.activate();
-    });
+    this.addEventListener(input, 'showDropdown', () => this.update());
 
     // Force the disabled state with getters and setters.
     this.disabled = this.disabled;
     this.triggerUpdate();
+  }
+
+  update() {
+    if (this.component.dataSrc === 'custom') {
+      this.updateCustomItems();
+    }
+
+    // Activate the control.
+    this.activate();
   }
 
   set disabled(disabled) {
@@ -482,14 +546,22 @@ export class SelectComponent extends BaseComponent {
     }
     if (disabled) {
       this.setDisabled(this.choices.containerInner, true);
-      this.choices.itemList.removeAttribute('tabIndex');
+      this.focusableElement.removeAttribute('tabIndex');
       this.choices.disable();
     }
     else {
       this.setDisabled(this.choices.containerInner, false);
-      this.choices.itemList.setAttribute('tabIndex', this.component.tabindex || 0);
+      this.focusableElement.setAttribute('tabIndex', this.component.tabindex || 0);
       this.choices.enable();
     }
+  }
+
+  show(show) {
+    // If we go from hidden to visible, trigger a refresh.
+    if (show && (this._visible !== show)) {
+      this.triggerUpdate();
+    }
+    return super.show(show);
   }
 
   addCurrentChoices(value, items) {
@@ -655,5 +727,9 @@ export class SelectComponent extends BaseComponent {
       this.choices.destroy();
       this.choices = null;
     }
+  }
+
+  focus() {
+    this.focusableElement.focus();
   }
 }

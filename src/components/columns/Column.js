@@ -1,5 +1,10 @@
-import {FormioComponents} from '../Components';
-export class ColumnComponent extends FormioComponents {
+import NestedComponent from '../NestedComponent';
+export default class ColumnComponent extends NestedComponent {
+  constructor(component, options, data) {
+    super(component, options, data);
+    this.noEdit = true;
+  }
+
   get className() {
     const comp   = this.component;
     const width  = ` col-sm-${comp.width  ? comp.width  : 6}`;

@@ -1,11 +1,12 @@
 'use strict';
 import assert from 'power-assert';
-import {DataGridComponent} from './DataGrid';
+import DataGridComponent from './DataGrid';
 import {components as comps} from './fixtures/index';
-import {Harness} from '../../../test/harness';
+import Harness from '../../../test/harness';
 describe('DataGrid Component', () => {
   it('Should build a data grid component', (done) => {
     Harness.testCreate(DataGridComponent, comps.comp1).then((component) => {
+      document.body.appendChild(component.getElement());
       Harness.testElements(component, 'input[type="text"]', 3);
       done();
     });

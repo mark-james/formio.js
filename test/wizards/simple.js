@@ -1,7 +1,7 @@
 import _map from 'lodash/map';
 import assert from 'power-assert';
-import { Harness } from '../harness';
-module.exports = {
+import Harness from '../harness';
+export default {
   title: 'Simple Wizard',
   form: {
     _id: '58cdd541d482d500aaf48368',
@@ -233,9 +233,8 @@ module.exports = {
           // Should returns a reject
           done('Should not be called');
         })
-        .catch((error) => {
-          // Should returns a reject
-          assert.equal(error, 'Invalid Submission');
+        .catch((errors) => {
+          assert.equal(errors[0].message, '');
         })
 
 

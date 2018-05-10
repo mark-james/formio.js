@@ -4,6 +4,156 @@ All notable changes to this project will be documented in this file
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### 3.0.0
+#### Breaking Changes
+ - Changed the overrall structure of the library and how "imports" work to make them more structured.
+    
+    ```js
+    // To render a new form.
+    import { Form } from 'formiojs';
+    const renderer = new Form(document.getElementById('formio'), 'https://examples.form.io/example');
+    renderer.render();
+    ```
+    
+    ```js
+    // To render a form builder
+    import { FormBuilder } from 'formiojs';
+    const builder = new FormBuilder(document.getElementById('builder'), {components:[]});
+    builder.render();
+    ```
+    
+    ```js
+    // To import a component
+    import TextFieldComponent from 'formiojs/components/textfield/TextField';
+    ```
+    
+ - Changed FormioComponents name to NestedComponent.
+ - Changed FormioComponentsIndex name to Components
+ - Changed FormioForm name to Webform
+ - Changed FormioWizard name to Wizard
+ - Changed FormioPDF name to PDF
+ - Renamed GMap component to Location component
+ - Changed all exports on Components to be default exports. ```import TextFieldComponent from 'formiojs/components/textfield/TextField';```
+ - Deprected ability to "attach" Formio to existing form using Formio.form method.
+ - Modified all JavaScript execution to make it more consistent.
+   - "component" now always refers to the JSON of the component (not the component instance)
+   - "instance" now refers to the component instance. Use at your own risk of SDK changes within each component!
+
+## 3.0.0-alpha.6
+### Changed
+ - The library structure
+ - Now using Webpack for the builds.
+
+### Added
+ - Multiple masks for text field and phone number components
+
+## 3.0.0-alpha.5
+### Fixed
+ - Issues with the simple conditional logic in form builder.
+
+## 3.0.0-alpha.4
+### Added
+ - Better documentation around the javascript execution code.
+### Fixed
+ - Issues with text area not working when set to required.
+ - Problems where two text with same key not working in form builder.
+ - `moment` library inside calculated value for DateTime component.
+
+## 3.0.0-alpha.1 
+### Added
+ - Form Builder
+ - Tags component (advanced)
+ - Tabs component (layout)
+ - Collapsible panels
+ - A way to remove event listener using the "off" method.
+ - "hasClass" method to check for a class.
+ - "hasValue" method to check for a value within a component.
+ - Version number and license link in all builds.
+ 
+### Changed
+ - How logic executions work by moving them into a single location within FormioUtils called "execute".
+ - Made a single way to create modals for form builder and resource adding.
+ - Now include Formio utils in the basic "formio" library under Formio.Utils
+ 
+### Removed
+ - Lib folder since this will be included in the package build.
+ - Dist folder since this will be included in the package build.
+ 
+### Fixed
+ - Make sure to pass the full root data object within checkValidity.
+ - Folder name for EditGrid component.
+
+## 2.32.1
+### Fixed
+ - Issue with the OAuth button where it would launch the modal at the wrong times.
+ - Problems where clearOnHide would trigger on readOnly forms.
+
+## 2.32.0
+### Added
+ - Ability to save a submission in a state (Save in state on button)
+ - Ability to skip frontend validation if in draft state
+ - Delete action to button component
+ - Message on file component when validation fails
+
+### Fixed
+ - Nested form data handling.
+ - Default values on nested forms.
+ - DateTime component resetting values was not working.
+ - Validation styling inside datagrid
+ - Destroy method on wizard component not removing header and footer
+ - Problem where number component would crash if decimalLimit was less than 2.
+
+### Changed
+ - Upgrade i18next to 11.2.3
+
+## 2.31.4
+### Fixed
+ - Disappering label for DataGrid.
+ - Validation for DataGrid.
+ - Validation for EditGrid.
+ - Destroy method should clear form element
+ - Stop talking about FFiles.
+
+### Added
+ - Add basic support for submission states.
+ - Docs about Seamless.js integration.
+ - Explain why files have been rejected when validation fails. 
+
+## 2.31.3
+ - Bad Release. Do not use!
+
+## 2.31.2
+### Fixed
+ - Problems with datagrid not rending properly and getting out of sync.
+ - Issues with the minLength and maxLength on data grid.
+ - Performance issues with datagrid to not re-render unless it needs to.
+ - Problem with multiple value setting not resetting values when removing rows.
+ - Flickering UI when adding and removing rows from a data grid.
+
+## 2.31.1
+### Changed
+ - Updated build with latest dependencies.
+
+## 2.31.0
+### Fixed
+ - Display of Dates within edit grids.
+
+### Changed
+ - Server errors now return a rejected promise instead of throwing an error.
+
+### Added
+ - Nested form support for forms of different types.
+ - Data variable in editgrid templates
+ - Collapsible fieldsets
+ - Autofocus feature.
+ - `getView(component, data)` option for EditGrid body template.
+
+### Fixed
+ - Interpolation for EditGrid.
+
+### Fixed
+ - Select HTML5 component with Custom data source.
+
 ## 2.30.2
 ### Fixed
  - Problem where values would not get reset before getting deleted with clear on hide.
