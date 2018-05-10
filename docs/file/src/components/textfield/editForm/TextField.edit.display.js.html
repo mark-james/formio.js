@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -251,22 +250,22 @@
     key: &apos;inputMask&apos;,
     label: &apos;Input Mask&apos;,
     tooltip: &apos;An input mask helps the user with input by ensuring a predefined format.&lt;br&gt;&lt;br&gt;9: numeric&lt;br&gt;a: alphabetical&lt;br&gt;*: alphanumeric&lt;br&gt;&lt;br&gt;Example telephone mask: (999) 999-9999&lt;br&gt;&lt;br&gt;See the &lt;a target=\&apos;_blank\&apos; href=\&apos;https://github.com/RobinHerbots/jquery.inputmask\&apos;&gt;jquery.inputmask documentation&lt;/a&gt; for more information.&lt;/a&gt;&apos;,
-    customConditional: &quot;show = !data.allowMultipleMasks;&quot;
+    customConditional: &apos;show = !data.allowMultipleMasks;&apos;
   },
   {
     weight: 413,
-    type: &quot;checkbox&quot;,
+    type: &apos;checkbox&apos;,
     input: true,
-    key: &quot;allowMultipleMasks&quot;,
-    label: &quot;Allow Multiple Masks&quot;
+    key: &apos;allowMultipleMasks&apos;,
+    label: &apos;Allow Multiple Masks&apos;
   },
   {
     weight: 417,
-    type: &quot;datagrid&quot;,
+    type: &apos;datagrid&apos;,
     input: true,
-    key: &quot;inputMasks&quot;,
-    label: &quot;Input Masks&quot;,
-    customConditional: &quot;show = data.allowMultipleMasks === true;&quot;,
+    key: &apos;inputMasks&apos;,
+    label: &apos;Input Masks&apos;,
+    customConditional: &apos;show = data.allowMultipleMasks === true;&apos;,
     components: [
       {
         type: &apos;textfield&apos;,

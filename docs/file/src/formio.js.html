@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -264,6 +263,7 @@ const isObject = (val) =&gt; val &amp;&amp; typeof val === &apos;object&apos;;
  *   let formio = new Formio(&apos;https://examples.form.io/example&apos;);
  */
 export default class Formio {
+  /* eslint-disable max-statements */
   constructor(path, options = {}) {
     // Ensure we have an instance of Formio.
     if (!(this instanceof Formio)) {
@@ -427,6 +427,7 @@ export default class Formio {
       Formio.projectUrl = this.projectUrl;
     }
   }
+  /* eslint-enable max-statements */
 
   delete(type, opts) {
     const _id = `${type}Id`;
@@ -752,6 +753,7 @@ export default class Formio {
 
   // Determine if the user can submit the form.
   canSubmit() {
+    /* eslint-disable max-statements, max-depth */
     return Promise.all([
       this.loadForm(),
       this.currentUser(),
@@ -814,6 +816,7 @@ export default class Formio {
       }
       return canSubmit;
     });
+    /* eslint-enable max-statements, max-depth */
   }
 
   getUrlParts(url) {
@@ -1288,7 +1291,7 @@ export default class Formio {
 
 // Define all the static properties.
 Formio.Headers = Headers;
-Formio.baseUrl = &apos;https://api.form.io&apos;;
+//Formio.baseUrl = &apos;https://api.form.io&apos;;
 Formio.projectUrl = Formio.baseUrl;
 Formio.projectUrlSet = false;
 Formio.plugins = [];

@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -289,11 +288,12 @@ export default class TextAreaComponent extends TextFieldComponent {
     if (!shouldShow &amp;&amp; node) {
       this.editor.renderer.scroller.removeChild(this.editor.renderer.emptyMessageNode);
       this.editor.renderer.emptyMessageNode = null;
-    } else if (shouldShow &amp;&amp; !node) {
+    }
+    else if (shouldShow &amp;&amp; !node) {
       node = this.editor.renderer.emptyMessageNode = this.ce(&apos;div&apos;);
       node.textContent = this.t(this.component.placeholder);
-      node.className = &quot;ace_invisible ace_emptyMessage&quot;;
-      node.style.padding = &quot;0 9px&quot;;
+      node.className = &apos;ace_invisible ace_emptyMessage&apos;;
+      node.style.padding = &apos;0 9px&apos;;
       this.editor.renderer.scroller.appendChild(node);
     }
   }
@@ -318,7 +318,7 @@ export default class TextAreaComponent extends TextFieldComponent {
             this.updateValue(null, this.getConvertedValue(this.editor.getValue()));
           });
           this.editor.getSession().setTabSize(2);
-          this.editor.getSession().setMode(&quot;ace/mode/&quot; + mode);
+          this.editor.getSession().setMode(&apos;ace/mode/&apos; + mode);
           this.editor.on(&apos;input&apos;, () =&gt; this.acePlaceholder());
           setTimeout(() =&gt; this.acePlaceholder(), 100);
           return this.editor;

@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -395,6 +394,7 @@ export default class BaseComponent {
    * @param {Object} options - The options for this component.
    * @param {Object} data - The global data submission object this component will belong.
    */
+  /* eslint-disable max-statements */
   constructor(component, options, data) {
     this.originalComponent = _.cloneDeep(component);
     /**
@@ -573,6 +573,7 @@ export default class BaseComponent {
     // Allow anyone to hook into the component creation.
     this.hook(&apos;component&apos;);
   }
+  /* eslint-enable max-statements */
 
   get hasInput() {
     return this.component.input || this.inputs.length;
@@ -683,7 +684,7 @@ export default class BaseComponent {
     }
     const type = `formio.${event}`;
     _.each(this.eventListeners, (listener) =&gt; {
-      if ((listener.type == type) &amp;&amp; (!cb || (cb === listener.listener))) {
+      if ((listener.type === type) &amp;&amp; (!cb || (cb === listener.listener))) {
         this.events.off(listener.type, listener.listener);
       }
     });
@@ -701,7 +702,7 @@ export default class BaseComponent {
     }
   }
 
-  performInputMapping(input){
+  performInputMapping(input) {
     return input;
   }
 
@@ -878,7 +879,7 @@ export default class BaseComponent {
     }
   }
 
-  createModal(title) {
+  createModal() {
     let self = this;
     let modalBody = this.ce(&apos;div&apos;);
     let modalOverlay = this.ce(&apos;div&apos;, {
@@ -1144,7 +1145,7 @@ export default class BaseComponent {
     }
   }
 
-  buildInput(container, value, index){
+  buildInput(container, value) {
     const input = this.createInput(container);
     input.value = value;
   }
@@ -1756,8 +1757,8 @@ export default class BaseComponent {
    * Taken from jQuery https://j11y.io/jquery/#v=1.5.0&amp;fn=jQuery.fn.hasClass
    */
   hasClass(element, className) {
-    className = &quot; &quot; + className + &quot; &quot;;
-    return ((&quot; &quot; + element.className + &quot; &quot;).replace(/[\n\t\r]/g, &quot; &quot;).indexOf(className) &gt; -1);
+    className = &apos; &apos; + className + &apos; &apos;;
+    return ((&apos; &apos; + element.className + &apos; &apos;).replace(/[\n\t\r]/g, &apos; &apos;).indexOf(className) &gt; -1);
   }
 
   /**
@@ -2434,10 +2435,12 @@ export default class BaseComponent {
     return message ? false : true;
   }
 
+  /* eslint-disable max-len */
   getRawValue() {
     console.warn(&apos;component.getRawValue() has been deprecated. Use component.validationValue or component.dataValue instead.&apos;);
     return this.validationValue;
   }
+  /* eslint-enable max-len */
 
   get validationValue() {
     return this.dataValue;

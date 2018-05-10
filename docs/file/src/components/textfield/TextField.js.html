@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -348,24 +347,27 @@ export default class TextFieldComponent extends BaseComponent {
     if (!this.isMultipleMasksField) {
       return super.setValueAt(index, value);
     }
+    let defaultValue = this.defaultValue;
     if (!value) {
-      if (this.defaultValue) {
-        value = this.defaultValue;
-      } else {
+      if (defaultValue) {
+        value = defaultValue;
+      }
+      else {
         value = {
           maskName: this.component.inputMasks[0].label
         };
       }
     }
     //if value is a string, treat it as text value itself and use default mask or first mask in the list
-    if (typeof value === &quot;string&quot;) {
+    const defaultMaskName = _.get(defaultValue, &apos;maskName&apos;, &apos;&apos;);
+    if (typeof value === &apos;string&apos;) {
       value = {
         value: value,
-        maskName: this.defaultValue &amp;&amp; this.defaultValue.maskName ? this.defaultValue.maskName : this.component.inputMasks[0].label
+        maskName: defaultMaskName ? defaultMaskName : this.component.inputMasks[0].label
       };
     }
-    const maskName = value.maskName || &quot;&quot;;
-    const textValue = value.value || &quot;&quot;;
+    const maskName = value.maskName || &apos;&apos;;
+    const textValue = value.value || &apos;&apos;;
     const textInput = this.inputs[index] ? this.inputs[index].text : undefined;
     const maskInput = this.inputs[index] ? this.inputs[index].mask : undefined;
     if (textInput &amp;&amp; maskInput) {
@@ -418,7 +420,7 @@ export default class TextFieldComponent extends BaseComponent {
     const maskOptions = this.maskOptions;
     this.selectOptions(maskInput, &apos;maskOption&apos;, maskOptions);
     // Change the text field mask when another mask is selected.
-    maskInput.onchange = function () {
+    maskInput.onchange = function() {
       self.updateMask(textInput, this.value);
     };
     return maskInput;
@@ -456,7 +458,7 @@ export default class TextFieldComponent extends BaseComponent {
       return {
         label: mask.label,
         value: mask.label
-      }
+      };
     });
   }
 

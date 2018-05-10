@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -567,9 +566,11 @@ export default class FileComponent extends BaseComponent {
     }
   }
 
+  /* eslint-disable max-len */
   fileSize(a, b, c, d, e) {
     return `${(b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2)} ${e ? `${&apos;kMGTPEZY&apos;[--e]}B` : &apos;Bytes&apos;}`;
   }
+  /* eslint-enable max-len */
 
   createUploadStatus(fileUpload) {
     let container;
@@ -608,6 +609,7 @@ export default class FileComponent extends BaseComponent {
     ]);
   }
 
+  /* eslint-disable max-depth */
   globStringToRegex(str) {
     let regexp = &apos;&apos;, excludes = [];
     if (str.length &gt; 2 &amp;&amp; str[0] === &apos;/&apos; &amp;&amp; str[str.length - 1] === &apos;/&apos;) {
@@ -644,6 +646,7 @@ export default class FileComponent extends BaseComponent {
     }
     return {regexp: regexp, excludes: excludes};
   }
+  /* eslint-enable max-depth */
 
   translateScalars(str) {
     if (typeof str === &apos;string&apos;) {
@@ -708,6 +711,7 @@ export default class FileComponent extends BaseComponent {
     if (this.component.storage &amp;&amp; files &amp;&amp; files.length) {
       // files is not really an array and does not have a forEach method, so fake it.
       Array.prototype.forEach.call(files, file =&gt; {
+        const fileName = uniqueName(file.name);
         const fileUpload = {
           originalName: file.name,
           name: fileName,
@@ -735,7 +739,6 @@ export default class FileComponent extends BaseComponent {
         }
 
         // Get a unique name for this file to keep file collisions from occurring.
-        const fileName = uniqueName(file.name);
         const dir = this.interpolate(this.component.dir || &apos;&apos;, {data: this.data, row: this.row});
         const fileService = this.fileService;
         if (!fileService) {

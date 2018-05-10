@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 233,
+  "end": 232,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 233,
+    "end": 232,
     "loc": {
       "start": {
         "line": 1,
@@ -70,9 +70,9 @@
                   "line": 1,
                   "column": 19
                 },
-                "identifierName": "BaseEditForm"
+                "identifierName": "baseEditForm"
               },
-              "name": "BaseEditForm"
+              "name": "baseEditForm"
             }
           }
         ],
@@ -219,9 +219,9 @@
                         "line": 3,
                         "column": 21
                       },
-                      "identifierName": "BaseEditForm"
+                      "identifierName": "baseEditForm"
                     },
-                    "name": "BaseEditForm"
+                    "name": "baseEditForm"
                   },
                   "arguments": [
                     {
@@ -528,21 +528,6 @@
           "leadingComments": [],
           "trailingComments": []
         }
-      },
-      {
-        "type": "EmptyStatement",
-        "start": 231,
-        "end": 232,
-        "loc": {
-          "start": {
-            "line": 13,
-            "column": 1
-          },
-          "end": {
-            "line": 13,
-            "column": 2
-          }
-        }
       }
     ],
     "directives": []
@@ -589,7 +574,7 @@
         "postfix": false,
         "binop": null
       },
-      "value": "BaseEditForm",
+      "value": "baseEditForm",
       "start": 7,
       "end": 19,
       "loc": {
@@ -932,7 +917,7 @@
         "postfix": false,
         "binop": null
       },
-      "value": "BaseEditForm",
+      "value": "baseEditForm",
       "start": 91,
       "end": 103,
       "loc": {
@@ -1675,32 +1660,6 @@
     },
     {
       "type": {
-        "label": ";",
-        "beforeExpr": true,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "start": 231,
-      "end": 232,
-      "loc": {
-        "start": {
-          "line": 13,
-          "column": 1
-        },
-        "end": {
-          "line": 13,
-          "column": 2
-        }
-      }
-    },
-    {
-      "type": {
         "label": "eof",
         "beforeExpr": false,
         "startsExpr": false,
@@ -1712,8 +1671,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 233,
-      "end": 233,
+      "start": 232,
+      "end": 232,
       "loc": {
         "start": {
           "line": 14,

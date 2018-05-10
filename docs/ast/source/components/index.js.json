@@ -1610,7 +1610,7 @@
           },
           "extra": {
             "rawValue": "./tags/Tags",
-            "raw": "\"./tags/Tags\""
+            "raw": "'./tags/Tags'"
           },
           "value": "./tags/Tags"
         }
@@ -2645,7 +2645,7 @@
           },
           "extra": {
             "rawValue": "./tabs/Tabs",
-            "raw": "\"./tabs/Tabs\""
+            "raw": "'./tabs/Tabs'"
           },
           "value": "./tabs/Tabs"
         }

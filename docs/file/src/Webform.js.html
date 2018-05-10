@@ -164,7 +164,6 @@
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table">components/table</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/table/Table.js~TableComponent.html">TableComponent</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-Table">Table</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TableEditOptions">TableEditOptions</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-table-fixtures">components/table/fixtures</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-component">component</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-components">components</a></span></span></li>
 <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#components-tabs">components/tabs</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/components/tabs/Tabs.js~TabsComponent.html">TabsComponent</a></span></span></li>
@@ -244,7 +243,9 @@
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/Webform.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">// DO NOT DELETE! THIS WILL BREAK PDF GENERATION.
+/* eslint-disable no-unused-vars */
 import * as polyfill from &apos;./formio.polyfill&apos;;
+/* eslint-enable no-unused-vars */
 
 import _ from &apos;lodash&apos;;
 import EventEmitter from &apos;eventemitter2&apos;;
@@ -287,6 +288,7 @@ export default class Webform extends NestedComponent {
    * @param {boolean} options.i18n - The translation file for this rendering. @see https://github.com/formio/formio.js/blob/master/i18n.js
    * @param {boolean} options.template - Provides a way to inject custom logic into the creation of every element rendered within the form.
    */
+  /* eslint-disable max-statements */
   constructor(element, options) {
     super(null, getOptions(options));
 
@@ -458,6 +460,7 @@ export default class Webform extends NestedComponent {
       this.language = this.options.language;
     });
   }
+  /* eslint-enable max-statements */
 
   /**
    * Sets the language for this form.
@@ -771,6 +774,7 @@ export default class Webform extends NestedComponent {
         });
         this.loader.appendChild(spinner);
       }
+      /* eslint-disable max-depth */
       if (this.loader) {
         try {
           if (loading) {
@@ -784,6 +788,7 @@ export default class Webform extends NestedComponent {
           // ingore
         }
       }
+      /* eslint-enable max-depth */
     }
   }
 
