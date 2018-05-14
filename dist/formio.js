@@ -196,9 +196,9 @@ var Formio = function () {
 
     // Register an array of items.
     var registerItems = function registerItems(items, base, staticBase) {
-      for (var _i in items) {
-        if (items.hasOwnProperty(_i)) {
-          var item = items[_i];
+      for (var i in items) {
+        if (items.hasOwnProperty(i)) {
+          var item = items[i];
           if (Array.isArray(item)) {
             registerItems(item, base, true);
           } else {
@@ -250,9 +250,9 @@ var Formio = function () {
       this.formUrl = this.projectUrl + path;
       this.formId = path.replace(/^\/+|\/+$/g, '');
       var items = ['submission', 'action', 'v'];
-      for (var _i2 in items) {
-        if (items.hasOwnProperty(_i2)) {
-          var item = items[_i2];
+      for (var i in items) {
+        if (items.hasOwnProperty(i)) {
+          var item = items[i];
           this[item + 'sUrl'] = this.projectUrl + path + '/' + item;
           if (this.pathType === item && subs.length > 2 && subs[2]) {
             this[item + 'Id'] = subs[2].replace(/^\/+|\/+$/g, '');
@@ -657,9 +657,9 @@ var Formio = function () {
           return true;
         }
 
-        for (var _i3 in form.submissionAccess) {
-          if (form.submissionAccess.hasOwnProperty(_i3)) {
-            var subRole = form.submissionAccess[_i3];
+        for (var i in form.submissionAccess) {
+          if (form.submissionAccess.hasOwnProperty(i)) {
+            var subRole = form.submissionAccess[i];
             if (subRole.type === 'create_all' || subRole.type === 'create_own') {
               for (var j in subRole.roles) {
                 if (subRole.roles.hasOwnProperty(j)) {
@@ -959,7 +959,7 @@ var Formio = function () {
     key: 'getAllFormData',
     value: function getAllFormData() {
       var formData = {};
-      for (i = 0; i < sessionStorage.length; i++) {
+      for (var i = 0; i < sessionStorage.length; i++) {
         var _key2 = sessionStorage.key(i);
         if (_key2.indexOf('_formio') >= 0) {
           var value = sessionStorage.getItem(_key2);
@@ -1412,8 +1412,8 @@ var Formio = function () {
         var value = data;
         var parts = component.key.split('.');
         var _key7 = '';
-        for (var _i4 = 0; _i4 < parts.length; _i4++) {
-          _key7 = parts[_i4];
+        for (var i = 0; i < parts.length; i++) {
+          _key7 = parts[i];
 
           // Handle nested resources
           if (value.hasOwnProperty('_id')) {

@@ -250,7 +250,7 @@ export class SelectComponent extends BaseComponent {
 
      // Allow for post body interpolation
      body = JSON.parse(this.interpolate(JSON.stringify(body), {
-      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, formioBase: Formio.getBaseUrl(), formData: Formio.getAllFormData
+      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, formioBase: Formio.getBaseUrl(), formData: Formio.getAllFormData()
     }));
 
     // Add search capability.

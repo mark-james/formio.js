@@ -847,7 +847,7 @@ class Formio {
 
   static getAllFormData(){
     let formData = {};
-    for (i = 0; i < sessionStorage.length; i++){
+    for (let i = 0; i < sessionStorage.length; i++){
       let key = sessionStorage.key(i);
       if (key.indexOf('_formio') >= 0) {
         let value = sessionStorage.getItem(key);
