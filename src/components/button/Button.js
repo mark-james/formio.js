@@ -151,11 +151,21 @@ export class ButtonComponent extends BaseComponent {
           // Get the form's flattened schema components
           const flattened = FormioUtils.flattenComponents(form.component.components, true);
           // Create object containing the corresponding HTML element components
-          const components = {};
-          _.each(flattened, (component, key) => {
-            const element = form.getComponent(key);
-            if (element) {
-              components[key] = element;
+          var components = {};
+          _each(flattened, function(component, key) {
+            if(key.includes(".data.")){
+              var formKey = key.split(".data.")[0];
+              var compKey = key.split(".data.")[1];
+              var element = form.getComponent(formKey).getComponent(compKey);
+              if (element) {
+              components[formKey+'-'+compKey] = element;
+              }       
+            }
+            else {
+              var element = form.getComponent(key);
+              if (element) {
+                components[key] = element;
+              }
             }
           });
 

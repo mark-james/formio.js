@@ -241,11 +241,34 @@ export class SelectComponent extends BaseComponent {
       skip: 0
     };
 
+    // Build up tiers of parent data to be accessible for interpolation. Max 4 Deep.
+    var count = 1;
+    var tempObj = this;
+    var tempObjPrev = {};
+    var parentData = [];
+      
+    while (count <= 4) {
+      if (tempObj.parent !== null){
+        tempObjPrev = tempObj;
+        tempObj = tempObj.parent;
+        if (tempObj.data !== tempObjPrev.data) {
+          parentData.push(tempObj.data);
+          count = count +1
+        }
+      }
+      else break;
+    }
+
     // Allow for url interpolation.
     url = this.interpolate(url, {
       data: this.data,
       formioBase: Formio.getBaseUrl()
     });
+
+     // Allow for post body interpolation
+     body = JSON.parse(this.interpolate(JSON.stringify(body), {
+      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, parentData: parentData, formioBase: Formio.getBaseUrl()
+    }));
 
     // Add search capability.
     if (this.component.searchField && search) {
@@ -259,7 +282,7 @@ export class SelectComponent extends BaseComponent {
 
     // Add filter capability
     if (this.component.filter) {
-      const filter = this.interpolate(this.component.filter, {data: this.data});
+      const filter = this.interpolate(this.component.filter, {data: this.data, formioOptions: Formio.getOptions()});
       url += (!url.includes('?') ? '?' : '&') + filter;
     }
 
@@ -298,7 +321,8 @@ export class SelectComponent extends BaseComponent {
         _.each(this.component.data.headers, (header) => {
           if (header.key) {
             headers.set(header.key, this.interpolate(header.value, {
-              data: this.data
+              data: this.data,
+              formioOptions: Formio.getOptions()
             }));
           }
         });

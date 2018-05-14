@@ -131,6 +131,10 @@ var Formio = function () {
     this.vUrl = '';
     this.query = '';
 
+    if (Object.keys(options).length !== 0 && options.constructor === Object) {
+      Formio.setOptions(options);
+    }
+
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
     } else if (Formio.baseUrl) {
@@ -929,6 +933,16 @@ var Formio = function () {
         }
         return _nativePromiseOnly2.default.reject(err);
       });
+    }
+  }, {
+    key: 'getOptions',
+    value: function getOptions() {
+      return JSON.parse(sessionStorage.formioOptions);
+    }
+  }, {
+    key: 'setOptions',
+    value: function setOptions(options) {
+      sessionStorage.formioOptions = JSON.stringify(options);
     }
   }, {
     key: 'setToken',

@@ -316,11 +316,21 @@ export class ButtonComponent extends BaseComponent {
           // Get the form&apos;s flattened schema components
           const flattened = FormioUtils.flattenComponents(form.component.components, true);
           // Create object containing the corresponding HTML element components
-          const components = {};
-          _.each(flattened, (component, key) =&gt; {
-            const element = form.getComponent(key);
-            if (element) {
-              components[key] = element;
+          var components = {};
+          _each(flattened, function(component, key) {
+            if(key.includes(&quot;.data.&quot;)){
+              var formKey = key.split(&quot;.data.&quot;)[0];
+              var compKey = key.split(&quot;.data.&quot;)[1];
+              var element = form.getComponent(formKey).getComponent(compKey);
+              if (element) {
+              components[formKey+&apos;-&apos;+compKey] = element;
+              }       
+            }
+            else {
+              var element = form.getComponent(key);
+              if (element) {
+                components[key] = element;
+              }
             }
           });
 
@@ -377,14 +387,20 @@ export class ButtonComponent extends BaseComponent {
 
     function getUrlParameter(name) {
       name = name.replace(/[[]/, &apos;\\[&apos;).replace(/[\]]/, &apos;\\]&apos;);
-      var regex = new RegExp(`[\\?&amp;]${name}=([^&amp;#]*)`);
-      var results = regex.exec(location.search);
-      return results === null ? &apos;&apos; : decodeURIComponent(results[1].replace(/\+/g, &apos; &apos;));
+      const regex = new RegExp(`[\\?&amp;]${name}=([^&amp;#]*)`);
+      const results = regex.exec(location.search);
+      if (!results) {
+        return results;
+      }
+      return decodeURIComponent(results[1].replace(/\+/g, &apos; &apos;));
     }
 
     // If this is an OpenID Provider initiated login, perform the click event immediately
-    if (this.component.action === &apos;oauth&apos; &amp;&amp; this.component.oauth.authURI.indexOf(getUrlParameter(&apos;iss&apos;)) === 0) {
-      this.openOauth();
+    if ((this.component.action === &apos;oauth&apos;) &amp;&amp; this.component.oauth &amp;&amp; this.component.oauth.authURI) {
+      const iss = getUrlParameter(&apos;iss&apos;);
+      if (iss &amp;&amp; (this.component.oauth.authURI.indexOf(iss) === 0)) {
+        this.openOauth();
+      }
     }
 
     this.autofocus();

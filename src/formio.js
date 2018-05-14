@@ -44,6 +44,10 @@ class Formio {
     this.vUrl = '';
     this.query = '';
 
+    if (Object.keys(options).length !== 0 && options.constructor === Object) {
+      Formio.setOptions(options);
+    }
+
     if (options.hasOwnProperty('base')) {
       this.base = options.base;
     }
@@ -822,6 +826,14 @@ class Formio {
         }
         return Promise.reject(err);
       });
+  }
+
+  static getOptions() {
+    return JSON.parse(sessionStorage.formioOptions);
+  }
+
+  static setOptions(options) {
+      sessionStorage.formioOptions = JSON.stringify(options);
   }
 
   static setToken(token) {
