@@ -1759,13 +1759,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#datavalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-dataValue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-dataValue",
     "src/components/base/Base.js~BaseComponent#dataValue",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#datavalue",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-dataValue",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-dataValue",
     "src/components/base/Base.js~BaseComponent#dataValue",
     "member"
   ],
@@ -1801,13 +1801,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
   [
     "src/components/base/base.js~basecomponent#disabled",
-    "class/src/components/base/Base.js~BaseComponent.html#instance-get-disabled",
+    "class/src/components/base/Base.js~BaseComponent.html#instance-set-disabled",
     "src/components/base/Base.js~BaseComponent#disabled",
     "member"
   ],
@@ -6121,13 +6121,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#src",
-    "class/src/formio.form.js~FormioForm.html#instance-get-src",
+    "class/src/formio.form.js~FormioForm.html#instance-set-src",
     "src/formio.form.js~FormioForm#src",
     "member"
   ],
   [
     "src/formio.form.js~formioform#src",
-    "class/src/formio.form.js~FormioForm.html#instance-set-src",
+    "class/src/formio.form.js~FormioForm.html#instance-get-src",
     "src/formio.form.js~FormioForm#src",
     "member"
   ],
@@ -6187,13 +6187,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/formio.form.js~formioform#url",
-    "class/src/formio.form.js~FormioForm.html#instance-set-url",
+    "class/src/formio.form.js~FormioForm.html#instance-get-url",
     "src/formio.form.js~FormioForm#url",
     "member"
   ],
   [
     "src/formio.form.js~formioform#url",
-    "class/src/formio.form.js~FormioForm.html#instance-get-url",
+    "class/src/formio.form.js~FormioForm.html#instance-set-url",
     "src/formio.form.js~FormioForm#url",
     "member"
   ],
@@ -6618,6 +6618,12 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/formio.js~formio.getallformdata",
+    "class/src/formio.js~Formio.html#static-method-getAllFormData",
+    "src/formio.js~Formio.getAllFormData",
+    "method"
+  ],
+  [
     "src/formio.js~formio.getapiurl",
     "class/src/formio.js~Formio.html#static-method-getApiUrl",
     "src/formio.js~Formio.getApiUrl",
@@ -6633,6 +6639,12 @@ window.esdocSearchIndex = [
     "src/formio.js~formio.getbaseurl",
     "class/src/formio.js~Formio.html#static-method-getBaseUrl",
     "src/formio.js~Formio.getBaseUrl",
+    "method"
+  ],
+  [
+    "src/formio.js~formio.getformdata",
+    "class/src/formio.js~Formio.html#static-method-getFormData",
+    "src/formio.js~Formio.getFormData",
     "method"
   ],
   [
@@ -6765,6 +6777,12 @@ window.esdocSearchIndex = [
     "src/formio.js~formio.setbaseurl",
     "class/src/formio.js~Formio.html#static-method-setBaseUrl",
     "src/formio.js~Formio.setBaseUrl",
+    "method"
+  ],
+  [
+    "src/formio.js~formio.setformdata",
+    "class/src/formio.js~Formio.html#static-method-setFormData",
+    "src/formio.js~Formio.setFormData",
     "method"
   ],
   [

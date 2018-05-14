@@ -9711,32 +9711,16 @@ var SelectComponent = exports.SelectComponent = function (_BaseComponent) {
         skip: 0
       };
 
-      // Build up tiers of parent data to be accessible for interpolation. Max 4 Deep.
-      var count = 1;
-      var tempObj = this;
-      var tempObjPrev = {};
-      var parentData = [];
-
-      while (count <= 4) {
-        if (tempObj.parent !== null) {
-          tempObjPrev = tempObj;
-          tempObj = tempObj.parent;
-          if (tempObj.data !== tempObjPrev.data) {
-            parentData.push(tempObj.data);
-            count = count + 1;
-          }
-        } else break;
-      }
-
       // Allow for url interpolation.
       url = this.interpolate(url, {
         data: this.data,
+        formioOptions: _formio2.default.getOptions(),
         formioBase: _formio2.default.getBaseUrl()
       });
 
       // Allow for post body interpolation
       body = JSON.parse(this.interpolate(JSON.stringify(body), {
-        data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data, parentData: parentData, formioBase: _formio2.default.getBaseUrl()
+        data: this.data, formioOptions: _formio2.default.getOptions(), rootData: this.root.data, formioBase: _formio2.default.getBaseUrl(), formData: _formio2.default.getAllFormData
       }));
 
       // Add search capability.
@@ -12967,9 +12951,9 @@ var Formio = function () {
 
     // Register an array of items.
     var registerItems = function registerItems(items, base, staticBase) {
-      for (var i in items) {
-        if (items.hasOwnProperty(i)) {
-          var item = items[i];
+      for (var _i in items) {
+        if (items.hasOwnProperty(_i)) {
+          var item = items[_i];
           if (Array.isArray(item)) {
             registerItems(item, base, true);
           } else {
@@ -13021,9 +13005,9 @@ var Formio = function () {
       this.formUrl = this.projectUrl + path;
       this.formId = path.replace(/^\/+|\/+$/g, '');
       var items = ['submission', 'action', 'v'];
-      for (var i in items) {
-        if (items.hasOwnProperty(i)) {
-          var item = items[i];
+      for (var _i2 in items) {
+        if (items.hasOwnProperty(_i2)) {
+          var item = items[_i2];
           this[item + 'sUrl'] = this.projectUrl + path + '/' + item;
           if (this.pathType === item && subs.length > 2 && subs[2]) {
             this[item + 'Id'] = subs[2].replace(/^\/+|\/+$/g, '');
@@ -13428,9 +13412,9 @@ var Formio = function () {
           return true;
         }
 
-        for (var i in form.submissionAccess) {
-          if (form.submissionAccess.hasOwnProperty(i)) {
-            var subRole = form.submissionAccess[i];
+        for (var _i3 in form.submissionAccess) {
+          if (form.submissionAccess.hasOwnProperty(_i3)) {
+            var subRole = form.submissionAccess[_i3];
             if (subRole.type === 'create_all' || subRole.type === 'create_own') {
               for (var j in subRole.roles) {
                 if (subRole.roles.hasOwnProperty(j)) {
@@ -13716,6 +13700,31 @@ var Formio = function () {
       sessionStorage.formioOptions = JSON.stringify(options);
     }
   }, {
+    key: 'setFormData',
+    value: function setFormData(key, data) {
+      // Assumes string
+      sessionStorage.setItem(key + '_formio', data);
+    }
+  }, {
+    key: 'getFormData',
+    value: function getFormData(key) {
+      sessionStorage.getItem(key + '_formio');
+    }
+  }, {
+    key: 'getAllFormData',
+    value: function getAllFormData() {
+      var formData = {};
+      for (i = 0; i < sessionStorage.length; i++) {
+        var _key2 = sessionStorage.key(i);
+        if (_key2.indexOf('_formio') >= 0) {
+          var value = sessionStorage.getItem(_key2);
+          formData[_key2] = value;
+        }
+        return formData;
+      }
+      sessionStorage.getItem(key + '_formio');
+    }
+  }, {
     key: 'setToken',
     value: function setToken(token) {
       token = token || '';
@@ -13901,8 +13910,8 @@ var Formio = function () {
   }, {
     key: 'pluginWait',
     value: function pluginWait(pluginFn) {
-      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-        args[_key2 - 1] = arguments[_key2];
+      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key3 = 1; _key3 < _len2; _key3++) {
+        args[_key3 - 1] = arguments[_key3];
       }
 
       return _nativePromiseOnly2.default.all(Formio.plugins.map(function (plugin) {
@@ -13914,8 +13923,8 @@ var Formio = function () {
   }, {
     key: 'pluginGet',
     value: function pluginGet(pluginFn) {
-      for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-        args[_key3 - 1] = arguments[_key3];
+      for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key4 = 1; _key4 < _len3; _key4++) {
+        args[_key4 - 1] = arguments[_key4];
       }
 
       var callPlugin = function callPlugin(index) {
@@ -13940,8 +13949,8 @@ var Formio = function () {
   }, {
     key: 'pluginAlter',
     value: function pluginAlter(pluginFn, value) {
-      for (var _len4 = arguments.length, args = Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
-        args[_key4 - 2] = arguments[_key4];
+      for (var _len4 = arguments.length, args = Array(_len4 > 2 ? _len4 - 2 : 0), _key5 = 2; _key5 < _len4; _key5++) {
+        args[_key5 - 2] = arguments[_key5];
       }
 
       return Formio.plugins.reduce(function (value, plugin) {
@@ -14008,8 +14017,8 @@ var Formio = function () {
       }
 
       done = done || function () {
-        for (var _len5 = arguments.length, args = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-          args[_key5] = arguments[_key5];
+        for (var _len5 = arguments.length, args = Array(_len5), _key6 = 0; _key6 < _len5; _key6++) {
+          args[_key6] = arguments[_key6];
         }
 
         return console.log(args);
@@ -14157,9 +14166,9 @@ var Formio = function () {
       if (component.key.indexOf('.') !== -1) {
         var value = data;
         var parts = component.key.split('.');
-        var key = '';
-        for (var i = 0; i < parts.length; i++) {
-          key = parts[i];
+        var _key7 = '';
+        for (var _i4 = 0; _i4 < parts.length; _i4++) {
+          _key7 = parts[_i4];
 
           // Handle nested resources
           if (value.hasOwnProperty('_id')) {
@@ -14167,17 +14176,17 @@ var Formio = function () {
           }
 
           // Return if the key is not found on the value.
-          if (!value.hasOwnProperty(key)) {
+          if (!value.hasOwnProperty(_key7)) {
             return;
           }
 
           // Convert old single field data in submissions to multiple
-          if (key === parts[parts.length - 1] && component.multiple && !Array.isArray(value[key])) {
-            value[key] = [value[key]];
+          if (_key7 === parts[parts.length - 1] && component.multiple && !Array.isArray(value[_key7])) {
+            value[_key7] = [value[_key7]];
           }
 
           // Set the value of this key.
-          value = value[key];
+          value = value[_key7];
         }
         return value;
       } else {

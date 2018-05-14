@@ -1001,6 +1001,28 @@ class Formio {
       sessionStorage.formioOptions = JSON.stringify(options);
   }
 
+  static setFormData(key, data) {
+    // Assumes string
+    sessionStorage.setItem(key + &apos;_formio&apos;, data);
+  }
+
+  static getFormData(key){
+    sessionStorage.getItem(key + &apos;_formio&apos;);
+  }
+
+  static getAllFormData(){
+    let formData = {};
+    for (i = 0; i &lt; sessionStorage.length; i++){
+      let key = sessionStorage.key(i);
+      if (key.indexOf(&apos;_formio&apos;) &gt;= 0) {
+        let value = sessionStorage.getItem(key);
+        formData[key] = value;
+      }
+      return formData;
+    }
+    sessionStorage.getItem(key + &apos;_formio&apos;);
+  }
+
   static setToken(token) {
     token = token || &apos;&apos;;
     if (token === this.token) {

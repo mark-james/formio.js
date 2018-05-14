@@ -836,6 +836,28 @@ class Formio {
       sessionStorage.formioOptions = JSON.stringify(options);
   }
 
+  static setFormData(key, data) {
+    // Assumes string
+    sessionStorage.setItem(key + '_formio', data);
+  }
+
+  static getFormData(key){
+    sessionStorage.getItem(key + '_formio');
+  }
+
+  static getAllFormData(){
+    let formData = {};
+    for (i = 0; i < sessionStorage.length; i++){
+      let key = sessionStorage.key(i);
+      if (key.indexOf('_formio') >= 0) {
+        let value = sessionStorage.getItem(key);
+        formData[key] = value;
+      }
+      return formData;
+    }
+    sessionStorage.getItem(key + '_formio');
+  }
+
   static setToken(token) {
     token = token || '';
     if (token === this.token) {
