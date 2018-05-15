@@ -406,6 +406,24 @@ export class SelectComponent extends BaseComponent {
       skip: 0
     };
 
+    // Build up tiers of parent data to be accessible for interpolation.
+    var count = 1;
+    var tempObj = this;
+    var tempObjPrev = {};
+    var parentData = [];
+      
+    while (count &lt;= 4) {
+      if (tempObj.parent !== null){
+        tempObjPrev = tempObj;
+        tempObj = tempObj.parent;
+        if (tempObj.data !== tempObjPrev.data) {
+          parentData.push(tempObj.data);
+          count = count +1
+        }
+      }
+      else break;
+    }
+
     // Allow for url interpolation.
     url = this.interpolate(url, {
       data: this.data,
@@ -415,7 +433,7 @@ export class SelectComponent extends BaseComponent {
 
      // Allow for post body interpolation
      body = JSON.parse(this.interpolate(JSON.stringify(body), {
-      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, formioBase: Formio.getBaseUrl(), formData: Formio.getAllFormData()
+      data: this.data, formioOptions: Formio.getOptions(), rootData: this.root.data, parentData: parentData, formioBase: Formio.getBaseUrl(), formData: Formio.getAllFormData()
     }));
 
     // Add search capability.
