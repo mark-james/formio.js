@@ -458,7 +458,11 @@ export class EditGridComponent extends FormioComponents {
       return;
     }
     this.removeRowComponents(rowIndex);
-    this.dataValue[rowIndex] = this.editRows[rowIndex].data;
+    // For Some Reason dataValue is readOnly
+    let tempDV = _lodash2.default.cloneDeep(this.dataValue);
+    tempDV[rowIndex] = this.editRows[rowIndex].data;
+    this.dataValue = tempDV;
+    //this.dataValue[rowIndex] = this.editRows[rowIndex].data;
     this.editRows[rowIndex].isOpen = false;
     this.checkValidity(this.data, true);
     this.updateValue();
