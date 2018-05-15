@@ -152,7 +152,7 @@ export class ButtonComponent extends BaseComponent {
           const flattened = FormioUtils.flattenComponents(form.component.components, true);
           // Create object containing the corresponding HTML element components
           var components = {};
-          _each(flattened, function(component, key) {
+          _.each(flattened, function(component, key) {
             if(key.includes(".data.")){
               var formKey = key.split(".data.")[0];
               var compKey = key.split(".data.")[1];
