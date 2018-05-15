@@ -6508,7 +6508,7 @@ var _get = function get(object, property, receiver) {
 
 var _lodash = require('lodash');
 
-var _lodash3 = _interopRequireDefault(_lodash);
+var _lodash2 = _interopRequireDefault(_lodash);
 
 var _Components = require('../Components');
 
@@ -6549,7 +6549,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
     _this.type = 'datagrid';
     _this.editRows = [];
     if (_this.options.components) {
-      _this.create = _lodash3.default.bind(_this.options.components.create, _this.options.components, _lodash3.default, _this.options, _lodash3.default, true);
+      _this.create = _lodash2.default.bind(_this.options.components.create, _this.options.components, _lodash2.default, _this.options, _lodash2.default, true);
     }
     return _this;
   }
@@ -6574,19 +6574,19 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       }
 
       var tableClass = 'editgrid-listgroup list-group ';
-      _lodash3.default.each(['striped', 'bordered', 'hover', 'condensed'], function (prop) {
+      _lodash2.default.each(['striped', 'bordered', 'hover', 'condensed'], function (prop) {
         if (_this2.component[prop]) {
           tableClass += 'table-' + prop + ' ';
         }
       });
-      this.tableElement = this.ce('ul', { class: tableClass }, [this.headerElement = this.createHeader(), this.rowElements = _lodash3.default.map(this.rows, this.createRow.bind(this)), this.footerElement = this.createFooter()]);
+      this.tableElement = this.ce('ul', { class: tableClass }, [this.headerElement = this.createHeader(), this.rowElements = _lodash2.default.map(this.rows, this.createRow.bind(this)), this.footerElement = this.createFooter()]);
 
       this.element.appendChild(this.tableElement);
     }
   }, {
     key: 'createHeader',
     value: function createHeader() {
-      var templateHeader = _lodash3.default.get(this.component, 'templates.header');
+      var templateHeader = _lodash2.default.get(this.component, 'templates.header');
       if (!templateHeader) {
         return this.text('');
       }
@@ -6603,7 +6603,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       var _this3 = this;
 
       var wrapper = this.ce('li', { class: 'list-group-item' });
-      var rowTemplate = _lodash3.default.get(this.component, 'templates.row', this.defaultRowTemplate);
+      var rowTemplate = _lodash2.default.get(this.component, 'templates.row', this.defaultRowTemplate);
 
       // Store info so we can detect changes later.
       wrapper.rowData = row;
@@ -6613,9 +6613,9 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
 
       if (wrapper.rowOpen) {
         wrapper.appendChild(this.ce('div', { class: 'editgrid-edit' }, this.ce('div', { class: 'editgrid-body' }, [this.component.components.map(function (comp) {
-          var component = _lodash3.default.cloneDeep(comp);
+          var component = _lodash2.default.cloneDeep(comp);
           component.row = _this3.row + '-' + rowIndex;
-          var options = _lodash3.default.clone(_this3.options);
+          var options = _lodash2.default.clone(_this3.options);
           options.name += '[' + rowIndex + ']';
           var instance = _this3.createComponent(component, options, _this3.editRows[rowIndex].data);
           _this3.editRows[rowIndex].components.push(instance);
@@ -6656,7 +6656,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
   }, {
     key: 'createFooter',
     value: function createFooter() {
-      var footerTemplate = _lodash3.default.get(this.component, 'templates.footer');
+      var footerTemplate = _lodash2.default.get(this.component, 'templates.footer');
       if (!footerTemplate) {
         return this.text('');
       }
@@ -6759,7 +6759,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
     key: 'editRow',
     value: function editRow(rowIndex) {
       this.editRows[rowIndex].isOpen = true;
-      this.editRows[rowIndex].data = _lodash3.default.cloneDeep(this.dataValue[rowIndex]);
+      this.editRows[rowIndex].data = _lodash2.default.cloneDeep(this.dataValue[rowIndex]);
       this.refreshDOM();
     }
   }, {
