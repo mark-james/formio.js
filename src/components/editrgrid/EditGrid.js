@@ -22,7 +22,9 @@ export class EditGridComponent extends FormioComponents {
     this.createLabel(this.element);
     this.buildTable();
     this.createDescription(this.element);
-    this.createAddButton();
+    if (!this.component.disabled){
+      this.createAddButton();
+    }
     this.element.appendChild(this.errorContainer = this.ce('div', {class: 'has-error'}));
   }
 

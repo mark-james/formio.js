@@ -22,6 +22,12 @@ export class FormComponent extends BaseComponent {
    * Load the subform.
    */
   loadSubForm() {
+
+    // If the form is disabled then disable all child components
+    if (this.component.disabled){
+      this.options.readOnly = true;
+    }
+    
     // Only load the subform if the subform isn't loaded and the conditions apply.
     if (this.subFormLoaded || !super.checkConditions(this.root ? this.root.data : this.data)) {
       return this.subFormReady;

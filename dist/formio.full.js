@@ -3709,7 +3709,7 @@ var BaseComponent = function () {
   }, {
     key: 'shouldDisable',
     get: function get() {
-      return (this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
+      return (Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
     }
   }, {
     key: 'viewOnly',
@@ -6561,7 +6561,9 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
       this.createLabel(this.element);
       this.buildTable();
       this.createDescription(this.element);
-      this.createAddButton();
+      if (!this.component.disabled) {
+        this.createAddButton();
+      }
       this.element.appendChild(this.errorContainer = this.ce('div', { class: 'has-error' }));
     }
   }, {
@@ -7803,6 +7805,11 @@ var FormComponent = exports.FormComponent = function (_BaseComponent) {
      */
     value: function loadSubForm() {
       var _this2 = this;
+
+      // If the form is disabled then disable all child components
+      if (this.component.disabled) {
+        this.options.readOnly = true;
+      }
 
       // Only load the subform if the subform isn't loaded and the conditions apply.
       if (this.subFormLoaded || !_get(FormComponent.prototype.__proto__ || Object.getPrototypeOf(FormComponent.prototype), 'checkConditions', this).call(this, this.root ? this.root.data : this.data)) {

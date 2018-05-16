@@ -2500,7 +2500,7 @@ var BaseComponent = function () {
   }, {
     key: 'shouldDisable',
     get: function get() {
-      return (this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
+      return (Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
     }
   }, {
     key: 'viewOnly',

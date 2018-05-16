@@ -314,7 +314,7 @@ export class BaseComponent {
   }
 
   get shouldDisable() {
-    return (this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
+    return (Formio.getOptions().readOnly || this.options.readOnly || this.component.disabled) && !this.component.alwaysEnabled;
   }
 
   /**
