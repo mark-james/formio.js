@@ -1,5 +1,6 @@
 import {BaseComponent} from '../base/Base';
 import FormioUtils from '../../utils';
+import Formio from '../../formio.js';
 
 export class FileComponent extends BaseComponent {
   constructor(component, options, data) {
@@ -163,7 +164,13 @@ export class FileComponent extends BaseComponent {
   }
 
   get fileService() {
-    return this.options.fileService || this.options.formio;
+      if (this.options.fileService) {
+        return this.options.fileService;
+      }
+      if (this.options.formio) {
+        return this.options.formio;
+      }
+      return new Formio();
   }
 
   createImageListItem(fileInfo, index) {

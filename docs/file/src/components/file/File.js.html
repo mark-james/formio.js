@@ -165,6 +165,7 @@
 <div class="content" data-ice="content"><h1 data-ice="title">src/components/file/File.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import {BaseComponent} from &apos;../base/Base&apos;;
 import FormioUtils from &apos;../../utils&apos;;
+import Formio from &apos;../../formio.js&apos;;
 
 export class FileComponent extends BaseComponent {
   constructor(component, options, data) {
@@ -328,7 +329,13 @@ export class FileComponent extends BaseComponent {
   }
 
   get fileService() {
-    return this.options.fileService || this.options.formio;
+      if (this.options.fileService) {
+        return this.options.fileService;
+      }
+      if (this.options.formio) {
+        return this.options.formio;
+      }
+      return new Formio();
   }
 
   createImageListItem(fileInfo, index) {

@@ -8,7 +8,7 @@ export class EditGridComponent extends FormioComponents {
     super(component, options, data);
     this.type = 'datagrid';
     this.editRows = [];
-    if (this.options.components) {
+    if (!this.component.disabled && !Formio.getOptions().readOnly) {
       this.create = _.bind(this.options.components.create, this.options.components, _, this.options, _, true);
     }
   }

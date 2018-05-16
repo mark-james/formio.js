@@ -6548,7 +6548,7 @@ var EditGridComponent = exports.EditGridComponent = function (_FormioComponents)
 
     _this.type = 'datagrid';
     _this.editRows = [];
-    if (_this.options.components) {
+    if (!_this.component.disabled && !Formio.getOptions().readOnly) {
       _this.create = _lodash2.default.bind(_this.options.components.create, _this.options.components, _lodash2.default, _this.options, _lodash2.default, true);
     }
     return _this;
@@ -7193,6 +7193,10 @@ var _utils = require('../../utils');
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _formio = require('../../formio.js');
+
+var _formio2 = _interopRequireDefault(_formio);
+
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
 }
@@ -7698,14 +7702,20 @@ var FileComponent = exports.FileComponent = function (_BaseComponent) {
   }, {
     key: 'fileService',
     get: function get() {
-      return this.options.fileService || this.options.formio;
+      if (this.options.fileService) {
+        return this.options.fileService;
+      }
+      if (this.options.formio) {
+        return this.options.formio;
+      }
+      return new _formio2.default();
     }
   }]);
 
   return FileComponent;
 }(_Base.BaseComponent);
 
-},{"../../utils":57,"../base/Base":4}],19:[function(require,module,exports){
+},{"../../formio.js":45,"../../utils":57,"../base/Base":4}],19:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
